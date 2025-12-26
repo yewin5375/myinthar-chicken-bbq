@@ -3,186 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✨ မြင်သာကြက်ကင် - Premium POS</title>
+    <title>🍗 မြင်သာကြက်ကင် - Premium POS & Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --premium-gold: #D4AF37;
-            --deep-black: #1a1a1a;
-            --soft-white: #ffffff;
-            --accent-orange: #ff6b00;
-            --bg-gray: #f4f4f9;
-        }
-        body { 
-            font-family: 'Pyidaungsu', sans-serif; 
-            background: var(--bg-gray); 
-            margin: 0; padding: 0; 
-            color: var(--deep-black);
-        }
-        .header { 
-            background: var(--deep-black); 
-            color: var(--premium-gold); 
-            padding: 40px 20px; 
-            text-align: center; 
-            border-bottom: 3px solid var(--premium-gold);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-        .header h2 { margin: 0; font-size: 28px; letter-spacing: 1px; }
-        .container { max-width: 600px; margin: auto; padding: 20px; margin-bottom: 120px; }
+        :root { --gold: #D4AF37; --dark: #121212; --orange: #ff6b00; --card: #ffffff; }
+        body { font-family: 'Pyidaungsu', sans-serif; background: #f0f2f5; margin: 0; padding-bottom: 80px; }
         
-        /* Menu Cards */
-        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .menu-card { 
-            background: white; 
-            border-radius: 15px; 
-            padding: 20px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-            border-left: 5px solid var(--premium-gold);
-        }
-        .menu-card:active { transform: scale(0.98); }
-        .item-info h3 { margin: 0; font-size: 18px; }
-        .item-price { color: var(--accent-orange); font-weight: bold; font-size: 16px; margin-top: 5px; }
+        /* Navigation Tabs */
+        .nav-tabs { display: flex; background: var(--dark); position: sticky; top: 0; z-index: 1000; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: white; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { border-bottom: 3px solid var(--gold); color: var(--gold); }
 
-        /* Qty Controls */
-        .qty-box { display: flex; align-items: center; gap: 15px; background: #f8f9fa; padding: 5px 10px; border-radius: 50px; }
-        .btn-qty { 
-            width: 35px; height: 35px; border: none; 
-            background: white; color: var(--deep-black); 
-            border-radius: 50%; cursor: pointer; 
-            font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        .container { max-width: 600px; margin: auto; padding: 15px; }
+        .section { display: none; }
+        .section.active { display: block; }
 
-        /* Footer Bar */
-        .footer-bar { 
-            position: fixed; bottom: 0; width: 100%; max-width: 600px; 
-            background: var(--deep-black); padding: 20px; 
-            box-sizing: border-box; display: flex; justify-content: space-between; 
-            align-items: center; color: white; border-radius: 25px 25px 0 0;
-        }
-        .btn-checkout { 
-            background: var(--premium-gold); color: var(--deep-black); 
-            border: none; padding: 15px 30px; border-radius: 12px; 
-            font-weight: bold; font-size: 16px; cursor: pointer;
-        }
+        /* Premium Card Design */
+        .card { background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
+        .item-img { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 10px; }
+        .badge { position: absolute; top: 10px; right: 10px; background: var(--orange); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
 
-        /* Modal Styles */
-        #checkout-modal { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; 
-        }
-        .modal-content { 
-            background: white; width: 90%; max-width: 400px; padding: 30px; 
-            border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        input { 
-            width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; 
-            border-radius: 12px; font-size: 15px; background: #fafafa;
-        }
-        .app-btn { 
-            width: 100%; padding: 15px; border: none; border-radius: 12px; 
-            color: white; font-weight: bold; margin-top: 10px; cursor: pointer;
-        }
+        /* Admin Form */
+        .admin-form { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 8px; margin-top: 10px; }
+
+        /* Checkout Bar */
+        .footer-bar { position: fixed; bottom: 0; width: 100%; max-width: 600px; background: var(--dark); padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; color: white; border-radius: 20px 20px 0 0; left: 50%; transform: translateX(-50%); }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2>🍗 MYIN THAR ROAST</h2>
-    <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">Premium Taste, Traditional Recipe</p>
+<div class="nav-tabs">
+    <button class="tab-btn active" onclick="showTab('customer')">🛍 Menu</button>
+    <button class="tab-btn" onclick="showTab('admin')">🛠 Admin</button>
 </div>
 
-<div class="container">
-    <div id="menu-grid" class="menu-grid">Loading Luxury Menu...</div>
+<div id="customer" class="section active container">
+    <h2 style="text-align:center;">✨ မြင်သာကြက်ကင်</h2>
+    <div id="customer-menu">မီနူးများ ဆွဲယူနေသည်...</div>
 </div>
 
-<div class="footer-bar">
-    <div>
-        <small style="opacity: 0.7;">TOTAL AMOUNT</small><br>
-        <b style="font-size:22px; color: var(--premium-gold);"><span id="total-price">0</span> K</b>
+<div id="admin" class="section container">
+    <div class="admin-form">
+        <h3>➕ Menu အသစ်ထည့်ရန်</h3>
+        <input type="text" id="adm-name" placeholder="အမည် (ဥပမာ- ၁သောင်းတန်ဆပ်)">
+        <input type="number" id="adm-price" placeholder="ဈေးနှုန်း">
+        <input type="number" id="adm-stock" placeholder="Stock အရေအတွက်">
+        <select id="adm-cat">
+            <option value="single">ရိုးရိုး</option>
+            <option value="10000_set">၁ သောင်းတန် Set</option>
+            <option value="20000_set">၂ သောင်းတန် Set</option>
+        </select>
+        <label>ဓာတ်ပုံတင်ရန်:</label>
+        <input type="file" id="adm-file" accept="image/*">
+        <button class="btn-main" onclick="handleSaveItem()">Menu သိမ်းမည်</button>
     </div>
-    <button class="btn-checkout" onclick="openCheckout()">Order Now ➔</button>
+    <hr>
+    <h3>📋 လက်ရှိ Menu များ</h3>
+    <div id="admin-menu-list"></div>
 </div>
 
-<div id="checkout-modal">
-    <div class="modal-content">
-        <h2 style="text-align:center; color: var(--deep-black);">Checkout</h2>
-        <input type="text" id="cust-name" placeholder="သင့်အမည်">
-        <input type="tel" id="cust-phone" placeholder="ဖုန်းနံပါတ်">
-        <input type="datetime-local" id="pickup-datetime">
-        
-        <button class="app-btn" style="background:#7360f2;" onclick="submitOrder('viber')">🟣 Send via Viber</button>
-        <button class="app-btn" style="background:#0088cc;" onclick="submitOrder('telegram')">🔵 Send via Telegram</button>
-        <button onclick="closeCheckout()" style="width:100%; background:none; border:none; margin-top:15px; color:#666;">Cancel</button>
-    </div>
+<div class="footer-bar" id="cart-bar">
+    <div>Total: <b id="total-price">0</b> K</div>
+    <button style="background:var(--gold); border:none; padding:10px 20px; border-radius:10px; font-weight:bold;" onclick="alert('Viber/Telegram သို့ ပို့ရန် လုပ်ဆောင်ချက်...')">Check Out</button>
 </div>
-
-<audio id="click-sound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
-<audio id="success-sound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3"></audio>
 
 <script>
     const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTk2MDYsImV4cCI6MjA4MjMzNTYwNn0.Kxy3QW1gq-J-tzUF2fxQd0l989Wr7BI2uRTbWDTNL6k";
     const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
-    const MY_PHONE = "959767287345";
 
-    let cart = {};
-    let menuData = [];
+    let menuItems = [];
 
-    // Sound Play Functions
-    function playClick() { document.getElementById('click-sound').play(); }
-    function playSuccess() { document.getElementById('success-sound').play(); }
+    // ၁။ Tab ပြောင်းလဲခြင်း
+    function showTab(tab) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tab).classList.add('active');
+        event.currentTarget.classList.add('active');
+        if(tab === 'admin') document.getElementById('cart-bar').style.display = 'none';
+        else document.getElementById('cart-bar').style.display = 'flex';
+    }
 
+    // ၂။ Menu ဖတ်ခြင်း (Realtime)
     async function fetchMenu() {
-        const { data } = await _supabase.from('menu_items').select('*').order('name');
-        if (data) { menuData = data; renderMenu(); }
+        const { data } = await _supabase.from('menu_items').select('*').order('created_at', {ascending: false});
+        menuItems = data || [];
+        renderCustomerMenu();
+        renderAdminMenu();
     }
 
-    function renderMenu() {
-        const grid = document.getElementById('menu-grid');
-        grid.innerHTML = menuData.map(item => `
-            <div class="menu-card">
-                <div class="item-info">
-                    <h3>${item.name}</h3>
-                    <div class="item-price">${item.price.toLocaleString()} MMK</div>
+    function renderCustomerMenu() {
+        const div = document.getElementById('customer-menu');
+        div.innerHTML = menuItems.map(item => `
+            <div class="card">
+                ${item.image_url ? `<img src="${item.image_url}" class="item-img">` : ''}
+                <div class="badge">${item.category.replace('_', ' ')}</div>
+                <div style="font-weight:bold; font-size:18px;">${item.name}</div>
+                <div style="color:var(--orange); font-weight:bold;">${item.price.toLocaleString()} K</div>
+                <div style="font-size:12px; color:gray;">လက်ကျန်: ${item.stock_qty}</div>
+                <button class="btn-main" style="padding:10px;" onclick="addToCart('${item.id}')">🛒 မှာယူမည်</button>
+            </div>
+        `).join('');
+    }
+
+    function renderAdminMenu() {
+        const div = document.getElementById('admin-menu-list');
+        div.innerHTML = menuItems.map(item => `
+            <div class="card" style="display:flex; gap:10px; align-items:center;">
+                <img src="${item.image_url}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;">
+                <div style="flex:1;">
+                    <b>${item.name}</b><br>
+                    <small>${item.price} K | Stock: ${item.stock_qty}</small>
                 </div>
-                <div class="qty-box">
-                    <button class="btn-qty" onclick="updateQty('${item.name}', -1)">−</button>
-                    <span id="qty-${item.name}" style="font-weight:bold; min-width:20px; text-align:center;">0</span>
-                    <button class="btn-qty" onclick="updateQty('${item.name}', 1)">+</button>
-                </div>
-            </div>`).join('');
+                <button class="btn-delete" onclick="deleteItem('${item.id}')">ဖျက်မည်</button>
+            </div>
+        `).join('');
     }
 
-    function updateQty(name, change) {
-        playClick();
-        const item = menuData.find(i => i.name === name);
-        cart[name] = (cart[name] || 0) + change;
-        if (cart[name] < 0) cart[name] = 0;
-        document.getElementById(`qty-${name}`).innerText = cart[name];
-        
-        let total = 0;
-        menuData.forEach(i => total += (cart[i.name] || 0) * i.price);
-        document.getElementById('total-price').innerText = total.toLocaleString();
+    // ၃။ Admin: Menu အသစ်ထည့်ခြင်း + Image Upload
+    async function handleSaveItem() {
+        const file = document.getElementById('adm-file').files[0];
+        const name = document.getElementById('adm-name').value;
+        const price = document.getElementById('adm-price').value;
+        const stock = document.getElementById('adm-stock').value;
+        const cat = document.getElementById('adm-cat').value;
+
+        if(!file || !name) return alert("အချက်အလက် ပြည့်စုံအောင် ဖြည့်ပါ။");
+
+        // Image Upload to Supabase Storage
+        const fileName = `${Date.now()}_${file.name}`;
+        const { data: upData, error: upErr } = await _supabase.storage.from('menu-images').upload(fileName, file);
+        if(upErr) return alert("Upload Error: " + upErr.message);
+
+        const { data: urlData } = _supabase.storage.from('menu-images').getPublicUrl(fileName);
+        const imageUrl = urlData.publicUrl;
+
+        // Save to Database
+        await _supabase.from('menu_items').insert([{ name, price, stock_qty: stock, category: cat, image_url: imageUrl }]);
+        alert("သိမ်းဆည်းပြီးပါပြီ");
+        fetchMenu();
     }
 
-    function openCheckout() {
-        if (document.getElementById('total-price').innerText === "0") return alert("ကျေးဇူးပြု၍ မီနူးအရင်ရွေးချယ်ပါ။");
-        document.getElementById('checkout-modal').style.display = 'flex';
+    // ၄။ Admin: Delete
+    async function deleteItem(id) {
+        if(confirm("ဖျက်မှာ သေချာပါသလား?")) {
+            await _supabase.from('menu_items').delete().eq('id', id);
+            fetchMenu();
+        }
     }
 
-    function closeCheckout() { document.getElementById('checkout-modal').style.display = 'none'; }
-
-    async function submitOrder(sendVia) {
-        // ... (သင်၏ မူလ Submit Logic ကို ဤနေရာတွင် ဆက်လက်အသုံးပြုနိုင်ပါသည်)
-        playSuccess();
-        alert("အော်ဒါတင်နေပါသည်... ခဏစောင့်ပါ။");
-        // မူလ Function ကို ဒီအောက်မှာ ဆက်ထည့်ပါ...
-    }
+    // Realtime Sync
+    _supabase.channel('any').on('postgres_changes', { event: '*', table: 'menu_items' }, fetchMenu).subscribe();
 
     window.onload = fetchMenu;
 </script>
