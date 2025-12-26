@@ -3,161 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍗 မြင်သာကြက်ကင် - Premium POS & Admin</title>
+    <title>🍗 မြင်သာကြက်ကင် - Premium Store</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #D4AF37; --dark: #121212; --orange: #ff6b00; --card: #ffffff; }
-        body { font-family: 'Pyidaungsu', sans-serif; background: #f0f2f5; margin: 0; padding-bottom: 80px; }
-        
-        /* Navigation Tabs */
-        .nav-tabs { display: flex; background: var(--dark); position: sticky; top: 0; z-index: 1000; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: white; cursor: pointer; font-weight: bold; }
-        .tab-btn.active { border-bottom: 3px solid var(--gold); color: var(--gold); }
+        :root { --gold: #D4AF37; --dark: #121212; --orange: #ff6b00; --bg: #f8f9fa; }
+        body { font-family: 'Pyidaungsu', sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; }
 
-        .container { max-width: 600px; margin: auto; padding: 15px; }
+        /* Side Sidebar Menu */
+        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--dark); transition: 0.3s; z-index: 2001; padding-top: 60px; color: white; box-shadow: 2px 0 10px rgba(0,0,0,0.5); }
+        .sidebar.active { left: 0; }
+        .sidebar-item { padding: 15px 25px; border-bottom: 1px solid #333; cursor: pointer; display: block; text-decoration: none; color: white; font-size: 15px; }
+        .sidebar-item:hover { background: #1a1a1a; color: var(--gold); }
+        .admin-link { position: absolute; bottom: 0; width: 100%; background: #000; color: var(--gold); border-top: 1px solid var(--gold); padding: 20px 25px; box-sizing: border-box; }
+
+        /* Header */
+        .header { background: var(--dark); color: white; padding: 15px; display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .burger { font-size: 24px; cursor: pointer; color: var(--gold); margin-right: 15px; }
+        
+        .container { max-width: 600px; margin: auto; padding: 15px; padding-bottom: 100px; }
         .section { display: none; }
         .section.active { display: block; }
 
-        /* Premium Card Design */
-        .card { background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
-        .item-img { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 10px; }
-        .badge { position: absolute; top: 10px; right: 10px; background: var(--orange); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+        /* Cards & UI */
+        .card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .btn-main { background: var(--dark); color: white; border: none; padding: 12px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; }
+        .status-tag { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .pending { background: #fff3cd; color: #856404; }
+        .cooking { background: #d1ecf1; color: #0c5460; }
+        .done { background: #d4edda; color: #155724; }
 
-        /* Admin Form */
-        .admin-form { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 8px; margin-top: 10px; }
+        /* Overlay */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; }
+        .overlay.active { display: block; }
 
-        /* Checkout Bar */
-        .footer-bar { position: fixed; bottom: 0; width: 100%; max-width: 600px; background: var(--dark); padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; color: white; border-radius: 20px 20px 0 0; left: 50%; transform: translateX(-50%); }
+        /* Voucher Template (Hidden) */
+        #voucher-capture { position: absolute; left: -9999px; background: white; width: 350px; padding: 30px; border: 1px solid #000; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="nav-tabs">
-    <button class="tab-btn active" onclick="showTab('customer')">🛍 Menu</button>
-    <button class="tab-btn" onclick="showTab('admin')">🛠 Admin</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-item" onclick="showPage('customer')">🍗 Menu (မှာယူရန်)</div>
+    <div class="sidebar-item" onclick="showPage('tracking')">📍 Order Tracking (အခြေအနေစစ်ရန်)</div>
+    <div class="sidebar-item" onclick="showPage('history')">📜 မှာယူမှုမှတ်တမ်း</div>
+    <div class="sidebar-item admin-link" onclick="showPage('admin')">⚙️ Admin Dashboard</div>
 </div>
 
-<div id="customer" class="section active container">
-    <h2 style="text-align:center;">✨ မြင်သာကြက်ကင်</h2>
-    <div id="customer-menu">မီနူးများ ဆွဲယူနေသည်...</div>
+<div class="header">
+    <div class="burger" onclick="toggleSidebar()">☰</div>
+    <div style="font-weight:bold; letter-spacing:1px;">MYIN THAR ROAST</div>
 </div>
 
-<div id="admin" class="section container">
-    <div class="admin-form">
-        <h3>➕ Menu အသစ်ထည့်ရန်</h3>
-        <input type="text" id="adm-name" placeholder="အမည် (ဥပမာ- ၁သောင်းတန်ဆပ်)">
-        <input type="number" id="adm-price" placeholder="ဈေးနှုန်း">
-        <input type="number" id="adm-stock" placeholder="Stock အရေအတွက်">
-        <select id="adm-cat">
-            <option value="single">ရိုးရိုး</option>
-            <option value="10000_set">၁ သောင်းတန် Set</option>
-            <option value="20000_set">၂ သောင်းတန် Set</option>
-        </select>
-        <label>ဓာတ်ပုံတင်ရန်:</label>
-        <input type="file" id="adm-file" accept="image/*">
-        <button class="btn-main" onclick="handleSaveItem()">Menu သိမ်းမည်</button>
+<div class="container">
+    <div id="customer" class="section active">
+        <h3 style="color: var(--orange);">🔥 Best Sellers</h3>
+        <div id="customer-menu-list"></div>
     </div>
-    <hr>
-    <h3>📋 လက်ရှိ Menu များ</h3>
-    <div id="admin-menu-list"></div>
+
+    <div id="tracking" class="section">
+        <div class="card">
+            <h3>📍 Track Your Order</h3>
+            <p style="font-size:13px; color:#666;">သင့် Order ID ကို ရိုက်ထည့်ပြီး အခြေအနေကို စစ်ဆေးပါ။</p>
+            <input type="number" id="track-id-input" placeholder="Order ID (ဥပမာ - 15)">
+            <button class="btn-main" style="background:var(--orange);" onclick="trackOrder()">Track Now</button>
+            <div id="track-result" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <div id="history" class="section">
+        <h3>📜 မှာယူခဲ့သမျှစာရင်း</h3>
+        <div id="history-list"></div>
+    </div>
+
+    <div id="admin" class="section">
+        <div class="card" style="background:var(--dark); color:white;">
+            <h3>📦 တက်လာသော အော်ဒါများ</h3>
+            <div id="admin-orders-list"></div>
+        </div>
+        
+        <div class="card">
+            <h3>➕ မီနူးအသစ်ထည့်ရန်</h3>
+            <input type="text" id="adm-name" placeholder="အမည်">
+            <input type="number" id="adm-price" placeholder="ဈေးနှုန်း">
+            <input type="number" id="adm-stock" placeholder="Stock">
+            <select id="adm-cat">
+                <option value="single">ရိုးရိုး</option>
+                <option value="10000_set">၁သောင်းတန် Set</option>
+                <option value="20000_set">၂သောင်းတန် Set</option>
+            </select>
+            <input type="file" id="adm-file" accept="image/*">
+            <button class="btn-main" onclick="handleSaveItem()">Save Menu Item</button>
+        </div>
+    </div>
 </div>
 
-<div class="footer-bar" id="cart-bar">
-    <div>Total: <b id="total-price">0</b> K</div>
-    <button style="background:var(--gold); border:none; padding:10px 20px; border-radius:10px; font-weight:bold;" onclick="alert('Viber/Telegram သို့ ပို့ရန် လုပ်ဆောင်ချက်...')">Check Out</button>
+<div id="voucher-capture">
+    <h2 style="margin:0;">MYIN THAR ROAST</h2>
+    <p>Premium BBQ & Chicken</p>
+    <hr>
+    <p><b>Order ID:</b> #<span id="v-id"></span></p>
+    <p><b>Customer:</b> <span id="v-name"></span></p>
+    <div id="v-items" style="text-align:left; margin:20px 0;"></div>
+    <hr>
+    <h3>Total: <span id="v-total"></span> MMK</h3>
+    <p style="font-size:12px;">ကျေးဇူးတင်ပါသည်! ထပ်မံမှာယူရန် ဖိတ်ခေါ်ပါသည်။</p>
 </div>
+
+<audio id="notiSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
 <script>
     const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTk2MDYsImV4cCI6MjA4MjMzNTYwNn0.Kxy3QW1gq-J-tzUF2fxQd0l989Wr7BI2uRTbWDTNL6k";
     const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
-    let menuItems = [];
+    // Sidebar & Navigation
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
+    }
 
-    // ၁။ Tab ပြောင်းလဲခြင်း
-    function showTab(tab) {
+    function showPage(id) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tab).classList.add('active');
-        event.currentTarget.classList.add('active');
-        if(tab === 'admin') document.getElementById('cart-bar').style.display = 'none';
-        else document.getElementById('cart-bar').style.display = 'flex';
+        document.getElementById(id).classList.add('active');
+        toggleSidebar();
+        if(id === 'admin') fetchAdminOrders();
+        if(id === 'customer') fetchMenu();
+        window.scrollTo(0,0);
     }
 
-    // ၂။ Menu ဖတ်ခြင်း (Realtime)
-    async function fetchMenu() {
-        const { data } = await _supabase.from('menu_items').select('*').order('created_at', {ascending: false});
-        menuItems = data || [];
-        renderCustomerMenu();
-        renderAdminMenu();
-    }
-
-    function renderCustomerMenu() {
-        const div = document.getElementById('customer-menu');
-        div.innerHTML = menuItems.map(item => `
-            <div class="card">
-                ${item.image_url ? `<img src="${item.image_url}" class="item-img">` : ''}
-                <div class="badge">${item.category.replace('_', ' ')}</div>
-                <div style="font-weight:bold; font-size:18px;">${item.name}</div>
-                <div style="color:var(--orange); font-weight:bold;">${item.price.toLocaleString()} K</div>
-                <div style="font-size:12px; color:gray;">လက်ကျန်: ${item.stock_qty}</div>
-                <button class="btn-main" style="padding:10px;" onclick="addToCart('${item.id}')">🛒 မှာယူမည်</button>
-            </div>
-        `).join('');
-    }
-
-    function renderAdminMenu() {
-        const div = document.getElementById('admin-menu-list');
-        div.innerHTML = menuItems.map(item => `
-            <div class="card" style="display:flex; gap:10px; align-items:center;">
-                <img src="${item.image_url}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;">
-                <div style="flex:1;">
-                    <b>${item.name}</b><br>
-                    <small>${item.price} K | Stock: ${item.stock_qty}</small>
-                </div>
-                <button class="btn-delete" onclick="deleteItem('${item.id}')">ဖျက်မည်</button>
-            </div>
-        `).join('');
-    }
-
-    // ၃။ Admin: Menu အသစ်ထည့်ခြင်း + Image Upload
-    async function handleSaveItem() {
-        const file = document.getElementById('adm-file').files[0];
-        const name = document.getElementById('adm-name').value;
-        const price = document.getElementById('adm-price').value;
-        const stock = document.getElementById('adm-stock').value;
-        const cat = document.getElementById('adm-cat').value;
-
-        if(!file || !name) return alert("အချက်အလက် ပြည့်စုံအောင် ဖြည့်ပါ။");
-
-        // Image Upload to Supabase Storage
-        const fileName = `${Date.now()}_${file.name}`;
-        const { data: upData, error: upErr } = await _supabase.storage.from('menu-images').upload(fileName, file);
-        if(upErr) return alert("Upload Error: " + upErr.message);
-
-        const { data: urlData } = _supabase.storage.from('menu-images').getPublicUrl(fileName);
-        const imageUrl = urlData.publicUrl;
-
-        // Save to Database
-        await _supabase.from('menu_items').insert([{ name, price, stock_qty: stock, category: cat, image_url: imageUrl }]);
-        alert("သိမ်းဆည်းပြီးပါပြီ");
-        fetchMenu();
-    }
-
-    // ၄။ Admin: Delete
-    async function deleteItem(id) {
-        if(confirm("ဖျက်မှာ သေချာပါသလား?")) {
-            await _supabase.from('menu_items').delete().eq('id', id);
-            fetchMenu();
+    // 📍 Tracking Logic
+    async function trackOrder() {
+        const id = document.getElementById('track-id-input').value;
+        const { data, error } = await _supabase.from('orders').select('*').eq('id', id).single();
+        const res = document.getElementById('track-result');
+        if(data) {
+            res.innerHTML = `
+                <div class="card" style="border-left: 5px solid var(--orange);">
+                    <h4>Status: <span class="status-tag ${data.status}">${data.status}</span></h4>
+                    <p><b>ပစ္စည်းစာရင်း:</b> ${data.items}</p>
+                    <p><b>စုစုပေါင်း:</b> ${data.total} MMK</p>
+                    <button class="btn-main" onclick="downloadVoucher(${data.id})">📥 Download Invoice (Image)</button>
+                </div>`;
+        } else {
+            res.innerHTML = "<p style='color:red;'>အော်ဒါ ID မှားယွင်းနေပါသည်။</p>";
         }
     }
 
-    // Realtime Sync
-    _supabase.channel('any').on('postgres_changes', { event: '*', table: 'menu_items' }, fetchMenu).subscribe();
+    // 🧾 Voucher Image Download
+    async function downloadVoucher(id) {
+        const { data } = await _supabase.from('orders').select('*').eq('id', id).single();
+        document.getElementById('v-id').innerText = data.id;
+        document.getElementById('v-name').innerText = data.customer_name;
+        document.getElementById('v-items').innerText = data.items;
+        document.getElementById('v-total').innerText = data.total;
+
+        const capture = document.getElementById('voucher-capture');
+        html2canvas(capture).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Voucher_Order_${id}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+
+    // 🔔 Realtime Notification for Admin
+    _supabase.channel('orders_realtime').on('postgres_changes', { event: 'INSERT', table: 'orders' }, payload => {
+        document.getElementById('notiSound').play();
+        alert("🚨 အော်ဒါအသစ် ရောက်လာပါပြီ!");
+        if(document.getElementById('admin').classList.contains('active')) fetchAdminOrders();
+    }).subscribe();
+
+    // Admin Functions
+    async function fetchAdminOrders() {
+        const { data } = await _supabase.from('orders').select('*').order('created_at', {ascending: false}).limit(10);
+        document.getElementById('admin-orders-list').innerHTML = data.map(o => `
+            <div style="padding:15px; border-bottom:1px solid #333;">
+                <b>#${o.id} - ${o.customer_name}</b> <span class="status-tag ${o.status}">${o.status}</span><br>
+                <small>${o.items}</small><br>
+                <div style="margin-top:10px;">
+                    <button onclick="updateStatus(${o.id}, 'cooking')" style="background:orange; border:none; padding:5px 10px; border-radius:5px;">ကင်နေသည်</button>
+                    <button onclick="updateStatus(${o.id}, 'done')" style="background:green; border:none; padding:5px 10px; border-radius:5px; color:white;">ပြီးပြီ</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function updateStatus(id, newStatus) {
+        await _supabase.from('orders').update({ status: newStatus }).eq('id', id);
+        fetchAdminOrders();
+    }
+
+    // Menu Loader
+    async function fetchMenu() {
+        const { data } = await _supabase.from('menu_items').select('*').order('created_at', {ascending: false});
+        document.getElementById('customer-menu-list').innerHTML = data.map(item => `
+            <div class="card">
+                <img src="${item.image_url || 'https://via.placeholder.com/400'}" style="width:100%; height:150px; object-fit:cover; border-radius:12px;">
+                <h4 style="margin:10px 0 5px 0;">${item.name}</h4>
+                <div style="color:var(--orange); font-weight:bold;">${item.price.toLocaleString()} MMK</div>
+                <button class="btn-main" style="margin-top:10px;" onclick="alert('မှာယူမှုစနစ်သို့...')">🛒 မှာယူမည်</button>
+            </div>
+        `).join('');
+    }
 
     window.onload = fetchMenu;
 </script>
