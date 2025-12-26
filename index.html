@@ -47,13 +47,79 @@
 
         /* Footer Bar */
         .footer-bar { position: fixed; bottom: 0; width: 100%; max-width: 600px; background: var(--dark); padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; color: white; border-radius: 20px 20px 0 0; left: 50%; transform: translateX(-50%); }
+
+        /* Sidebar Style */
+.sidebar {
+    height: 100%;
+    width: 0; /* စစချင်း ဖျောက်ထားမည် */
+    position: fixed;
+    z-index: 2001;
+    top: 0;
+    left: 0;
+    background-color: var(--dark);
+    overflow-x: hidden;
+    transition: 0.3s;
+    padding-top: 0;
+}
+.sidebar a {
+    padding: 15px 25px;
+    text-decoration: none;
+    font-size: 16px;
+    color: white;
+    display: block;
+    border-bottom: 1px solid #333;
+}
+.sidebar a:hover { background: #333; color: var(--gold); }
+
+/* Overlay Background */
+.overlay {
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+}
+
+        #checkout-modal input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+.btn-submit {
+    background: #ff6b00;
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    width: 100%;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+        
     </style>
 </head>
 <body>
 
+<div id="mySidebar" class="sidebar">
+    <div style="padding: 20px; background: var(--gold); color: var(--dark); font-weight: bold;">
+        MENU စာရင်း
+    </div>
+    <a href="#" onclick="showPage('customer')">🍗 မှာယူရန်</a>
+    <a href="#" onclick="showPage('tracking')">📍 အော်ဒါစစ်ဆေးရန်</a>
+    <a href="#" onclick="showPage('admin')">⚙️ Admin Panel</a>
+</div>
+
+<div id="overlay" class="overlay" onclick="closeNav()"></div>
+    
 <div class="header">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <div class="burger" onclick="alert('Sidebar System Connected!')">☰</div>
+    <div class="burger" onclick="openNav()">☰</div>
     <div style="font-weight:bold;">MYIN THAR ROAST</div>
 </div>
 
@@ -111,6 +177,23 @@
         renderMenu(allMenuItems);
     }
 
+function openNav() {
+    document.getElementById("mySidebar").style.width = "260px";
+    document.getElementById("overlay").style.display = "block";
+}
+
+function closeNav() {
+    document.getElementById("mySidebar").style.width = "0";
+    document.getElementById("overlay").style.display = "none";
+}
+
+// စာမျက်နှာများ ပြောင်းလဲခြင်း (လိုအပ်ပါက သုံးရန်)
+function showPage(pageId) {
+    closeNav();
+    alert(pageId + " စာမျက်နှာသို့ သွားနေသည်...");
+    // ဤနေရာတွင် အခြား section များကို ဖော်ပြ/ဖျောက်သည့် logic ထည့်နိုင်သည်
+}
+    
     function renderMenu(items) {
         const grid = document.getElementById('menu-display');
         grid.innerHTML = items.map(item => `
@@ -169,29 +252,43 @@
 }
 
 async function submitOrder() {
-    const name = document.getElementById('cust-name').value;
-    const phone = document.getElementById('cust-phone').value;
+    const name = document.getElementById('cust-name').value.trim();
+    const phone = document.getElementById('cust-phone').value.trim();
     const pickup = document.getElementById('pickup-time').value;
     const total = document.getElementById('total-price').innerText;
 
-    if(!name || !phone) return alert("အချက်အလက် ပြည့်စုံအောင် ဖြည့်ပါ");
+    if(!name || !phone) return alert("အမည်နှင့် ဖုန်းနံပါတ် ဖြည့်ပေးပါ");
 
     let itemsArr = [];
     for (let item in cart) {
-        if(cart[item] > 0) itemsArr.push(`${item} (${cart[item]})`);
+        if(cart[item] > 0) itemsArr.push(`${item} [${cart[item]} ခု]`);
     }
 
-    // Supabase သို့ ပို့ခြင်း
+    // ၁။ Hidden System: Admin Panel ဆီသို့ အချက်အလက် ပို့ခြင်း (Supabase)
     const { data, error } = await _supabase.from('orders').insert([{
-        customer_name: name, phone: phone, items: itemsArr.join(", "), total: total, status: 'pending'
+        customer_name: name,
+        phone: phone,
+        items: itemsArr.join(", "),
+        total: total,
+        status: 'pending'
     }]).select();
 
     if(!error) {
-        alert("Order တင်ပြီးပါပြီ။ ID: #" + data[0].id);
-        // Viber ပို့ရန်
-        const msg = `Order #${data[0].id}\nဝယ်သူ: ${name}\nပစ္စည်း: ${itemsArr.join(", ")}\nစုစုပေါင်း: ${total} K`;
-        window.location.href = `viber://forward?text=${encodeURIComponent(msg)}`;
-        location.reload();
+        const orderId = data[0].id;
+
+        // ၂။ Auto Copy Format: ပို့မည့် စာသားပုံစံ
+        const message = `🔥 အော်ဒါအသစ် ရောက်ရှိပါသည်။\n\n🆔 Order ID: #${orderId}\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n⏰ လာယူမည့်အချိန်: ${pickup || 'ချက်ချင်း'}\n----------------\n📦 ပစ္စည်းများ:\n${itemsArr.join("\n")}\n----------------\n💰 စုစုပေါင်း: ${total} K`;
+
+        // ၃။ Clipboard ထဲသို့ Auto Copy ကူးထည့်ခြင်း
+        navigator.clipboard.writeText(message);
+
+        alert("မှာယူမှု အောင်မြင်ပါသည်။ Viber သို့ ကူးပြောင်းနေသည်... (စာသားကို Auto Copy ကူးထားပြီးဖြစ်သည်)");
+
+        // ၄။ Viber သို့ တိုက်ရိုက် ပို့ဆောင်ခြင်း (သင့်နံပါတ်သို့)
+        // မှတ်ချက် - Viber က ဖုန်းနံပါတ်ဆီ တိုက်ရိုက်စာပို့ဖို့အတွက် ဝယ်သူက သင့်ကို Contact ထဲ သိမ်းထားဖို့ လိုနိုင်ပါတယ်။
+        window.location.href = `viber://forward?text=${encodeURIComponent(message)}`;
+    } else {
+        alert("အော်ဒါတင်ခြင်း မအောင်မြင်ပါ: " + error.message);
     }
 }
     // html2canvas library ကို header မှာ ထည့်ဖို့မမေ့ပါနဲ့
@@ -211,7 +308,24 @@ async function downloadVoucher(orderId) {
         link.click();
     });
 }
-    
+    // Admin Dashboard မှာ အော်ဒါတွေ ဆွဲပြတဲ့ Function
+async function fetchAdminOrders() {
+    const { data, error } = await _supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    const orderList = document.getElementById('admin-orders-list');
+    if(data) {
+        orderList.innerHTML = data.map(order => `
+            <div class="card" style="border-left: 5px solid ${order.status === 'pending' ? 'orange' : 'green'};">
+                <b>Order #${order.id}</b> - ${order.customer_name}<br>
+                <small>${order.items}</small><br>
+                <span style="color:red;">Total: ${order.total} K</span>
+            </div>
+        `).join('');
+    }
+}
     window.onload = fetchMenu;
 </script>
 </body>
