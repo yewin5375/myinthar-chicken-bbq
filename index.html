@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYIN THAR ROAST</title>
+    <title>MYIN THAR ROAST - Premium Dining</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        /* (၂) Premium Luxury Theme CSS */
         :root {
             --gold: #D4AF37;
             --dark-gold: #996515;
@@ -34,8 +33,7 @@
         .header {
             background: rgba(15, 15, 15, 0.95);
             padding: 20px;
-            display: flex;
-            align-items: center;
+            text-align: center;
             border-bottom: 1px solid var(--dark-gold);
             position: sticky;
             top: 0;
@@ -47,12 +45,11 @@
             font-family: 'Playfair Display', serif;
             color: var(--gold);
             margin: 0;
-            font-size: 20px;
+            font-size: 22px;
             letter-spacing: 2px;
             text-transform: uppercase;
         }
 
-        /* Premium Menu Cards */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -66,84 +63,54 @@
             overflow: hidden;
             border: 1px solid #333;
             transition: transform 0.3s ease;
-            position: relative;
         }
 
-        .menu-card:active { transform: scale(0.95); }
-
-        .menu-card img {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            filter: brightness(0.9);
-        }
+        .menu-card img { width: 100%; height: 140px; object-fit: cover; }
 
         .card-info { padding: 12px; }
+        .price-tag { color: var(--gold); font-weight: bold; margin: 5px 0; }
 
-        .price-tag {
-            color: var(--gold);
-            font-weight: bold;
-            font-size: 16px;
-            margin: 5px 0;
-        }
-
-        /* Floating Checkout Bar */
+        /* Buttons & UI */
         .footer-bar {
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 500px;
-            background: rgba(28, 28, 28, 0.9);
+            bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 500px;
+            background: rgba(28, 28, 28, 0.95);
             border: 1px solid var(--gold);
             border-radius: 50px;
-            padding: 10px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(15px);
+            padding: 12px 25px;
+            display: flex; justify-content: space-between; align-items: center;
             z-index: 1001;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Luxury Inputs */
-        input, select, textarea {
-            background: #252525 !important;
-            border: 1px solid #444 !important;
-            color: white !important;
-            padding: 15px !important;
-            border-radius: 12px !important;
-            margin: 10px 0;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
         .btn-gold {
             background: var(--luxury-gradient);
-            color: black;
-            font-weight: bold;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            cursor: pointer;
+            color: black; font-weight: bold;
+            border: none; padding: 12px 20px;
+            border-radius: 12px; cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
-        /* Premium Voucher Design */
-        #invoice-card {
-            background: #fff;
-            color: #000;
-            padding: 40px;
-            width: 350px;
-            border: 10px double var(--gold);
-            position: relative;
-            font-family: 'Courier New', Courier, monospace;
+        .app-btn {
+            width: 100%; padding: 15px; border-radius: 12px;
+            border: none; color: white; font-weight: bold;
+            margin-top: 10px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-     .viber-bg { background: #7360f2; }
+        .viber-bg { background: #7360f2; }
         .tele-bg { background: #0088cc; }
-        .voucher-header { border-bottom: 2px solid #000; margin-bottom: 20px; }
+
+        input, textarea {
+            background: #252525; border: 1px solid #444; color: white;
+            padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px;
+        }
+
+        /* Voucher Styling */
+        #invoice-card {
+            background: #fff; color: #000; padding: 40px; width: 350px;
+            border: 10px double var(--gold); text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -151,100 +118,68 @@
 <audio id="clickSound" src="https://www.fesliyanstudios.com/play-mp3/387"></audio>
 <audio id="successSound" src="https://www.fesliyanstudios.com/play-mp3/2653"></audio>
 
-<div id="overlay" class="overlay" onclick="closeNav()"></div>
-
 <div class="header">
-    <div class="burger" onclick="openNav()"><i class="fas fa-bars" style="color:var(--gold)"></i></div>
     <h1>MYIN THAR ROAST</h1>
-    <p style="font-size: 13px; opacity: 0.9;">ရသာစုံလင် အကင်စုံ</p>
-    <p style="font-size: 13px; opacity: 0.9;">မင်္ဂလာပါ! မြင်သာကြက်ကင် မှ ကြိုဆိုပါတယ်။
-လတ်ဆတ်ပြီး အရသာရှိတဲ့ ကြက်ကင်ပူပူလေးတွေကို သုံးဆောင်နိုင်ပါပြီ။
-📍 ဆိုင်သိုလာရောက်ယူရန်သာ (Pick Up Only)
-📞 Phone/Viber: 09767287345</p>
+    <p style="font-size: 12px; margin-top: 5px;">📍 Pick Up Only | 📞 09767287345</p>
 </div>
 
 <div class="container">
-    
     <div id="page-customer" class="section active">
         <div id="menu-display" class="menu-grid"></div>
     </div>
-
-    <div id="page-admin" class="section" style="padding:20px;">
-        <h2 style="color:var(--gold)">Admin Portal</h2>
-        <div class="admin-form">
-            <input type="text" id="add-name" placeholder="Menu Item Name">
-            <input type="number" id="add-price" placeholder="Price (MMK)">
-            <textarea id="add-desc" placeholder="Set details / Description"></textarea>
-            <input type="file" id="add-img">
-            <button class="btn-gold" style="width:100%" onclick="uploadMenu()">Add Premium Item</button>
-        </div>
-        <div id="admin-orders-list" style="margin-top:30px;"></div>
-    </div>
-
 </div>
 
 <div class="footer-bar">
-    <div>Total: <span id="total-price" style="color:var(--gold); font-size:20px;">0</span> K</div>
-    <button class="btn-gold" style="padding:10px 30px; border-radius:30px;" onclick="playSound('clickSound'); openCheckout()">Checkout</button>
+    <div>Total: <span id="total-price" style="color:var(--gold); font-size:18px;">0</span> K</div>
+    <button class="btn-gold" onclick="playSound('clickSound'); openCheckout()">Checkout</button>
 </div>
 
-<div id="checkout-modal" class="modal" style="display:none; position:fixed; top:0; background:rgba(0,0,0,0.9); width:100%; height:100%; z-index:9999; display:flex; align-items:center; justify-content:center;">
-    <div style="background:var(--dark-grey); padding:30px; border-radius:25px; width:85%; max-width:400px; border:1px solid var(--gold);">
-        <h2 style="color:var(--gold); text-align:center;">Reservation Details</h2>
-        <input type="text" id="cust-name" placeholder="Full Name">
-        <input type="tel" id="cust-phone" placeholder="Phone Number">
+<div id="checkout-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--dark-grey); padding:25px; border-radius:20px; width:90%; max-width:400px; border:1px solid var(--gold);">
+        <h3 style="color:var(--gold); text-align:center;">RESERVATION DETAILS</h3>
+        <input type="text" id="cust-name" placeholder="ဝယ်သူအမည်">
+        <input type="tel" id="cust-phone" placeholder="ဖုန်းနံပါတ်">
         <input type="datetime-local" id="pickup-time">
-        <button class="btn-gold" style="width:100%; margin-top:10px;" onclick="submitOrder('viber')">Order via Viber</button>
-        <button onclick="closeModal('checkout-modal')" style="background:none; border:none; color:grey; width:100%; margin-top:15px;">Cancel</button>
-     <button class="app-btn tele-bg" onclick="submitOrder('telegram')">
-            🔵 Telegram ဖြင့် တိုက်ရိုက်ပို့မည်
-        </button>
-
-        <div class="guide-box" id="viber-guide" style="display:none;">
-            <b>💡 Viber ဖြင့် ပို့နည်းလမ်းညွှန်:</b><br>
-            ၁။ ခလုတ်နှိပ်လိုက်လျှင် အော်ဒါစာသားများကို Copy အလိုအလျောက် ယူသွားပါမည်။<br>
-            ၂။ Viber ပွင့်လာပါက ဆိုင်ရှင် Chat ထဲတွင် ခဏဖိနှိပ်ပြီး <b>Paste (ကူးထည့်)</b> လုပ်၍ ပို့ပေးပါ။
-        </div>
         
-        <div class="notice">⚠️ အော်ဒါတင်ပြီးပါက <b>09767287345</b> သို့ <br>ဖုန်းဖြင့် အကြောင်းကြားပေးပါ။</div>
-        <button onclick="closeCheckout()" style="width:100%; border:none; background:none; color:#94a3b8; margin-top:15px; cursor:pointer;">မမှာသေးပါ (ပိတ်မည်)</button>
+        <button class="app-btn viber-bg" onclick="submitOrder('viber')">
+            <i class="fab fa-viber"></i> Viber ဖြင့် ပို့မည်
+        </button>
+        <button class="app-btn tele-bg" onclick="submitOrder('telegram')">
+            <i class="fab fa-telegram"></i> Telegram ဖြင့် ပို့မည်
+        </button>
+        
+        <button onclick="closeCheckout()" style="width:100%; background:none; border:none; color:#777; margin-top:15px; cursor:pointer;">Cancel</button>
     </div>
 </div>
 
 <div id="voucher-wrap" style="position:absolute; left:-9999px;">
     <div id="invoice-card">
-        <div class="voucher-header">
-            <h2>MYIN THAR ROAST</h2>
-            <p>Order ID: #<span id="v-id"></span></p>
-        </div>
-        <p><b>Date:</b> <span id="v-date"></span></p>
-        <p><b>Customer:</b> <span id="v-name"></span></p>
-        <div id="v-items" style="margin:20px 0; min-height:100px;"></div>
-        <div style="border-top:2px solid #000; padding-top:10px; text-align:right;">
-            <h3>Total: <span id="v-total"></span> MMK</h3>
-        </div>
-        <p style="text-align:center; font-size:10px; margin-top:30px;">Thank you for choosing premium quality.</p>
+        <h2 style="margin:0;">MYIN THAR ROAST</h2>
+        <p>Order ID: #<span id="v-id"></span></p>
+        <hr>
+        <p style="text-align:left;"><b>Date:</b> <span id="v-date"></span></p>
+        <p style="text-align:left;"><b>Customer:</b> <span id="v-name"></span></p>
+        <div id="v-items" style="margin:20px 0; text-align:left;"></div>
+        <hr>
+        <h3 style="text-align:right;">Total: <span id="v-total"></span> K</h3>
+        <p style="font-size:12px; margin-top:20px;">ကျေးဇူးတင်ပါသည်</p>
     </div>
 </div>
 
 <script>
-    // (၃) Supabase Connection
     const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTk2MDYsImV4cCI6MjA4MjMzNTYwNn0.Kxy3QW1gq-J-tzUF2fxQd0l989Wr7BI2uRTbWDTNL6k";
     const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
-
     const MY_PHONE = "959767287345";
-    
+
     let cart = {};
     let allItems = [];
 
-    // Sound Logic
     function playSound(id) { document.getElementById(id).play(); }
+    function openCheckout() { document.getElementById('checkout-modal').style.display = 'flex'; }
+    function closeCheckout() { document.getElementById('checkout-modal').style.display = 'none'; }
 
-    window.onload = () => {
-        fetchMenu();
-        document.getElementById('checkout-modal').style.display = 'none';
-    };
+    window.onload = fetchMenu;
 
     async function fetchMenu() {
         const { data } = await _supabase.from('menu_items').select('*');
@@ -255,12 +190,12 @@
     function renderMenu(items) {
         document.getElementById('menu-display').innerHTML = items.map(i => `
             <div class="menu-card">
-                <img src="${i.image_url}" alt="${i.name}">
+                <img src="${i.image_url}">
                 <div class="card-info">
-                    <div style="font-weight:bold; height:40px;">${i.name}</div>
+                    <div style="font-weight:bold; height:40px; font-size:14px;">${i.name}</div>
                     <div class="price-tag">${i.price.toLocaleString()} K</div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <button onclick="updateQty('${i.name}', -1, ${i.price})" style="background:#444; color:white; border:none; border-radius:5px; width:30px; height:30px;">-</button>
+                        <button onclick="updateQty('${i.name}', -1, ${i.price})" style="background:#333; color:white; border:none; border-radius:5px; width:30px; height:30px;">-</button>
                         <span id="qty-${i.name}">0</span>
                         <button onclick="updateQty('${i.name}', 1, ${i.price})" style="background:var(--gold); border:none; border-radius:5px; width:30px; height:30px;">+</button>
                     </div>
@@ -278,67 +213,54 @@
         let total = 0;
         for(let key in cart) {
             let item = allItems.find(i => i.name === key);
-            total += cart[key] * item.price;
+            if(item) total += cart[key] * item.price;
         }
         document.getElementById('total-price').innerText = total.toLocaleString();
     }
 
-    function openCheckout() { document.getElementById('checkout-modal').style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    // (၄) Submit Order & Auto-Voucher
     async function submitOrder(platform) {
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
         const time = document.getElementById('pickup-time').value;
         const total = document.getElementById('total-price').innerText;
 
-        if(!name || !phone) return alert("Please fill in premium details.");
+        if(!name || !phone) return alert("အမည်နှင့် ဖုန်းနံပါတ် ဖြည့်ပေးပါ။");
 
-        let orderItems = [];
-        for(let k in cart) { if(cart[k] > 0) orderItems.push(`${k} x ${cart[k]}`); }
+        let orderList = [];
+        for(let k in cart) { if(cart[k] > 0) orderList.push(`${k} x ${cart[k]}`); }
+        if(orderList.length === 0) return alert("မီနူး အရင်ရွေးပါ။");
 
-        // Hidden Database Logging
+        // 1. Save to Database (Hidden)
         const { data, error } = await _supabase.from('orders').insert([{
-            customer_name: name,
-            phone: phone,
-            items: orderItems.join(", "),
-            total: total,
-            status: 'pending'
+            customer_name: name, phone: phone, items: orderList.join(", "), total: total, status: 'pending'
         }]).select();
 
         if(!error) {
             playSound('successSound');
             const orderId = data[0].id;
-            
-            // Set Voucher Data
+
+            // 2. Prepare Voucher & Download
             document.getElementById('v-id').innerText = orderId;
             document.getElementById('v-name').innerText = name;
             document.getElementById('v-total').innerText = total;
             document.getElementById('v-date').innerText = new Date().toLocaleString();
-            document.getElementById('v-items').innerHTML = orderItems.join("<br>");
+            document.getElementById('v-items').innerHTML = orderList.join("<br>");
 
-            // Generate Image and Download
             setTimeout(() => {
-                html2canvas(document.querySelector("#invoice-card"), { useCORS: true }).then(canvas => {
+                html2canvas(document.querySelector("#invoice-card")).then(canvas => {
                     const link = document.createElement('a');
-                    link.download = `Premium_Order_${orderId}.png`;
-                    link.href = canvas.toDataURL("image/png");
+                    link.download = `Voucher_${orderId}.png`;
+                    link.href = canvas.toDataURL();
                     link.click();
                 });
             }, 500);
 
-            // Redirect to Messaging
-            const msg = `🔥 PREMIUM ORDER 🔥\nID: #${orderId}\nCustomer: ${name}\nPhone: ${phone}\nTime: ${time}\nItems: ${orderItems.join(", ")}\nTotal: ${total} MMK`;
-            window.location.href = `viber://forward?text=${encodeURIComponent(msg)}`;
-        } else {
-            alert("Order failed to reach dashboard. Check internet.");
-        }
-    }
+            // 3. Messaging Link Preparation
+            const msg = `🔥 PREMIUM ORDER 🔥\nID: #${orderId}\nCustomer: ${name}\nPhone: ${phone}\nTime: ${time || 'ASAP'}\nItems:\n${orderList.join("\n")}\nTotal: ${total} MMK`;
 
-     if (sendVia === 'viber') {
-            // Viber အတွက် စာသားကို Copy ယူခြင်း
-            navigator.clipboard.writeText(msg).then(() => {
+            if(platform === 'viber') {
+                // Clipboard copy for backup
+                navigator.clipboard.writeText(msg).then(() => {
                 alert("အော်ဒါစာသားကို Copy ယူပြီးပါပြီ။ Viber ပွင့်လာပါက ဆိုင်ရှင် Chat ထဲတွင် Paste လုပ်၍ ပို့ပေးပါ။");
                 window.location.href = `viber://contact?number=${MY_PHONE}`;
             }).catch(err => {
@@ -346,13 +268,13 @@
                 window.location.href = `viber://contact?number=${MY_PHONE}&draft=${encodeURIComponent(msg)}`;
             });
         } else {
-            // Telegram အတွက် Direct Send Link
-            const teleMsg = msg.replace(/\*/g, ''); // Telegram link formats can be sensitive
+                const teleMsg = msg.replace(/\*/g, ''); // Telegram link formats can be sensitive
             window.location.href = `https://t.me/+${MY_PHONE}?text=${encodeURIComponent(msg)}`;
+        });
+        } else {
+            alert("Error saving order: " + error.message);
         }
     }
-    // Admin Sidebar Toggle
-    function openNav() { document.getElementById("page-admin").classList.toggle('active'); }
 </script>
 </body>
 </html>
