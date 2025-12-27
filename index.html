@@ -91,6 +91,32 @@
     transform: rotate(-15deg); font-weight: bold; width: fit-content; margin: 10px 20px;
 }
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 3000; justify-content: center; align-items: center; flex-direction: column; }
+
+   /* Sidebar Style */
+.sidebar {
+    position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+    background: white; z-index: 4000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 2px 0 15px rgba(0,0,0,0.1); padding: 20px;
+}
+.sidebar.active { left: 0; }
+.sidebar-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; z-index: 3999;
+}
+.sidebar-header { border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+.sidebar-item {
+    padding: 12px 15px; border-radius: 10px; display: flex;
+    align-items: center; gap: 12px; color: #333; cursor: pointer; transition: 0.2s;
+}
+.sidebar-item:hover { background: #fdf2e9; color: var(--primary); }
+.sidebar-item i { width: 20px; font-size: 18px; color: var(--primary); }
+
+/* Loader Fix */
+#loader { 
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(255,255,255,0.8); z-index: 5000; justify-content: center; align-items: center; 
+}  
+    
     </style>
 </head>
 <body>
@@ -168,6 +194,23 @@
     </select>
 </div>
 
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3 style="margin:0; color:var(--primary);">MT Roast Menu</h3>
+    </div>
+    <div class="sidebar-item" onclick="toggleSidebar()"><i class="fas fa-home"></i> Home</div>
+  <div class="sidebar-item" onclick="showHistory()"><i class="fas fa-history"></i> Order History</div>
+<div class="sidebar-item" onclick="trackOrder()"><i class="fas fa-truck"></i> Order Tracking</div>
+    <div class="sidebar-item" onclick="window.location.href='tel:09767287345'"><i class="fas fa-phone"></i> Contact Us</div>
+    <div class="sidebar-item" onclick="toggleSidebar()" style="margin-top:20px; color:red;"><i class="fas fa-times"></i> ပိတ်မည်</div>
+</div>
+
+<div class="header" style="display:flex; align-items:center; gap:15px; padding:15px;">
+    <i class="fas fa-bars" onclick="toggleSidebar()" style="font-size:22px; cursor:pointer;"></i>
+    <div style="font-size:20px; font-weight:bold; flex:1;">Myin Thar Roast</div>
+</div>
+    
 <div class="search-bar">
     <i class="fas fa-search"></i>
     <input type="text" id="search" oninput="filterMenu()" placeholder="ရှာဖွေရန်...">
@@ -238,6 +281,34 @@
 
     window.onload = () => { fetchMenu(); loadCart(); };
 
+async function trackOrder() {
+    const orderId = prompt("သင့် Order ID ကို ရိုက်ထည့်ပါ (ဥပမာ - 123):");
+    if(!orderId) return;
+
+    document.getElementById('loader').style.display = 'flex';
+    
+    const { data, error } = await _supabase
+        .from('orders')
+        .select('status, customer_name, total')
+        .eq('id', orderId)
+        .single();
+
+    document.getElementById('loader').style.display = 'none';
+
+    if(error || !data) {
+        alert("အော်ဒါရှာမတွေ့ပါ။ ID မှန်ကန်စွာရိုက်ထည့်ပါ။");
+    } else {
+        let statusEmoji = {
+            'pending': '⏳ မှာယူမှုကို လက်ခံရရှိပါပြီ',
+            'preparing': '👨‍🍳 အစားအစာ ပြင်ဆင်နေပါပြီ',
+            'delivering': '🛵 ပို့ဆောင်နေပါပြီ',
+            'completed': '✅ မှာယူမှု ပြီးမြောက်ပါပြီ'
+        };
+        
+        alert(`Order #${orderId} ၏ အခြေအနေ\n\nဝယ်သူအမည်: ${data.customer_name}\nအခြေအနေ: ${statusEmoji[data.status] || data.status}\nစုစုပေါင်း: ${data.total} K`);
+    }
+}
+    
     async function fetchMenu() {
         const { data, error } = await _supabase.from('menu_items').select('*');
         if (error) console.log("Error:", error);
@@ -262,6 +333,11 @@
         `).join('');
     }
 
+    function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+    const overlay = document.querySelector('.sidebar-overlay');
+    overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+}
    // ၁။ Update Quantity with Animation & Haptic
     function updateQty(name, change, price) {
         cart[name] = (cart[name] || 0) + change;
@@ -366,85 +442,105 @@
     
     function closeCheckout() { document.getElementById('checkout-modal').style.display = 'none'; }
 
+    
     // ၃။ Submit Order with Premium Voucher Generation
     async function submitOrder(platform) {
-        const name = document.getElementById('cust-name').value;
-        const phone = document.getElementById('cust-phone').value;
-        const timeInput = document.getElementById('pickup-time').value;
-        const total = document.getElementById('total-price-display').innerText;
+    const name = document.getElementById('cust-name').value;
+    const phone = document.getElementById('cust-phone').value;
+    const total = document.getElementById('total-price-display').innerText;
+    const formattedDate = new Date().toLocaleString();
 
-        if(!name || !phone) return alert("အမည်နှင့် ဖုန်းနံပါတ် ဖြည့်ပါ။");
-        
-        let items = [];
-        for(let k in cart) items.push(`${k} (${cart[k]} ခု)`);
-        if(items.length === 0) return alert("မီနူး ရွေးချယ်ပေးပါ။");
+    if(!name || !phone) return alert("အမည်နှင့် ဖုန်းနံပါတ် ဖြည့်ပါ။");
+    
+    let items = [];
+    for(let k in cart) items.push(`${k} (${cart[k]} ခု)`);
+    if(items.length === 0) return alert("မီနူး ရွေးချယ်ပေးပါ။");
 
-        document.getElementById('loader').style.display = 'flex';
+    document.getElementById('loader').style.display = 'flex';
 
+    try {
         const { data, error } = await _supabase.from('orders').insert([{
             customer_name: name, phone: phone, items: items.join(", "), total: total, status: 'pending'
         }]).select();
 
-        if(!error) {
-            const orderId = data[0].id;
-            // Voucher Info injection
-document.getElementById('v-id').innerText = orderId;
-document.getElementById('v-name').innerText = name;
-document.getElementById('v-phone-display').innerText = "Phone: " + phone;
-document.getElementById('v-date').innerText = formattedDate;
-document.getElementById('v-total').innerText = total;
-document.getElementById('v-subtotal').innerText = total + " K";
+        if(error) throw error;
 
-// Table Items Injection
-let tableHtml = "";
-let count = 1;
-for(let k in cart) {
-    let item = allItems.find(i => i.name === k);
-    let itemPrice = item ? item.price : 0;
-    tableHtml += `
-        <tr>
-            <td>${count++}</td>
-            <td>${k}</td>
-            <td>${cart[k]}</td>
-            <td>${(itemPrice * cart[k]).toLocaleString()} K</td>
-        </tr>`;
+        const orderId = data[0].id;
+
+        // --- ၁။ History ထဲသိမ်းခြင်း ---
+        const historyData = { id: orderId, date: formattedDate, total: total, status: 'pending' };
+        let history = JSON.parse(localStorage.getItem('mt_roast_history')) || [];
+        history.unshift(historyData);
+        localStorage.setItem('mt_roast_history', JSON.stringify(history.slice(0, 10)));
+
+        // --- ၂။ Voucher ထဲ Data ထည့်ခြင်း ---
+        document.getElementById('v-id').innerText = orderId;
+        document.getElementById('v-name').innerText = name;
+        document.getElementById('v-phone-display').innerText = "Phone: " + phone;
+        document.getElementById('v-date').innerText = formattedDate;
+        document.getElementById('v-total').innerText = total;
+        document.getElementById('v-subtotal').innerText = total + " K";
+
+        let tableHtml = "";
+        let count = 1;
+        for(let k in cart) {
+            let item = allItems.find(i => i.name === k);
+            tableHtml += `<tr><td>${count++}</td><td>${k}</td><td>${cart[k]}</td><td>${(item.price * cart[k]).toLocaleString()} K</td></tr>`;
+        }
+        document.getElementById('v-items-table').innerHTML = tableHtml;
+
+        // --- ၃။ Voucher ပုံထုတ်ခြင်း (The Fix) ---
+        const vWrap = document.getElementById('voucher-wrap');
+        vWrap.style.left = "0"; 
+        vWrap.style.top = "0";
+
+        const canvas = await html2canvas(document.querySelector("#invoice-card"), { useCORS: true, scale: 2 });
+        vWrap.style.left = "-9999px"; 
+
+        const link = document.createElement('a');
+        link.download = `Voucher_${orderId}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+
+        // --- ၄။ Viber/Telegram ပို့ခြင်း ---
+        let msg = `🍗 *MYIN THAR ROAST (Order #${orderId})*\n👤 Customer: ${name}\n📞 Phone: ${phone}\n📦 Items: ${items.join(", ")}\n💰 Total: ${total} MMK`;
+        
+        cart = {};
+        localStorage.removeItem('roast_cart');
+        document.getElementById('loader').style.display = 'none';
+        closeCheckout();
+
+        if (platform === 'viber') {
+            window.location.href = `viber://forward?text=${encodeURIComponent(msg)}`;
+        } else {
+            window.location.href = `https://t.me/share/url?url=${encodeURIComponent(msg)}`;
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("အော်ဒါတင်လို့မရပါ။ အင်တာနက်စစ်ပါ။");
+        document.getElementById('loader').style.display = 'none';
+    }
 }
-document.getElementById('v-items-table').innerHTML = tableHtml;
-
-// Generate and Download Image
-html2canvas(document.querySelector("#invoice-card")).then(canvas => {
-    const link = document.createElement('a');
-    link.download = `Voucher_${orderId}.png`;
-    link.href = canvas.toDataURL();
-    link.click();
-    // ... ကျန်ရှိသော Viber/Telegram ပို့ဆောင်သည့် code များ ...
-});
-
-            html2canvas(document.querySelector("#invoice-card")).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `Voucher_${orderId}.png`;
-                link.href = canvas.toDataURL();
-                link.click();
-
-                let msg = `🍗 *MYIN THAR ROAST (Order #${orderId})*\n👤 Customer: ${name}\n📞 Phone: ${phone}\n📦 Items: ${items.join(", ")}\n💰 Total: ${total} MMK`;
-
-                cart = {};
-                localStorage.removeItem('roast_cart');
-                document.getElementById('loader').style.display = 'none';
-                closeCheckout();
-
-                if (platform === 'viber') {
-                    window.location.href = `viber://contact?number=${MY_PHONE}&draft=${encodeURIComponent(msg)}`;
-                } else {
-                    window.location.href = `https://t.me/+${MY_PHONE}?text=${encodeURIComponent(msg)}`;
-                }
-            });
+          
         } else {
             alert("Error saving order.");
             document.getElementById('loader').style.display = 'none';
         }
     }
 
+    
+    function showHistory() {
+    let history = JSON.parse(localStorage.getItem('mt_roast_history')) || [];
+    if(history.length === 0) return alert("မှာယူဖူးသည့်မှတ်တမ်းမရှိသေးပါ။");
+    
+    let historyList = history.map(h => 
+        `ID: #${h.id}\nDate: ${h.date}\nTotal: ${h.total} K\nStatus: ${h.status}\n-------`
+    ).join('\n');
+    
+    alert("သင့်မှာယူမှုမှတ်တမ်းများ:\n\n" + historyList);
+}
+    
     function changeLang() {
         let l = document.getElementById('lang').value;
         document.getElementById('search').placeholder = (l==='en') ? "Search..." : "ရှာဖွေရန်...";
