@@ -68,21 +68,51 @@
     }
     .search-bar input { border: none; background: transparent; width: 100%; outline: none; font-size: 15px; }
 
-    /* Menu Grid & Pearl Cards */
-    .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 10px 20px; }
-    .menu-card { 
-        background: var(--pearl-white); 
-        border-radius: 25px; 
-        padding: 12px; 
-        box-shadow: var(--card-shadow);
-        text-align: center; 
-        transition: 0.3s;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-    .menu-card:active { transform: scale(0.96); }
-    .menu-card img { width: 100%; height: 130px; object-fit: cover; border-radius: 20px; margin-bottom: 8px; }
-    .price-tag { color: var(--primary); font-weight: 800; font-size: 16px; margin: 8px 0; }
-    
+    /* Premium Back Button */
+.back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    cursor: pointer;
+    color: var(--text-main);
+    transition: 0.3s;
+}
+.back-btn:active { transform: scale(0.9); }
+
+/* Menu Card ကို Premium ဆန်အောင် ပြန်ညှိခြင်း */
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+.menu-card { 
+    background: #ffffff; border-radius: 20px; padding: 12px; 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04); text-align: center; border: 1px solid #f8f8f8;
+}
+.menu-card img { width: 100%; height: 110px; object-fit: cover; border-radius: 16px; }
+
+/* Cart Drawer အတွင်းပိုင်း Layout */
+.cart-items-container { 
+    flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; 
+}
+.cart-item-row { 
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    background: #fff; border-radius: 18px; border: 1px solid #f1f1f1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+.cart-item-row img { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; }
+
+.qty-control { 
+    display: flex; align-items: center; gap: 8px; background: #f1f2f6;
+    padding: 5px 10px; border-radius: 12px;
+}
+.qty-control button { 
+    width: 26px; height: 26px; border-radius: 8px; border: none; 
+    background: white; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+            
     /* Quantity Controls */
     .qty-control { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 5px; }
     .qty-control button { 
@@ -115,43 +145,6 @@
         font-weight: bold; 
         box-shadow: 0 12px 30px var(--primary-glow); 
     }
-
-    /* Cart Drawer ပိုမိုသေသပ်စေရန် */
-.cart-items-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px; /* ပစ္စည်းတစ်ခုချင်းစီကြား ခြားပေးရန် */
-}
-
-.cart-item-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-    padding: 12px;
-    border-radius: 18px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    border: 1px solid #f1f1f1;
-}
-
-/* Back Button/Close Button အတွက် Style */
-.close-drawer-btn {
-    position: absolute;
-    right: 20px;
-    top: 15px;
-    background: #f1f2f6;
-    border: none;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 /* Image တွေ ပျောက်နေရင် သို့မဟုတ် ကြီးနေရင် ထိန်းရန် */
 .cart-item-row img {
@@ -212,6 +205,12 @@
     <div class="sidebar-item" onclick="toggleSidebar()"><i class="fas fa-home"></i> ပင်မစာမျက်နှာ</div>
     <div class="sidebar-item" onclick="showHistory()"><i class="fas fa-history"></i> မှာယူမှုမှတ်တမ်း</div>
     <div class="sidebar-item" onclick="trackOrder()"><i class="fas fa-truck"></i> အော်ဒါခြေရာခံမည်</div>
+    <div class="sidebar-header">
+    <button class="back-btn" onclick="toggleSidebar()" style="margin-bottom: 15px;">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <h2 style="margin:0;">Menu</h2>
+    </div>
 </div>
 
 <div class="search-bar">
@@ -248,6 +247,13 @@
             အော်ဒါတင်မည်
         </button>
     </div>
+    <div class="sidebar-header">
+    <button class="back-btn" onclick="toggleSidebar()" style="margin-bottom: 15px;">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <h2 style="margin:0;">Menu</h2>
+    </div>
+    
 </div>
     
 
@@ -281,6 +287,13 @@
         </div>
         <center><button onclick="closeCheckout()" style="margin-top:15px; background:none; border:none; color:#aaa; cursor:pointer; font-size: 14px;">Cancel</button></center>
     </div>
+    <div class="sidebar-header">
+    <button class="back-btn" onclick="toggleSidebar()" style="margin-bottom: 15px;">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <h2 style="margin:0;">Menu</h2>
+    </div>
+    
 </div>
     
 
@@ -360,30 +373,55 @@
     }
 
     function renderDrawerItems() {
-        const list = document.getElementById('drawer-items-list');
-        let html = "";
-        for(let name in cart) {
-            let item = allItems.find(i => i.name === name);
-            html += `
-                <div class="cart-item-row">
-                    <img src="${item.image_url || 'https://via.placeholder.com/50'}">
-                    <div style="flex:1;">
-                        <div style="font-weight:600; font-size:14px;">${name}</div>
-                        <div style="color:var(--primary); font-size:12px;">${item.price.toLocaleString()} K</div>
-                    </div>
-                    <div class="qty-control">
-                        <button onclick="updateQty('${name}', -1, ${item.price})">-</button>
-                        <span>${cart[name]}</span>
-                        <button onclick="updateQty('${name}', 1, ${item.price})" style="background:var(--gold); border:none;">+</button>
-                    </div>
-                    <i class="fas fa-trash" onclick="deleteItem('${name}')" style="color:#ff7675; margin-left:10px; cursor:pointer;"></i>
-                </div>`;
-        }
-        list.innerHTML = html || "<center style='color:#aaa; margin-top:20px;'>ခြင်းတောင်းထဲမှာ ဘာမှမရှိသေးပါ</center>";
-        let totalDisplay = document.getElementById('total-price-display').innerText + " K";
-        document.getElementById('sub-total-text').innerText = totalDisplay;
-        document.getElementById('grand-total-text').innerText = totalDisplay;
+    const list = document.getElementById('drawer-items-list');
+    let html = "";
+    
+    // cart ထဲမှာ ပစ္စည်းရှိမရှိ စစ်သည်
+    if (Object.keys(cart).length === 0) {
+        list.innerHTML = `
+            <div style="text-align:center; margin-top:50px; color:#ccc;">
+                <i class="fas fa-shopping-basket" style="font-size:48px; margin-bottom:15px;"></i>
+                <p>ခြင်းတောင်းထဲမှာ ဘာမှမရှိသေးပါ</p>
+            </div>`;
+        updateTotalDisplay(0);
+        return;
     }
+
+    for(let name in cart) {
+        let item = allItems.find(i => i.name === name);
+        if(!item) continue;
+        
+        html += `
+            <div class="cart-item-row">
+                <img src="${item.image_url || 'https://via.placeholder.com/50'}" alt="img">
+                <div style="flex:1;">
+                    <div style="font-weight:600; font-size:14px; color:#2d3436;">${name}</div>
+                    <div style="color:var(--primary); font-size:13px; font-weight:700;">${item.price.toLocaleString()} K</div>
+                </div>
+                <div class="qty-control">
+                    <button onclick="updateQty('${name}', -1, ${item.price})">-</button>
+                    <span style="font-size:14px; font-weight:bold; min-width:20px; text-align:center;">${cart[name]}</span>
+                    <button onclick="updateQty('${name}', 1, ${item.price})" style="color:var(--primary);">+</button>
+                </div>
+                <button onclick="deleteItem('${name}')" style="background:none; border:none; color:#ff7675; padding:5px; cursor:pointer;">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        `;
+    }
+    list.innerHTML = html;
+    
+    // စုစုပေါင်း ဈေးနှုန်းများကို Update လုပ်ခြင်း
+    let total = document.getElementById('total-price-display').innerText;
+    document.getElementById('sub-total-text').innerText = total + " K";
+    document.getElementById('grand-total-text').innerText = total + " K";
+}
+
+function updateTotalDisplay(val) {
+    document.getElementById('sub-total-text').innerText = val + " K";
+    document.getElementById('grand-total-text').innerText = val + " K";
+}
+    
 
     function deleteItem(name) {
         delete cart[name];
@@ -470,14 +508,18 @@ ${itemsBulletList}
             time: time 
         });
 
-        // ၅။ UI နှင့် Cart ကို Reset လုပ်ခြင်း
-        cart = {};
-        saveCart();
-        updateTotal();
-        document.getElementById('loader').style.display = 'none';
-        closeCheckout();
-        if (typeof toggleDrawer === "function") toggleDrawer();
+        // submitOrder function ၏ Cart reset လုပ်သော နေရာတွင် ထည့်ရန်
+cart = {}; // Cart ကို အလွတ်လုပ်သည်
+saveCart();
+updateTotal();
 
+// Menu ပေါ်က Quantity အရေအတွက် အားလုံးကို 0 (သို့မဟုတ် ဖျောက်ရန်)
+document.querySelectorAll('[id^="qty-"]').forEach(el => {
+    el.innerText = '0'; // ဂဏန်းအားလုံးကို 0 ပြန်လုပ်သည်
+});
+
+renderDrawerItems(); // Drawer ကိုပါ ပျောက်သွားအောင်လုပ်သည်
+        
         // ၆။ Viber/Telegram သို့ ပို့ဆောင်ခြင်း
         const encodedMsg = encodeURIComponent(msg);
         if (platform === 'viber') {
