@@ -114,6 +114,15 @@
         <input type="text" id="cust-name" placeholder="အမည်" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
         <input type="tel" id="cust-phone" placeholder="ဖုန်းနံပါတ်" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
         <textarea id="notes" placeholder="မှတ်ချက် (အစပ်လျှော့ရန် စသည်...)" style="width:100%; padding:12px; height:80px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box; margin-bottom:15px;"></textarea>
+
+        <div style="margin-bottom: 10px;">
+    <label style="font-size: 12px; color: gray;">Pickup Date:</label>
+    <input type="date" id="pickup-date" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+</div>
+<div style="margin-bottom: 15px;">
+    <label style="font-size: 12px; color: gray;">Pickup Time:</label>
+    <input type="time" id="pickup-time" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+</div>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <button onclick="submitOrder('viber')" style="background:#7360f2; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;"><i class="fab fa-viber"></i> Viber</button>
