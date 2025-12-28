@@ -266,11 +266,28 @@
     window.onload = () => { fetchMenu(); loadCart(); };
 
     async function fetchMenu() {
-        const { data } = await _supabase.from('menu_items').select('*');
-        allItems = data || [];
-        renderMenu(allItems);
-    }
+    try {
+        // Database မှ data အားလုံးကို ဆွဲယူခြင်း
+        const { data, error } = await _supabase.from('menu_items').select('*');
+        
+        if (error) {
+            console.error("Supabase Error:", error.message);
+            alert("Database ချိတ်ဆက်မှု အမှားရှိနေပါသည်: " + error.message);
+            return;
+        }
 
+        if (!data || data.length === 0) {
+            console.warn("Database တွင် Data မရှိသေးပါ။");
+            document.getElementById('menu-display').innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>ရောင်းချရန် ပစ္စည်းမရှိသေးပါ။</p>";
+            return;
+        }
+
+        allItems = data;
+        renderMenu(data);
+    } catch (err) {
+        console.error("Unexpected Error:", err);
+    }
+}
     function renderMenu(items) {
         document.getElementById('menu-display').innerHTML = items.map(i => `
             <div class="menu-card">
