@@ -361,29 +361,38 @@
         if (data) { allItems = data; renderMenu(data); }
     }
 
-    function renderMenu(items) {
+        function renderMenu(items) {
         const display = document.getElementById('menu-display');
         display.innerHTML = items.map(i => {
             const safeId = i.name.replace(/\s+/g, '-');
-            return 
+            return `
                 <div class="menu-card">
                     <img src="${i.image_url || 'https://via.placeholder.com/150'}">
                     <div style="font-weight:600; font-size:14px; margin-top:8px;">${i.name}</div>
-                    <div class="price-tag">${Number(i.price).toLocaleString()} K</div>
-                    // ဥပမာ - Menu Card ထဲက Quantity ပြတဲ့ နေရာ
-
+                    <div class="price-tag" style="color:var(--primary); font-weight:bold;">${Number(i.price).toLocaleString()} K</div>
                     <div class="qty-control">
-                    <button onclick="updateQty('${item.name}', -1, ${item.price})">-</button>
-                    <span id="qty-${item.name}">${cart[item.name] || 0}</span> <button onclick="updateQty('${item.name}', 1, ${item.price})">+</button>
-                   </div>
+                        <button onclick="updateQty('${i.name}', -1, ${i.price})">-</button>
+                        <span id="qty-${safeId}">${cart[i.name] || 0}</span> 
+                        <button onclick="updateQty('${i.name}', 1, ${i.price})">+</button>
+                    </div>
                 </div>
-            ;
+            `;
         }).join('');
-    }
-
-    function updateQty(name, change, price) {
+        }
+        function updateQty(name, change, price) {
         cart[name] = (cart[name] || 0) + change;
         if (cart[name] <= 0) delete cart[name];
+        
+        updateTotal();
+        renderDrawerItems();
+        saveCart();
+        
+        // ID ကို safeId စနစ်အတိုင်း ရှာပါ
+        const safeId = name.replace(/\s+/g, '-');
+        const qtyLabel = document.getElementById(`qty-${safeId}`);
+        if (qtyLabel) qtyLabel.innerText = cart[name] || 0;
+        }
+    
         
     
         // Haptic & Animation
