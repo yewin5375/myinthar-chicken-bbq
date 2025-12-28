@@ -201,20 +201,21 @@
 
 <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-header"><h2>Myin Thar Roast</h2><p>Premium Delivery Service</p></div>
+    <div class="sidebar-header">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="back-btn" onclick="toggleSidebar()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h2 style="margin:0; font-size: 18px;">Main Menu</h2>
+        </div>
+    </div>
     <div class="sidebar-item" onclick="toggleSidebar()"><i class="fas fa-home"></i> ပင်မစာမျက်နှာ</div>
     <div class="sidebar-item" onclick="showHistory()"><i class="fas fa-history"></i> မှာယူမှုမှတ်တမ်း</div>
     <div class="sidebar-item" onclick="trackOrder()"><i class="fas fa-truck"></i> အော်ဒါခြေရာခံမည်</div>
-    <div class="sidebar-header">
-    <button class="back-btn" onclick="toggleSidebar()" style="margin-bottom: 15px;">
-        <i class="fas fa-chevron-left"></i>
-    </button>
-    <h2 style="margin:0;">Menu</h2>
-    </div>
 </div>
 
 <div class="search-bar">
-    <i class="fas fa-search"></i>
+    <i class="fas fa-search" style="color: #ccc;"></i>
     <input type="text" id="search" oninput="filterMenu()" placeholder="အစားအသောက်ရှာရန်...">
 </div>
 
@@ -226,17 +227,14 @@
 </button>
 
 <div id="cart-drawer" class="cart-drawer">
-    <button class="close-drawer-btn" onclick="toggleDrawer()">
-        <i class="fas fa-times"></i>
-    </button>
-
-    <div class="drawer-header" onclick="toggleDrawer()">
-        <div class="pull-bar"></div>
-        <h3 style="margin:0;">သင့်ခြင်းတောင်း</h3>
+    <div class="drawer-header" style="display:flex; align-items:center; padding: 15px 20px; border-bottom: 1px solid #eee;">
+        <button class="back-btn" onclick="toggleDrawer()" style="margin-right: 15px; background: #f8f9fa; box-shadow: none;">
+            <i class="fas fa-arrow-down"></i>
+        </button>
+        <h3 style="margin:0; flex:1;">သင့်ခြင်းတောင်း</h3>
     </div>
     
-    <div class="cart-items-container" id="drawer-items-list">
-        </div>
+    <div class="cart-items-container" id="drawer-items-list"></div>
 
     <div class="summary-card">
         <div class="summary-row"><span>စုစုပေါင်း:</span><span id="sub-total-text">0 K</span></div>
@@ -247,54 +245,29 @@
             အော်ဒါတင်မည်
         </button>
     </div>
-    <div class="sidebar-header">
-    <button class="back-btn" onclick="toggleSidebar()" style="margin-bottom: 15px;">
-        <i class="fas fa-chevron-left"></i>
-    </button>
-    <h2 style="margin:0;">Menu</h2>
-    </div>
-    
 </div>
-    
 
 <div class="modal" id="checkout-modal">
     <div class="modal-content">
-        <h3 style="text-align:center; color:var(--dark-blue); margin-bottom: 20px;">Confirm Order</h3>
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+            <button class="back-btn" onclick="closeCheckout()" style="box-shadow: none; background: #f8f9fa;">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h3 style="margin:0;">Confirm Order</h3>
+        </div>
         
         <label class="input-label">Customer Name</label>
         <input type="text" id="cust-name" class="premium-input" placeholder="Enter your name">
-
         <label class="input-label">Phone Number</label>
         <input type="tel" id="cust-phone" class="premium-input" placeholder="09xxxxxxxxx">
-
-        <div style="display: flex; gap: 10px;">
-            <div style="flex: 1;">
-                <label class="input-label">Pickup Date</label>
-                <input type="date" id="pickup-date" class="premium-input">
-            </div>
-            <div style="flex: 1;">
-                <label class="input-label">Pickup Time</label>
-                <input type="time" id="pickup-time" class="premium-input">
-            </div>
-        </div>
-
-        <label class="input-label">Notes (Optional)</label>
-        <textarea id="notes" class="premium-input" style="height: 80px;" placeholder="Any special instructions?"></textarea>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top: 10px;">
             <button onclick="submitOrder('viber')" style="background:#7360f2; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; cursor:pointer;"><i class="fab fa-viber"></i> Viber</button>
             <button onclick="submitOrder('telegram')" style="background:#24A1DE; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; cursor:pointer;"><i class="fab fa-telegram"></i> Telegram</button>
         </div>
-        <center><button onclick="closeCheckout()" style="margin-top:15px; background:none; border:none; color:#aaa; cursor:pointer; font-size: 14px;">Cancel</button></center>
     </div>
-    <div class="sidebar-header">
-    <button class="back-btn" onclick="toggleSidebar()" style="margin-bottom: 15px;">
-        <i class="fas fa-chevron-left"></i>
-    </button>
-    <h2 style="margin:0;">Menu</h2>
-    </div>
-    
 </div>
+    
     
 
 <div id="voucher-wrap">
