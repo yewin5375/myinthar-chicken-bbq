@@ -361,37 +361,58 @@
         if (data) { allItems = data; renderMenu(data); }
     }
 
-        function renderMenu(items) {
-        const display = document.getElementById('menu-display');
-        display.innerHTML = items.map(i => {
-            const safeId = i.name.replace(/\s+/g, '-');
-            return `
-                <div class="menu-card">
-                    <img src="${i.image_url || 'https://via.placeholder.com/150'}">
-                    <div style="font-weight:600; font-size:14px; margin-top:8px;">${i.name}</div>
-                    <div class="price-tag" style="color:var(--primary); font-weight:bold;">${Number(i.price).toLocaleString()} K</div>
-                    <div class="qty-control">
-                        <button onclick="updateQty('${i.name}', -1, ${i.price})">-</button>
-                        <span id="qty-${safeId}">${cart[i.name] || 0}</span> 
-                        <button onclick="updateQty('${i.name}', 1, ${i.price})">+</button>
-                    </div>
+       // ၁။ Menu ပြသပေးသည့် Function (Variable Name နှင့် Syntax ပြင်ထားသည်)
+function renderMenu(items) {
+    const display = document.getElementById('menu-display');
+    if (!display) return;
+    
+    display.innerHTML = items.map(i => {
+        const safeId = i.name.replace(/\s+/g, '-');
+        return `
+            <div class="menu-card">
+                <img src="${i.image_url || 'https://via.placeholder.com/150'}">
+                <div style="font-weight:600; font-size:14px; margin-top:8px;">${i.name}</div>
+                <div class="price-tag">${Number(i.price).toLocaleString()} K</div>
+                <div class="qty-control">
+                    <button onclick="updateQty('${i.name}', -1, ${i.price})">-</button>
+                    <span id="qty-${safeId}">${cart[i.name] || 0}</span> 
+                    <button onclick="updateQty('${i.name}', 1, ${i.price})">+</button>
                 </div>
-            `;
-        }).join('');
-        }
-        function updateQty(name, change, price) {
-        cart[name] = (cart[name] || 0) + change;
-        if (cart[name] <= 0) delete cart[name];
-        
-        updateTotal();
-        renderDrawerItems();
-        saveCart();
-        
-        // ID ကို safeId စနစ်အတိုင်း ရှာပါ
-        const safeId = name.replace(/\s+/g, '-');
-        const qtyLabel = document.getElementById(`qty-${safeId}`);
-        if (qtyLabel) qtyLabel.innerText = cart[name] || 0;
-        }
+            </div>
+        `;
+    }).join('');
+}
+
+// ၂။ အရေအတွက် အတိုးအလျှော့လုပ်သည့် Function
+function updateQty(name, change, price) {
+    cart[name] = (cart[name] || 0) + change;
+    if (cart[name] <= 0) delete cart[name];
+    
+    // UI Update များ
+    updateTotal();
+    renderDrawerItems();
+    saveCart();
+    
+    // Menu ပေါ်က ဂဏန်းကို ရှာပြီး 0 ဖြစ်စေ၊ အရေအတွက်ဖြစ်စေ ပြောင်းလဲပေးရန်
+    const safeId = name.replace(/\s+/g, '-');
+    const qtyLabel = document.getElementById(`qty-${safeId}`);
+    if (qtyLabel) {
+        qtyLabel.innerText = cart[name] || 0;
+    }
+}
+
+// ၃။ ပစ္စည်းဖျက်သည့် Function
+function deleteItem(name) {
+    delete cart[name];
+    updateTotal();
+    renderDrawerItems();
+    saveCart();
+    // Menu ပေါ်က label ကိုပါ 0 ပြန်လုပ်ပေးရန်
+    const safeId = name.replace(/\s+/g, '-');
+    const qtyLabel = document.getElementById(`qty-${safeId}`);
+    if (qtyLabel) qtyLabel.innerText = 0;
+}
+    
     
         
     
@@ -470,14 +491,7 @@ function updateTotalDisplay(val) {
 }
     
 
-    function deleteItem(name) {
-        delete cart[name];
-        updateTotal();
-        renderDrawerItems();
-        saveCart();
-        const qtyLabel = document.getElementById(`qty-${name.replace(/\s+/g, '-')}`);
-        if (qtyLabel) qtyLabel.innerText = 0;
-    }
+    
 
     async function submitOrder(platform) {
     const name = document.getElementById('cust-name').value;
