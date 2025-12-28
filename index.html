@@ -256,8 +256,12 @@
 </div>
 
 <div class="modal" id="checkout-modal">
-    <div class="modal-content" style="max-width: 400px; padding: 25px;">
+    <div class="modal-content" style="max-width: 400px; padding: 25px; position: relative;">
         <h3 style="text-align:center; color:var(--primary);">အချက်အလက်ဖြည့်ပါ</h3>
+        
+        <div id="checkout-items-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 10px;">
+            </div>
+
         <div style="margin-bottom: 15px;">
             <input type="text" id="cust-name" placeholder="ဝယ်သူအမည်" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:12px; box-sizing:border-box;">
         </div>
@@ -268,6 +272,7 @@
             <label style="font-size: 12px; color: #666;">လာယူမည့်အချိန် (သတ်မှတ်လိုလျှင်)</label>
             <input type="datetime-local" id="pickup-time" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:12px; box-sizing:border-box;">
         </div>
+        
         <div style="display:flex; gap:10px;">
             <button onclick="submitOrder('viber')" style="flex:1; background:#7360f2; color:white; border:none; padding:12px; border-radius:12px; font-weight:bold;">Viber</button>
             <button onclick="submitOrder('telegram')" style="flex:1; background:#0088cc; color:white; border:none; padding:12px; border-radius:12px; font-weight:bold;">Telegram</button>
@@ -378,24 +383,29 @@ function updateQty(name, change, price) {
         document.getElementById('drawer-items-list').innerHTML = html || "ခြင်းတောင်းထဲမှာ ဘာမှမရှိပါ";
     }
 
-    async function submitOrder(platform) {
+  async function submitOrder(platform) {
     const name = document.getElementById('cust-name').value;
     const phone = document.getElementById('cust-phone').value;
     const pickup = document.getElementById('pickup-time').value;
-    const total = document.getElementById('total-price-display').innerText;
+    
+    // Total ကို Number format သို့ ပြောင်းလဲခြင်း
+    const totalRaw = document.getElementById('total-price-display').innerText;
+    const totalNum = Number(totalRaw.replace(/,/g, ''));
 
     if(!name || !phone) return alert("အမည်နှင့် ဖုန်းနံပါတ် ဖြည့်ပါ။");
-    
-    let itemsList = "";
-    for(let n in cart) { itemsList += `- ${n} (${cart[n]} ခု)\n`; }
-    if(!itemsList) return alert("ပစ္စည်းရွေးချယ်ထားခြင်းမရှိပါ။");
+    if(Object.keys(cart).length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
 
     document.getElementById('loader').style.display = 'flex';
 
     try {
-                // --- ၁။ Database ထဲသိမ်းပြီး Order ID ရယူခြင်း ---
+        // --- ၁။ Database ထဲသိမ်းခြင်း ---
         const { data, error } = await _supabase.from('orders').insert([
-            { customer_name: name, phone: phone, total: total, status: 'pending' }
+            { 
+                customer_name: name, 
+                phone: phone, 
+                total: totalNum, // Number အဖြစ် သိမ်းခြင်း
+                status: 'pending' 
+            }
         ]).select();
 
         if(error) throw error;
@@ -478,7 +488,44 @@ function updateQty(name, change, price) {
     }
         
 
-    function openCheckout() { document.getElementById('checkout-modal').style.display = 'flex'; }
+   function openCheckout() {
+    let listHtml = "";
+    if (Object.keys(cart).length === 0) {
+        listHtml = "<p style='text-align:center; font-size:12px; color:red;'>ခြင်းတောင်းထဲမှာ ဘာမှမရှိပါ။</p>";
+    } else {
+        for (let n in cart) {
+            let item = allItems.find(i => i.name === n);
+            const safeId = n.replace(/[^a-zA-Z0-9]/g, '-');
+            listHtml += `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div style="flex:1; font-size:13px;"><b>${n}</b></div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button onclick="updateQty('${n}', -1, ${item.price}); openCheckout();" style="width:25px; height:25px;">-</button>
+                        <span style="min-width:20px; text-align:center;">${cart[n]}</span>
+                        <button onclick="updateQty('${n}', 1, ${item.price}); openCheckout();" style="width:25px; height:25px;">+</button>
+                        <i class="fas fa-trash" onclick="deleteItem('${n}')" style="color:red; cursor:pointer; margin-left:5px;"></i>
+                    </div>
+                </div>`;
+        }
+    }
+    document.getElementById('checkout-items-list').innerHTML = listHtml;
+    document.getElementById('checkout-modal').style.display = 'flex';
+}
+
+// ပစ္စည်းတစ်ခုလုံး ဖျက်ပစ်ရန် function
+function deleteItem(name) {
+    if(confirm("ဤပစ္စည်းကို ဖျက်မလား?")) {
+        delete cart[name];
+        updateTotal();
+        saveCart();
+        openCheckout(); // စာရင်းပြန် Update လုပ်ရန်
+        
+        // ပင်မ Menu Card ပေါ်က အရေအတွက်ကိုပါ 0 ဖြစ်အောင်လုပ်ခြင်း
+        const safeId = name.replace(/[^a-zA-Z0-9]/g, '-');
+        const qEl = document.getElementById(`qty-${safeId}`);
+        if(qEl) qEl.innerText = 0;
+    }
+}
     function closeCheckout() { document.getElementById('checkout-modal').style.display = 'none'; }
     function saveCart() { localStorage.setItem('mt_cart', JSON.stringify(cart)); }
     function loadCart() { cart = JSON.parse(localStorage.getItem('mt_cart')) || {}; updateTotal(); }
