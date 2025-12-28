@@ -362,43 +362,29 @@
     }
 
     function renderMenu(items) {
-    const display = document.getElementById('menu-display');
-    if (!display) return;
-    
-    display.innerHTML = items.map(i => {
-        // ID မှာ space ပါရင် error တက်တတ်လို့ space ကို - နဲ့ အစားထိုးပါတယ်
-        const safeId = i.name.replace(/\s+/g, '-');
-        return `
-            <div class="menu-card">
-                <img src="${i.image_url || 'https://via.placeholder.com/150'}" alt="${i.name}">
-                <div style="font-weight:600; font-size:14px; margin-top:8px;">${i.name}</div>
-                <div class="price-tag" style="color:var(--primary); font-weight:bold;">${Number(i.price).toLocaleString()} K</div>
-                <div class="qty-control" style="display:flex; justify-content:center; align-items:center; gap:10px; margin-top:10px;">
-                    <button onclick="updateQty('${i.name}', -1, ${i.price})" style="width:30px; height:30px; border-radius:8px; border:none; background:#eee;">-</button>
-                    <span id="qty-${safeId}" style="font-weight:bold; min-width:20px;">${cart[i.name] || 0}</span> 
-                    <button onclick="updateQty('${i.name}', 1, ${i.price})" style="width:30px; height:30px; border-radius:8px; border:none; background:#eee;">+</button>
+        const display = document.getElementById('menu-display');
+        display.innerHTML = items.map(i => {
+            const safeId = i.name.replace(/\s+/g, '-');
+            return 
+                <div class="menu-card">
+                    <img src="${i.image_url || 'https://via.placeholder.com/150'}">
+                    <div style="font-weight:600; font-size:14px; margin-top:8px;">${i.name}</div>
+                    <div class="price-tag">${Number(i.price).toLocaleString()} K</div>
+                    // ဥပမာ - Menu Card ထဲက Quantity ပြတဲ့ နေရာ
+
+                    <div class="qty-control">
+                    <button onclick="updateQty('${item.name}', -1, ${item.price})">-</button>
+                    <span id="qty-${item.name}">${cart[item.name] || 0}</span> <button onclick="updateQty('${item.name}', 1, ${item.price})">+</button>
+                   </div>
                 </div>
-            </div>
-        `;
-    }).join('');
+            ;
+        }).join('');
     }
-    
+
     function updateQty(name, change, price) {
-    cart[name] = (cart[name] || 0) + change;
-    if (cart[name] <= 0) delete cart[name];
-    
-    // UI Updates
-    updateTotal();
-    renderDrawerItems();
-    saveCart();
-    
-    // Menu ပေါ်က အရေအတွက်ကို ရှာပြီး ချက်ချင်းပြောင်းရန်
-    const safeId = name.replace(/\s+/g, '-');
-    const qtyLabel = document.getElementById(`qty-${safeId}`);
-    if (qtyLabel) {
-        qtyLabel.innerText = cart[name] || 0;
-    }
-    }   
+        cart[name] = (cart[name] || 0) + change;
+        if (cart[name] <= 0) delete cart[name];
+        
     
         // Haptic & Animation
         if (navigator.vibrate) navigator.vibrate(50);
