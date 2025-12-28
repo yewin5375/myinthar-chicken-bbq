@@ -317,6 +317,12 @@
         <input type="text" id="cust-name" class="premium-input" placeholder="Enter your name">
         <label class="input-label">Phone Number</label>
         <input type="tel" id="cust-phone" class="premium-input" placeholder="09xxxxxxxxx">
+        <label class="input-label">Pickup Date</label>
+<input type="date" id="pickup-date" class="premium-input">
+<label class="input-label">Pickup Time</label>
+<input type="time" id="pickup-time" class="premium-input">
+<label class="input-label">Notes</label>
+<input type="text" id="notes" class="premium-input" placeholder="မှတ်ချက်ရှိလျှင်ရေးရန်">
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top: 10px;">
             <button onclick="submitOrder('viber')" style="background:#7360f2; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; cursor:pointer;"><i class="fab fa-viber"></i> Viber</button>
@@ -356,28 +362,39 @@
     }
 
     function renderMenu(items) {
-        const display = document.getElementById('menu-display');
-        display.innerHTML = items.map(i => {
-            const safeId = i.name.replace(/\s+/g, '-');
-            return `
-                <div class="menu-card">
-                    <img src="${i.image_url || 'https://via.placeholder.com/150'}">
-                    <div style="font-weight:600; font-size:14px; margin-top:8px;">${i.name}</div>
-                    <div class="price-tag">${Number(i.price).toLocaleString()} K</div>
-                    // ဥပမာ - Menu Card ထဲက Quantity ပြတဲ့ နေရာ
-`
-                    <div class="qty-control">
-                    <button onclick="updateQty('${item.name}', -1, ${item.price})">-</button>
-                    <span id="qty-${item.name}">${cart[item.name] || 0}</span> <button onclick="updateQty('${item.name}', 1, ${item.price})">+</button>
-                   </div>
+    const display = document.getElementById('menu-display');
+    display.innerHTML = items.map(i => {
+        return `
+            <div class="menu-card">
+                <img src="${i.image_url || 'https://via.placeholder.com/150'}">
+                <div style="font-weight:600; font-size:14px; margin-top:8px;">${i.name}</div>
+                <div class="price-tag">${Number(i.price).toLocaleString()} K</div>
+                <div class="qty-control">
+                    <button onclick="updateQty('${i.name}', -1, ${i.price})">-</button>
+                    <span id="qty-${i.name.replace(/\s+/g, '-')}">${cart[i.name] || 0}</span> 
+                    <button onclick="updateQty('${i.name}', 1, ${i.price})">+</button>
                 </div>
-            `;
-        }).join('');
+            </div>
+        `;
+    }).join('');
     }
+    
 
     function updateQty(name, change, price) {
-        cart[name] = (cart[name] || 0) + change;
-        if (cart[name] <= 0) delete cart[name];
+    cart[name] = (cart[name] || 0) + change;
+    if (cart[name] <= 0) delete cart[name];
+    
+    // UI Update
+    updateTotal();
+    renderDrawerItems();
+    saveCart();
+    
+    // Menu ပေါ်က ဂဏန်းကို ချက်ချင်းပြောင်းရန်
+    const safeId = name.replace(/\s+/g, '-');
+    const qtyLabel = document.getElementById(`qty-${safeId}`);
+    if (qtyLabel) qtyLabel.innerText = cart[name] || 0;
+    }
+    
         
         // Haptic & Animation
         if (navigator.vibrate) navigator.vibrate(50);
@@ -503,9 +520,7 @@ function updateTotalDisplay(val) {
         if(error) throw error;
         const orderId = data[0].id;
 
-        // အော်ဒါတင်ခြင်း အောင်မြင်သွားတဲ့ အပိုင်းမှာ ထည့်ရန်
-cart = {}; // Cart ဒေတာကို အကုန်ဖျက်မယ်
-saveCart(); // LocalStorage မှာပါ သိမ်းမယ် (Refresh လုပ်ရင် ပြန်မပေါ်လာအောင်)
+        
 
 // ၁။ Menu ပေါ်က Quantity တွေကို လိုက်ပြီး 0 (သုည) ပြန်လုပ်မယ်
 // (Menu card ထုတ်တဲ့နေရာမှာ id="qty-${item.name}" လို့ ပေးထားဖို့ လိုပါတယ်)
