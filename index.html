@@ -8,9 +8,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #f26522; --bg: #fffbf8; --text: #2d3436; --card-bg: #ffffff; --gold: #ffc107; }
+                :root { --primary: #f26522; --bg: #fffbf8; --text: #2d3436; --card-bg: #ffffff; --gold: #ffc107; --dark-blue: #2d2a6e; }
         body { font-family: 'Pyidaungsu', sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; overflow-x: hidden; }
 
+        /* --- Form ပုံစံသစ်အတွက် CSS --- */
+        .pickup-form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #5d50c6;
+        }
+        .form-title { color: var(--dark-blue); text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 20px; }
+        .section-label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; font-size: 14px; }
+        .input-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .input-row div { flex: 1; }
+        .input-row input, .full-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .sub-text { font-size: 10px; color: #888; display: block; margin-top: 2px; }
+
+        /* ကျန်ရှိသော Header, Sidebar, Menu Grid CSS များသည် မူလအတိုင်းရှိပါသည် */
+        
         /* --- Header Section --- */
         .header { 
             position: sticky;
@@ -196,17 +212,49 @@
 </div>
 
 <div class="modal" id="checkout-modal">
-    <div class="modal-content">
-        <h3>အချက်အလက်ဖြည့်ပါ</h3>
-        <div class="input-group"><input type="text" id="cust-name" placeholder="ဝယ်သူအမည်"></div>
-        <div class="input-group"><input type="tel" id="cust-phone" placeholder="ဖုန်းနံပါတ်"></div>
-        <div style="display:flex; gap:10px;">
-            <button onclick="submitOrder('viber')" style="flex:1; background:#7360f2; color:white; border:none; padding:12px; border-radius:12px;">Viber</button>
-            <button onclick="submitOrder('telegram')" style="flex:1; background:#0088cc; color:white; border:none; padding:12px; border-radius:12px;">Telegram</button>
+    <div class="modal-content" style="max-width: 500px; padding: 10px;">
+        <div class="pickup-form-container">
+            <h2 class="form-title">Curbside Pickup Order Form</h2>
+            
+            <label class="section-label">Name</label>
+            <div class="input-row">
+                <div>
+                    <input type="text" id="first-name" placeholder="">
+                    <span class="sub-text">First Name</span>
+                </div>
+                <div>
+                    <input type="text" id="last-name" placeholder="">
+                    <span class="sub-text">Last Name</span>
+                </div>
+            </div>
+
+            <label class="section-label">Email</label>
+            <div style="margin-bottom:15px;">
+                <input type="email" id="cust-email" class="full-input" placeholder="example@example.com">
+                <span class="sub-text">example@example.com</span>
+            </div>
+
+            <label class="section-label">Phone Number</label>
+            <div class="input-row">
+                <div style="flex: 0.4;">
+                    <input type="text" id="area-code" placeholder="">
+                    <span class="sub-text">Area Code</span>
+                </div>
+                <div>
+                    <input type="tel" id="cust-phone" placeholder="">
+                    <span class="sub-text">Phone Number</span>
+                </div>
+            </div>
+
+            <label class="section-label">Additional Notes</label>
+            <textarea id="notes" class="full-input" style="height:80px; margin-bottom:15px;"></textarea>
+
+            <button onclick="submitOrder('telegram')" style="width:100%; background:#5d50c6; color:white; border:none; padding:15px; border-radius:5px; font-weight:bold; cursor:pointer;">Submit</button>
+            <center><button onclick="closeCheckout()" style="margin-top:10px; background:none; border:none; color:gray; cursor:pointer;">Cancel</button></center>
         </div>
-        <center><button onclick="closeCheckout()" style="margin-top:15px; background:none; border:none; color:gray;">ပယ်ဖျက်မည်</button></center>
     </div>
 </div>
+    
 
 <script>
     const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
@@ -278,19 +326,23 @@
         document.getElementById('drawer-items-list').innerHTML = html || "ခြင်းတောင်းထဲမှာ ဘာမှမရှိပါ";
     }
 
-    async function submitOrder(platform) {
-        const name = document.getElementById('cust-name').value;
+        async function submitOrder(platform) {
+        const firstName = document.getElementById('first-name').value;
+        const lastName = document.getElementById('last-name').value;
+        const fullName = firstName + " " + lastName;
         const phone = document.getElementById('cust-phone').value;
+        const email = document.getElementById('cust-email').value;
+        const notes = document.getElementById('notes').value;
         const total = document.getElementById('total-price-display').innerText;
         const now = new Date().toLocaleString();
 
-        if(!name || !phone) return alert("အမည်နှင့် ဖုန်းဖြည့်ပါ။");
+        if(!firstName || !phone) return alert("အမည်နှင့် ဖုန်းဖြည့်ပါ။");
         
         document.getElementById('loader').style.display = 'flex';
 
         try {
             const { data, error } = await _supabase.from('orders').insert([
-                { customer_name: name, phone: phone, total: total, status: 'pending' }
+                { customer_name: fullName, phone: phone, total: total, status: 'pending' }
             ]).select();
 
             if(error) throw error;
@@ -301,18 +353,20 @@
             history.unshift({id: orderId, date: now, total: total, status: 'pending'});
             localStorage.setItem('mt_history', JSON.stringify(history.slice(0, 10)));
 
-            // Prepare Voucher
+            // Prepare Voucher Image
             document.getElementById('v-id').innerText = orderId;
-            document.getElementById('v-name').innerText = name;
+            document.getElementById('v-name').innerText = fullName;
             document.getElementById('v-phone-display').innerText = phone;
             document.getElementById('v-date').innerText = now;
             document.getElementById('v-total').innerText = total;
             document.getElementById('v-subtotal').innerText = total + " K";
 
-            let tableHtml = ""; let count = 1;
+            let tableHtml = "";
+            let itemsList = ""; // Telegram Message အတွက်
             for(let n in cart) {
                 let item = allItems.find(i => i.name === n);
-                tableHtml += `<tr><td>${count++}</td><td>${n}</td><td>${cart[n]}</td><td>${(item.price * cart[n]).toLocaleString()} K</td></tr>`;
+                tableHtml += `<tr><td>1</td><td>${n}</td><td>${cart[n]}</td><td>${(item.price * cart[n]).toLocaleString()} K</td></tr>`;
+                itemsList += `- ${n} (${cart[n]} ခု)\n`;
             }
             document.getElementById('v-items-table').innerHTML = tableHtml;
 
@@ -322,31 +376,54 @@
             const canvas = await html2canvas(document.querySelector("#invoice-card"), {useCORS: true});
             vWrap.style.left = "-9999px";
 
+            // Download Invoice
             const link = document.createElement('a');
             link.download = `MT_Order_${orderId}.png`;
             link.href = canvas.toDataURL();
             link.click();
 
-            // Clear Cart & Send Message
+            // Clear UI
             cart = {}; saveCart(); updateTotal();
             document.getElementById('loader').style.display = 'none';
             closeCheckout();
             
-            let msg = `🍗 *MT Roast (Order #${orderId})*\n👤 Name: ${name}\n📞 Phone: ${phone}\n💰 Total: ${total} K`;
-            if(platform==='viber') window.location.href = `viber://forward?text=${encodeURIComponent(msg)}`;
-            else window.location.href = `https://t.me/share/url?url=${encodeURIComponent(msg)}`;
+            // --- Telegram ပို့မည့်အပိုင်း ---
+            // 'MyinTharRoastAdmin' နေရာတွင် သင့် Telegram Username (သို့) Bot အမည်ပြောင်းပါ
+            let admin_username = "yewin5375"; 
+            let msg = `🍗 *New Order: #${orderId}*\n\n`;
+            msg += `👤 ဝယ်သူ: ${fullName}\n`;
+            msg += `📞 ဖုန်း: ${phone}\n`;
+            msg += `📧 Email: ${email}\n`;
+            msg += `📝 မှတ်ချက်: ${notes}\n\n`;
+            msg += `🛒 မှာယူသည့်ပစ္စည်းများ:\n${itemsList}\n`;
+            msg += `💰 စုစုပေါင်း: ${total} K`;
+
+            if(platform === 'viber') {
+                window.location.href = `viber://forward?text=${encodeURIComponent(msg)}`;
+            } else {
+                // Telegram Link အမှန်
+                window.open(`https://t.me/${admin_username}?text=${encodeURIComponent(msg)}`, '_blank');
+            }
 
         } catch (err) {
-            alert("အမှားအယွင်းရှိပါသည်။");
+            console.error(err);
+            alert("အမှားအယွင်းရှိပါသည်။ Supabase Connection ကိုစစ်ဆေးပါ။");
             document.getElementById('loader').style.display = 'none';
         }
-    }
+        }
+    
+          function showHistory(){
+let history = JSON.parse(loc
+alStorage.getItem('mt_history'))||
+[];
+if(!history.length)return
+alert("9ooo:ool");
+\n"+ history.map(h =>`ID:#$
+{h.id}| ${h.total} K|${h.status}
+`).join('\n'));
+}  
 
-    function showHistory() {
-        let history = JSON.parse(localStorage.getItem('mt_history')) || [];
-        if(!history.length) return alert("မှတ်တမ်းမရှိပါ။");
-        alert("နောက်ဆုံးမှာယူမှုများ:\n" + history.map(h => `ID: #${h.id} | ${h.total} K | ${h.status}`).join('\n'));
-    }
+            
 
     async function trackOrder() {
         const id = prompt("Order ID ရိုက်ပါ:");
