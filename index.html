@@ -406,13 +406,7 @@ function updateQty(name, change, price) {
     renderDrawerItems();
     saveCart();
     
-    // Menu ပေါ်က ဂဏန်းကို ရှာပြီး 0 ဖြစ်စေ၊ အရေအတွက်ဖြစ်စေ ပြောင်းလဲပေးရန်
-    const safeId = name.replace(/\s+/g, '-');
-    const qtyLabel = document.getElementById(`qty-${safeId}`);
-    if (qtyLabel) {
-        qtyLabel.innerText = cart[name] || 0;
-    }
-}
+    
 
 // ၃။ ပစ္စည်းဖျက်သည့် Function
 function deleteItem(name) {
