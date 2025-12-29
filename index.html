@@ -388,7 +388,9 @@
         return `
             <div class="menu-card">
                 ...
-                <span id="qty-${safeId}">${cart[i.name] || 0}</span> 
+                // renderMenu ထဲက span နေရာ
+`<span id="qty-${i.name.replace(/\s+/g, '-')}">${cart[i.name] || 0}</span>`
+                                  
                 ...
             </div>
         `;
@@ -401,10 +403,21 @@ function updateQty(name, change, price) {
     cart[name] = (cart[name] || 0) + change;
     if (cart[name] <= 0) delete cart[name];
     
-    // UI Update များ
     updateTotal();
     renderDrawerItems();
     saveCart();
+    
+    // ဒီအပိုင်းမှာ error မတက်အောင် if နဲ့ သေချာစစ်ပါ
+    const safeId = name.replace(/\s+/g, '-');
+    const qtyLabel = document.getElementById(`qty-${safeId}`);
+    
+    if (qtyLabel) {
+        qtyLabel.innerText = cart[name] || 0;
+    } else {
+        console.warn(`ID qty-${safeId} ကို ရှာမတွေ့ပါ`); // error တက်မယ့်အစား log ပဲ ပြမယ်
+    }
+}
+    
     
     
 
@@ -587,25 +600,10 @@ ${itemsBulletList}
 📝 *Notes:* ${notes || '-'}
 ⚠️ အော်ဒါတင်ပြီးပါက 09767287345 သို့ ဖုန်းဆက်ပေးပါ။`;
 
-        // ၆။ History သိမ်းခြင်း
-        saveToHistory({ id: orderId, total: total, status: 'pending', date: date, time: time });
-
-
-// ၁။ Cart ကို အရင်ရှင်း (အဖြေ B က Array သုံးခိုင်းပေမဲ့ သင့် code က Object ဖြစ်လို့ {} သုံးပါ)
-cart = {};
-
-// ၂။ Menu ပေါ်က အရေအတွက်အားလုံးကို 0 ပြန်လုပ် (Menu မပျောက်ပါ)
-allItems.forEach(item => {
-    const safeId = getSafeId(item.name);
-    const qtyLabel = document.getElementById(`qty-${safeId}`);
-    if (qtyLabel) qtyLabel.textContent = '0';
-});
-
-// ၃။ UI Update
-renderDrawerItems(); // ခြင်းတောင်းထဲက စာရင်းရှင်းမယ်
-updateTotal();       // အောက်က bar ကို ဖျောက်မယ်
-saveCart();          // ဖုန်းထဲမှာ သိမ်းထားတာပါ ရှင်းမယ်
         
+
+
+
 
         // ... (msg ရေးထားတဲ့နေရာအောက်တွင်) ...
 
@@ -635,7 +633,31 @@ setTimeout(() => {
         window.location.href = `https://t.me/+${MY_PHONE}?text=${encodedMsg}`;
     }
 }, 2000); // Guide ကို ၂ စက္ကန့်လောက် ဖတ်ချိန်ပေးပြီးမှ App ဖွင့်ပေးမယ်
+
+
+        // ၆။ History သိမ်းခြင်း
+        saveToHistory({ id: orderId, total: total, status: 'pending', date: date, time: time });
+        // ၁။ Cart ကို အရင်ရှင်း (အဖြေ B က Array သုံးခိုင်းပေမဲ့ သင့် code က Object ဖြစ်လို့ {} သုံးပါ)
+cart = {};
+
+// ၂။ Menu ပေါ်က အရေအတွက်အားလုံးကို 0 ပြန်လုပ် (Menu မပျောက်ပါ)
+allItems.forEach(item => {
+    const safeId = getSafeId(item.name);
+    const qtyLabel = document.getElementById(`qty-${safeId}`);
+    if (qtyLabel) qtyLabel.textContent = '0';
+});
+
+// ၃။ UI Update
+renderDrawerItems(); // ခြင်းတောင်းထဲက စာရင်းရှင်းမယ်
+updateTotal();       // အောက်က bar ကို ဖျောက်မယ်
+saveCart();          // ဖုန်းထဲမှာ သိမ်းထားတာပါ ရှင်းမယ်
         
+          // 🔥 ဒီနေရာမှာ အခုလိုလေး ထည့်လိုက်ပါ
+    setTimeout(() => {
+        location.reload(); // အော်ဒါပို့ပြီး ၂ စက္ကန့်နေရင် Screen ကို Refresh လုပ်ပြီး 0 ပြန်ဖြစ်သွားအောင် လုပ်တာပါ
+    }, 2000);
+
+}, 2000);
 
         // ၉။ Voucher ပုံကို Download ချပေးခြင်း
         const link = document.createElement('a');
