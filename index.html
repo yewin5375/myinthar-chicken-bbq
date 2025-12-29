@@ -511,8 +511,6 @@ function updateTotalDisplay(val) {
 }
     
 
-    
-
     async function submitOrder(platform) {
     const name = document.getElementById('cust-name').value;
     const phone = document.getElementById('cust-phone').value;
@@ -522,18 +520,18 @@ function updateTotalDisplay(val) {
     const total = document.getElementById('total-price-display').innerText;
 
     // ၁။ အချက်အလက်စစ်ဆေးခြင်း
-    if(!name || !phone || !date || !time) {
+    if (!name || !phone || !date || !time) {
         return alert("အမည်၊ ဖုန်း၊ လာယူမည့်ရက်နှင့် အချိန်တို့ကို ပြည့်စုံစွာဖြည့်ပါ။");
     }
-
-    // ၂။ ပစ္စည်းစာရင်းကို Format ပြောင်းခြင်း (Database Error ကာကွယ်ရန်)
-    let itemsBulletList = Object.keys(cart).map(name => `▪️ ${name} (${cart[name]} ခု)`).join('\n');
-    let itemsDatabaseList = Object.keys(cart).map(name => `${name} x ${cart[name]}`).join(', ');
 
     // ပစ္စည်းမရှိဘဲ အော်ဒါတင်ခြင်းကို တားဆီးရန်
     if (Object.keys(cart).length === 0) {
         return alert("ခြင်းတောင်းထဲမှာ ပစ္စည်းမရှိသေးပါ");
     }
+
+    // ၂။ ပစ္စည်းစာရင်းကို Format ပြောင်းခြင်း
+    let itemsBulletList = Object.keys(cart).map(n => `▪️ ${n} (${cart[n]} ခု)`).join('\n');
+    let itemsDatabaseList = Object.keys(cart).map(n => `${n} x ${cart[n]}`).join(', ');
 
     document.getElementById('loader').style.display = 'flex';
 
@@ -541,44 +539,27 @@ function updateTotalDisplay(val) {
         // ၃။ Supabase ထဲသို့ သိမ်းဆည်းခြင်း
         const { data, error } = await _supabase
             .from('orders')
-            .insert([{ 
-                customer_name: name, 
-                phone: phone, 
-                total: total, 
-                items: itemsDatabaseList, // Null မဖြစ်အောင် အပေါ်မှာ Map လုပ်ထားပါတယ်
-                pickup_time: `${date} ${time}`, // Pickup Info ကို ဒီမှာ ပေါင်းထည့်ပါတယ်
-                status: 'pending' 
+            .insert([{
+                customer_name: name,
+                phone: phone,
+                total: total,
+                items: itemsDatabaseList,
+                pickup_time: `${date} ${time}`,
+                status: 'pending'
             }]).select();
 
-        if(error) throw error;
+        if (error) throw error;
         const orderId = data[0].id;
-
-        
-
-// ၁။ Menu ပေါ်က Quantity တွေကို လိုက်ပြီး 0 (သုည) ပြန်လုပ်မယ်
-// (Menu card ထုတ်တဲ့နေရာမှာ id="qty-${item.name}" လို့ ပေးထားဖို့ လိုပါတယ်)
-document.querySelectorAll('[id^="qty-"]').forEach(el => {
-    el.innerText = '0';
-});
-
-// ၂။ UI တစ်ခုလုံးကို ပြန် Update လုပ်မယ်
-updateTotal();
-renderDrawerItems(); 
-
-// ၃။ Drawer နဲ့ Modal ကို ပိတ်မယ်
-if (typeof toggleDrawer === "function") toggleDrawer();
-if (typeof closeCheckout === "function") closeCheckout();
-        
 
         // ၄။ Voucher Image ထုတ်ရန်အတွက် Data ထည့်ခြင်း
         document.getElementById('inv-order-id').innerText = `Order ID: #${orderId}`;
         document.getElementById('inv-date').innerText = `Date: ${new Date().toLocaleString()}`;
         document.getElementById('inv-total').innerText = `Total: ${total} K`;
         let itemsHtml = "";
-        for(let n in cart) itemsHtml += `<p>${n} x ${cart[n]}</p>`;
+        for (let n in cart) itemsHtml += `<p>${n} x ${cart[n]}</p>`;
         document.getElementById('inv-items').innerHTML = itemsHtml;
 
-        // Voucher ပုံဖမ်းခြင်း (Animation မပျက်စေရန် အရေးကြီးသည်)
+        // Voucher ပုံဖမ်းခြင်း
         const vWrap = document.getElementById('voucher-wrap');
         vWrap.style.left = "0";
         vWrap.style.top = "0";
@@ -600,78 +581,46 @@ ${itemsBulletList}
 📝 *Notes:* ${notes || '-'}
 ⚠️ အော်ဒါတင်ပြီးပါက 09767287345 သို့ ဖုန်းဆက်ပေးပါ။`;
 
-        
-
-
-
-
-        // ... (msg ရေးထားတဲ့နေရာအောက်တွင်) ...
-
-// Clipboard ထဲသို့ Message ကို Auto Copy ကူးခြင်း
-try {
-    await navigator.clipboard.writeText(msg);
-    console.log('Order detail copied to clipboard');
-} catch (err) {
-    // browser က auto-copy မရရင် manual copy လုပ်နိုင်အောင် fallback လုပ်ပါ
-    const textArea = document.createElement("textarea");
-    textArea.value = msg;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-}
-
-// ၆။ Viber/Telegram သို့ ပို့ဆောင်ခြင်း
-const encodedMsg = encodeURIComponent(msg);
-// Guide ပြပေးမည့် function ကို ခေါ်ခြင်း (Viber/Telegram မပွင့်ခင် ခဏပြပေးရန်)
-showAppGuide(platform);
-
-setTimeout(() => {
-    if (platform === 'viber') {
-        window.location.href = `viber://contact?number=${MY_PHONE}&draft=${encodedMsg}`;
-    } else {
-        window.location.href = `https://t.me/+${MY_PHONE}?text=${encodedMsg}`;
-    }
-}, 2000); // Guide ကို ၂ စက္ကန့်လောက် ဖတ်ချိန်ပေးပြီးမှ App ဖွင့်ပေးမယ်
-
+        // Clipboard ထဲသို့ Message ကို Auto Copy ကူးခြင်း
+        try {
+            await navigator.clipboard.writeText(msg);
+        } catch (err) {
+            const textArea = document.createElement("textarea");
+            textArea.value = msg;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
 
         // ၆။ History သိမ်းခြင်း
         saveToHistory({ id: orderId, total: total, status: 'pending', date: date, time: time });
-        // ၁။ Cart ကို အရင်ရှင်း (အဖြေ B က Array သုံးခိုင်းပေမဲ့ သင့် code က Object ဖြစ်လို့ {} သုံးပါ)
-cart = {};
 
-// ၂။ Menu ပေါ်က အရေအတွက်အားလုံးကို 0 ပြန်လုပ် (Menu မပျောက်ပါ)
-allItems.forEach(item => {
-    const safeId = getSafeId(item.name);
-    const qtyLabel = document.getElementById(`qty-${safeId}`);
-    if (qtyLabel) qtyLabel.textContent = '0';
-});
-
-// ၃။ UI Update
-renderDrawerItems(); // ခြင်းတောင်းထဲက စာရင်းရှင်းမယ်
-updateTotal();       // အောက်က bar ကို ဖျောက်မယ်
-saveCart();          // ဖုန်းထဲမှာ သိမ်းထားတာပါ ရှင်းမယ်
-        
-          // 🔥 ဒီနေရာမှာ အခုလိုလေး ထည့်လိုက်ပါ
-    setTimeout(() => {
-        location.reload(); // အော်ဒါပို့ပြီး ၂ စက္ကန့်နေရင် Screen ကို Refresh လုပ်ပြီး 0 ပြန်ဖြစ်သွားအောင် လုပ်တာပါ
-    }, 2000);
-
-}, 2000);
-
-        // ၉။ Voucher ပုံကို Download ချပေးခြင်း
+        // ၇။ Voucher ပုံကို Download ချပေးခြင်း
         const link = document.createElement('a');
         link.download = `Voucher_${orderId}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
 
-        // ၁၀။ Drawer နဲ့ Modal ကို ပိတ်ခြင်း (Animation ဖြင့်)
-        if (typeof toggleDrawer === "function") {
-            document.getElementById('cart-drawer').classList.remove('active');
-        }
-        if (typeof closeCheckout === "function") {
-            closeCheckout();
-        }
+        // ၈။ Viber/Telegram သို့ ပို့ဆောင်ခြင်း
+        const encodedMsg = encodeURIComponent(msg);
+        showAppGuide(platform);
+
+        setTimeout(() => {
+            if (platform === 'viber') {
+                window.location.href = `viber://contact?number=${MY_PHONE}&draft=${encodedMsg}`;
+            } else {
+                window.location.href = `https://t.me/+${MY_PHONE}?text=${encodedMsg}`;
+            }
+
+            // ၉။ နောက်ဆုံးအဆင့် - UI ကို Reset လုပ်ပြီး Refresh လုပ်မယ်
+            setTimeout(() => {
+                cart = {}; // Cart ရှင်းမယ်
+                localStorage.removeItem('mt_cart'); // LocalStorage ရှင်းမယ်
+                location.reload(); // အားလုံး 0 ဖြစ်သွားအောင် Page ပြန်ဖွင့်မယ်
+            }, 3000);
+
+        }, 2000);
 
     } catch (err) {
         alert("Error: " + err.message);
@@ -679,6 +628,8 @@ saveCart();          // ဖုန်းထဲမှာ သိမ်းထား�
         document.getElementById('loader').style.display = 'none';
     }
     }
+    
+
     
     
     function showAppGuide(platform) {
