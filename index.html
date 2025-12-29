@@ -86,63 +86,11 @@
 .back-btn:active { transform: scale(0.9); }
 
 /* Menu Grid Fix */
-/* Menu Card Complete Fix */
-.menu-card {
-    background: white;
-    border-radius: 20px;
-    padding: 15px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    text-align: center;
-    border: 1px solid #f0f0f0;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-.menu-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-}
-.menu-image { position: relative; margin-bottom: 10px; }
-.price-tag {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #FF6B35;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 14px;
-}
-.menu-info h3 { font-size: 18px; font-weight: bold; margin: 0 0 5px 0; color: #2D3436; }
-.menu-info p { color: #636e72; font-size: 14px; margin: 0 0 15px 0; }
-.qty-control {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    background: #f8f9fa;
-    padding: 8px;
-    border-radius: 25px;
-}
-.qty-control button {
-    width: 35px;
-    height: 35px;
-    border: none;
-    border-radius: 50%;
-    font-size: 18px;
-    font-weight: bold;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: all 0.3s;
-}
-.qty-control button:hover {
-    background: #FF6B35;
-    color: white;
-    transform: scale(1.1);
-}
-#qty-${safeId} { font-weight: bold; font-size: 16px; min-width: 30px; }
+
+.menu-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 15px !important; padding: 20px !important; }
+.menu-card { background: white; border-radius: 20px; padding: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); text-align: center; }
+.menu-img { width: 100%; height: 140px; object-fit: cover; border-radius: 15px; }
+.price-tag { position: absolute; top: 10px; right: 10px; background: #FF6B35; color: white; padding: 8px 12px; border-radius: 25px; font-weight: bold; }
 .add-cart-btn {
     width: 100%;
     background: linear-gradient(90deg, #FF6B35, #FF8C42);
@@ -438,67 +386,57 @@ function getSafeId(name) {
 // Render Menu Function (အပြည့်အစုံ)
 function renderMenu(items) {
     const menuDisplay = document.getElementById('menu-display');
-    if (!menuDisplay) {
-        console.error('menu-display element not found!');
-        return;
-    }
+    menuDisplay.innerHTML = '';
     
-    menuDisplay.innerHTML = '<p style="text-align:center; padding:40px; color:#666;">Loading menu...</p>';
-    
-    setTimeout(() => {
-        menuDisplay.innerHTML = '';
-        
-        items.forEach(item => {
-            const safeId = getSafeId(item.name);
-            const menuCard = document.createElement('div');
-            menuCard.className = 'menu-card';
-            menuCard.innerHTML = `
-                <img src="${item.image || 'https://via.placeholder.com/300x200/FF6B35/FFFFFF?text=Menu'}" alt="${item.name}" />
-                <div style="position:absolute; top:10px; right:10px; background:#FF6B35; color:white; padding:6px 12px; border-radius:20px; font-weight:bold; font-size:14px;">$${item.price}</div>
-                <h3 style="font-size:18px; font-weight:bold; margin:10px 0 5px 0; color:#2D3436;">${item.name}</h3>
-                <p style="color:#636e72; font-size:14px; margin:0 0 15px 0;">${item.description}</p>
-                <div class="qty-control">
-                    <button onclick="updateQty('${safeId}', -1)">➖</button>
-                    <span id="qty-${safeId}">0</span>
-                    <button onclick="updateQty('${safeId}', 1)">➕</button>
-                </div>
-                <button class="add-cart-btn" onclick="addToCart('${safeId}')">Add to Cart</button>
-            `;
-            menuDisplay.appendChild(menuCard);
-        });
-        
-        console.log('Menu rendered:', items.length, 'items');
-    }, 500);
+    items.forEach(item => {
+        const safeId = getSafeId(item.name);
+        const menuCard = document.createElement('div');
+        menuCard.className = 'menu-card';
+        menuCard.innerHTML = `
+            <img src="${item.image}" alt="${item.name}" class="menu-img">
+            <div class="price-tag">$${item.price.toLocaleString()}</div>
+            <h3>${item.name}</h3>
+            <p>${item.description}</p>
+            <div class="qty-control">
+                <button onclick="updateQty('${safeId}', -1)" class="qty-btn minus">−</button>
+                <span id="qty-${safeId}" class="qty-num">0</span>
+                <button onclick="updateQty('${safeId}', 1)" class="qty-btn plus">+</button>
+            </div>
+            <button onclick="addToCart('${safeId}')" class="add-cart-btn">
+                <span id="cart-text-${safeId}">Add to Cart</span>
+            </button>
+        `;
+        menuDisplay.appendChild(menuCard);
+    });
 }
 
-// Quantity Update Function
-function updateQty(name, change) {
-    console.log('updateQty called:', name, change);
-    const qtyElement = document.getElementById(`qty-${name}`);
-    if (!qtyElement) {
-        console.error('Quantity element not found:', name);
-        return;
-    }
+// 4. Quantity Update (အလုပ်လုပ်မယ်!)
+function updateQty(safeId, change) {
+    const qtyElement = document.getElementById(`qty-${safeId}`);
+    const currentQty = parseInt(qtyElement.textContent) || 0;
+    const newQty = Math.max(0, currentQty + change);
     
-    let currentQty = parseInt(qtyElement.textContent) || 0;
-    let newQty = Math.max(0, currentQty + change);
     qtyElement.textContent = newQty;
     
-    // Update cart
-    if (newQty === 0) {
-        delete cart[name];
+    // Update Cart
+    const item = demoMenu.find(item => getSafeId(item.name) === safeId);
+    if (newQty > 0) {
+        cart[safeId] = { ...item, quantity: newQty, total: item.price * newQty };
     } else {
-        const item = menuItems.find(item => getSafeId(item.name) === name) || 
-                     allItems.find(item => getSafeId(item.name) === name);
-        if (item) {
-            cart[name] = { ...item, quantity: newQty, total: item.price * newQty };
-        }
+        delete cart[safeId];
     }
     
     updateTotal();
     saveCart();
-    console.log('Cart updated:', cart);
-}
+    
+    // Button text update
+    const cartText = document.getElementById(`cart-text-${safeId}`);
+    if (newQty > 0) {
+        cartText.textContent = `Added (${newQty})`;
+    } else {
+        cartText.textContent = 'Add to Cart';
+    }
+                  }
 
 // Add to Cart Function
 function addToCart(name) {
