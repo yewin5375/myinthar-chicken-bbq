@@ -381,145 +381,181 @@
     
 
        // ၁။ Menu ပြသပေးသည့် Function (Variable Name နှင့် Syntax ပြင်ထားသည်)
-     function renderMenu(items) {
-    const display = document.getElementById('menu-display');
-    if (!display) return;
-    
-    display.innerHTML = items.map(i => {
-        // အမည်ထဲက Space တွေကို Dash (-) နဲ့ အစားထိုးပြီး ID ပေးခြင်း
-        const safeId = i.name.replace(/\s+/g, '-');
-        return `
-            <div class="menu-card bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <img src="${i.image_url || 'https://via.placeholder.com/150'}" class="w-full h-32 object-cover rounded-lg">
-                <div class="font-semibold text-gray-800 mt-3">${i.name}</div>
-                <div class="text-primary font-bold">${Number(i.price).toLocaleString()} K</div>
-                <div class="flex items-center justify-between mt-4 bg-gray-50 rounded-lg p-1">
-                    <button onclick="updateQty('${i.name}', -1, ${i.price})" class="w-8 h-8 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-600">-</button>
-                    <span id="qty-${safeId}" class="font-bold text-gray-800">${cart[i.name] || 0}</span> 
-                    <button onclick="updateQty('${i.name}', 1, ${i.price})" class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-md shadow-sm">+</button>
-                </div>
-            </div>
-        `;
-    }).join('');
-     }
-    
-    
-
-// ၂။ အရေအတွက် အတိုးအလျှော့လုပ်သည့် Function
-function updateQty(name, change, price) {
-    // Cart ထဲမှာ အရေအတွက် ပြောင်းလဲခြင်း
-    cart[name] = (cart[name] || 0) + change;
-    
-    // ၀ ဖြစ်သွားရင် Cart ထဲက ဖျက်ခြင်း
-    if (cart[name] <= 0) {
-        delete cart[name];
-    }
-    
-    // UI Update များ လုပ်ဆောင်ခြင်း
-    updateTotal();
-    renderDrawerItems();
-    saveCart();
-    
-    // Menu ကတ်ပြားပေါ်က ဂဏန်းကို ရှာပြီး Update လုပ်ခြင်း
-    const safeId = name.replace(/\s+/g, '-');
-    const qtyLabel = document.getElementById(`qty-${safeId}`);
-    
-    if (qtyLabel) {
-        // Cart ထဲမှာ ရှိရင် အဲဒီအရေအတွက်ပြမယ်၊ မရှိရင် 0 ပြမယ်
-        qtyLabel.innerText = cart[name] || 0;
-    }
-}
-    
-    
-    
-    
-
-// ၃။ ပစ္စည်းဖျက်သည့် Function
-function deleteItem(name) {
-    delete cart[name];
-    updateTotal();
-    renderDrawerItems();
-    saveCart();
-    // Menu ပေါ်က label ကိုပါ 0 ပြန်လုပ်ပေးရန်
-    const safeId = getSafeId(name);
-const qtyLabel = document.getElementById(`qty-${safeId}`);
-    
-
-        
-    
-        // Haptic & Animation
-        if (navigator.vibrate) navigator.vibrate(50);
-        const bar = document.querySelector('.checkout-bar');
-        bar.classList.add('cart-animate');
-        setTimeout(() => bar.classList.remove('cart-animate'), 400);
-
-        updateTotal();
-        renderDrawerItems();
-        saveCart();
-        
-        const qtyLabel = document.getElementById(`qty-${name.replace(/\s+/g, '-')}`);
-        if (qtyLabel) qtyLabel.innerText = cart[name] || 0;
-    }
-
-    function updateTotal() {
-        let total = 0; let count = 0;
-        for(let n in cart) {
-            let item = allItems.find(i => i.name === n);
-            if(item) { total += cart[n] * item.price; count++; }
+      function renderMenu(items) {
+            const menuDisplay = document.getElementById('menu-display');
+            menuDisplay.innerHTML = '';
+            
+            items.forEach(item => {
+                const safeId = getSafeId(item.name);
+                const menuCard = document.createElement('div');
+                menuCard.className = 'bg-white rounded-2xl shadow-lg overflow-hidden card-hover animate-fade-in';
+                menuCard.innerHTML = `
+                    <div class="relative">
+                        <img src="${item.image}" alt="${item.name}" class="w-full h-48 object-cover">
+                        <div class="absolute top-4 right-4 bg-brand-orange text-white px-3 py-1 rounded-full text-sm font-semibold">
+                            $${item.price}
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-brand-dark mb-2" data-name="${safeId}">${item.name}</h3>
+                        <p class="text-gray-600 mb-4">${item.description}</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <button onclick="updateQty('${safeId}', -1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                    </svg>
+                                </button>
+                                <span id="qty-${safeId}" class="w-8 text-center font-semibold">0</span>
+                                <button onclick="updateQty('${safeId}', 1)" class="w-8 h-8 rounded-full bg-brand-orange hover:bg-brand-light-orange text-white flex items-center justify-center transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button onclick="addToCart('${safeId}')" class="bg-brand-orange hover:bg-brand-light-orange text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                `;
+                menuDisplay.appendChild(menuCard);
+            });
         }
-        document.getElementById('total-price-display').innerText = total.toLocaleString();
-        document.getElementById('bottom-bar').style.display = count > 0 ? 'flex' : 'none';
-    }
 
-    function renderDrawerItems() {
-    const list = document.getElementById('drawer-items-list');
-    let html = "";
+        // Cart Management Functions
+        function updateQty(name, change) {
+            const qtyElement = document.getElementById(`qty-${name}`);
+            let currentQty = parseInt(qtyElement.textContent) || 0;
+            let newQty = Math.max(0, currentQty + change);
+            
+            qtyElement.textContent = newQty;
+            
+            // Update cart object
+            if (newQty === 0) {
+                delete cart[name];
+            } else {
+                const item = menuItems.find(item => getSafeId(item.name) === name);
+                if (item) {
+                    cart[name] = {
+                        ...item,
+                        quantity: newQty,
+                        total: item.price * newQty
+                    };
+                }
+            }
+            
+            updateTotal();
+            saveCart();
+            
+            // Animation for cart addition
+            if (change > 0) {
+                qtyElement.parentElement.parentElement.querySelector('button:last-child').classList.add('animate-bounce-in');
+                setTimeout(() => qtyElement.parentElement.parentElement.querySelector('button:last-child').classList.remove('animate-bounce-in'), 600);
+            }
+        }
+
+        function deleteItem(name) {
+            delete cart[name];
+            const item = menuItems.find(item => getSafeId(item.name) === name);
+            if (item) {
+                const safeId = getSafeId(item.name);
+                document.getElementById(`qty-${safeId}`).textContent = '0';
+            }
+            updateTotal();
+            renderDrawerItems();
+            saveCart();
+        }
+    function addToCart(name) {
+            const qtyElement = document.getElementById(`qty-${name}`);
+            const currentQty = parseInt(qtyElement.textContent) || 0;
+            if (currentQty === 0) {
+                updateQty(name, 1);
+            }
+            showNotification('Item added to cart!', 'success');
+        }
+
+        function updateTotal() {
+            const total = Object.values(cart).reduce((sum, item) => sum + item.total, 0);
+            const itemCount = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+            
+            updateTotalDisplay(total);
+            updateCheckoutBar(itemCount, total);
+            updateCartCount(itemCount);
+        }
+
+        function updateTotalDisplay(total) {
+            document.getElementById('total-price').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function updateCheckoutBar(count, total) {
+            const checkoutBar = document.getElementById('checkout-bar');
+            const itemsCount = checkoutBar.querySelector('.text-sm');
+            const totalPrice = document.getElementById('total-price');
+            
+            itemsCount.textContent = `${count} ${currentLanguage === 'en' ? 'items' : 'ပစ္စည်း'}`;
+            totalPrice.textContent = `$${total.toFixed(2)}`;
+            
+            if (count > 0) {
+                checkoutBar.style.transform = 'translateY(0)';
+            } else {
+                checkoutBar.style.transform = 'translateY(100%)';
+            }
+        }
+
+        function updateCartCount(count) {
+            document.getElementById('cart-count').textContent = count;
+        }
+
+        function renderDrawerItems() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            
+            if (Object.keys(cart).length === 0) {
+                cartItems.innerHTML = '<p class="text-gray-500 text-center py-8">Your cart is empty</p>';
+                return;
+            }
+            
+            Object.values(cart).forEach(item => {
+                const safeId = getSafeId(item.name);
+                const cartItem = document.createElement('div');
+                cartItem.className = 'flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cart-item-enter';
+                cartItem.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-brand-dark">${item.name}</h4>
+                        <p class="text-brand-orange font-semibold">$${item.price}</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="updateQty('${safeId}', -1)" class="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                            </svg>
+                        </button>
+                        <span class="w-8 text-center font-semibold">${item.quantity}</span>
+                        <button onclick="updateQty('${safeId}', 1)" class="w-6 h-6 rounded-full bg-brand-orange hover:bg-brand-light-orange text-white flex items-center justify-center">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </button>
+                        <button onclick="deleteItem('${safeId}')" class="w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center ml-2">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                cartItems.appendChild(cartItem);
+            });
+            
+            // Update drawer total
+            const total = Object.values(cart).reduce((sum, item) => sum + item.total, 0);
+            document.getElementById('drawer-total').textContent = `$${total.toFixed(2)}`;
+        }
     
-    // cart ထဲမှာ ပစ္စည်းရှိမရှိ စစ်သည်
-    if (Object.keys(cart).length === 0) {
-        list.innerHTML = `
-            <div style="text-align:center; margin-top:50px; color:#ccc;">
-                <i class="fas fa-shopping-basket" style="font-size:48px; margin-bottom:15px;"></i>
-                <p>ခြင်းတောင်းထဲမှာ ဘာမှမရှိသေးပါ</p>
-            </div>`;
-        updateTotalDisplay(0);
-        return;
-    }
 
-    for(let name in cart) {
-        let item = allItems.find(i => i.name === name);
-        if(!item) continue;
         
-        html += `
-            <div class="cart-item-row">
-                <img src="${item.image_url || 'https://via.placeholder.com/50'}" alt="img">
-                <div style="flex:1;">
-                    <div style="font-weight:600; font-size:14px; color:#2d3436;">${name}</div>
-                    <div style="color:var(--primary); font-size:13px; font-weight:700;">${item.price.toLocaleString()} K</div>
-                </div>
-                <div class="qty-control">
-                    <button onclick="updateQty('${name}', -1, ${item.price})">-</button>
-                    <span style="font-size:14px; font-weight:bold; min-width:20px; text-align:center;">${cart[name]}</span>
-                    <button onclick="updateQty('${name}', 1, ${item.price})" style="color:var(--primary);">+</button>
-                </div>
-                <button onclick="deleteItem('${name}')" style="background:none; border:none; color:#ff7675; padding:5px; cursor:pointer;">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-        `;
-    }
-    list.innerHTML = html;
     
-    // စုစုပေါင်း ဈေးနှုန်းများကို Update လုပ်ခြင်း
-    let total = document.getElementById('total-price-display').innerText;
-    document.getElementById('sub-total-text').innerText = total + " K";
-    document.getElementById('grand-total-text').innerText = total + " K";
-}
-
-function updateTotalDisplay(val) {
-    document.getElementById('sub-total-text').innerText = val + " K";
-    document.getElementById('grand-total-text').innerText = val + " K";
-}
     
 
     async function submitOrder(platform) {
