@@ -421,210 +421,166 @@
     const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
     const MY_PHONE = "959767287345";
     
-    let cart = {};
+    // Global Variables
+let cart = {};
 let allItems = [];
-let menuItems = []; // ဒီ line ထည့်ပါ
+let menuItems = [];
 
-    window.onload = () => { fetchMenu(); loadCart(); };
-
-    function getSafeId(name) {
+// Safe ID Function
+function getSafeId(name) {
     return name.toLowerCase()
-        .replace(/[^a-z0-9]/g, '-')  // မြန်မာစာ ကို အကယ်၍ ရှိရင်
-        .replace(/^-+|-+$/g, '')     // နောက်ဆုံး သန့်ရှင်း
-        .substring(0, 20);           // ရှည်တာ တိုအောင်
-    }
-    
-    // Menu အကွက်တွေ မပေါ်ရင် ဒီ demo data သုံးပါ
-async function fetchMenu() {
-    console.log("Fetching data from Supabase...");
-    
-    // Demo data နဲ့ အရင်စမ်းပါ (Supabase error မရှိအောင်)
-    const demoData = [
-        { name: "မြင်းသား ရိုး့ခြောက်", price: 8500, image: "https://via.placeholder.com/300x200/FF6B35/FFFFFF?text=Roast", description: "Premium ရိုး့ခြောက်" },
-        { name: "ငါး သုပ်", price: 4500, image: "https://via.placeholder.com/300x200/FF8C42/FFFFFF?text=Fish", description: "Fresh ငါးသုပ်" },
-        { name: "ကြက်သား ကင်", price: 6500, image: "https://via.placeholder.com/300x200/FF6B35/FFFFFF?text=Chicken", description: "Grilled ကြက်သား" }
-    ];
-    
-    allItems = demoData;
-    renderMenu(demoData);
-    console.log("Demo menu loaded:", demoData);
-    
-    // Supabase က data လည်း ထပ်ကြိုးစားပါ
-    try {
-        const { data, error } = await supabase.from('menuitems').select();
-        if (error) {
-            console.error("Supabase Error:", error);
-        } else if (data && data.length > 0) {
-            console.log("Real data loaded:", data);
-            allItems = data;
-            renderMenu(data);
-        }
-    } catch(err) {
-        console.error("Fetch error:", err);
-    }
+        .replace(/[^a-z0-9မြန်မာ]/g, '-')
+        .replace(/[-_]+/g, '-')
+        .replace(/^[-_]+|[-_]+$/g, '')
+        .substring(0, 20);
 }
 
-       // ၁။ Menu ပြသပေးသည့် Function (Variable Name နှင့် Syntax ပြင်ထားသည်)
-      function renderMenu(items) {
+// Render Menu Function (အပြည့်အစုံ)
+function renderMenu(items) {
     const menuDisplay = document.getElementById('menu-display');
-    menuDisplay.innerHTML = ''; // ရှင်းပါ
+    if (!menuDisplay) {
+        console.error('menu-display element not found!');
+        return;
+    }
     
-    items.forEach(item => {
-        const safeId = getSafeId(item.name);
-        const menuCard = document.createElement('div');
-        menuCard.className = 'menu-card';
-        menuCard.innerHTML = `
-            <div class="menu-image">
-                <img src="${item.image}" alt="${item.name}" style="width:100%; height:120px; object-fit:cover; border-radius:15px;">
-                <div class="price-tag">$${item.price}</div>
-            </div>
-            <div class="menu-info">
-                <h3 data-name="${safeId}">${item.name}</h3>
-                <p>${item.description}</p>
+    menuDisplay.innerHTML = '<p style="text-align:center; padding:40px; color:#666;">Loading menu...</p>';
+    
+    setTimeout(() => {
+        menuDisplay.innerHTML = '';
+        
+        items.forEach(item => {
+            const safeId = getSafeId(item.name);
+            const menuCard = document.createElement('div');
+            menuCard.className = 'menu-card';
+            menuCard.innerHTML = `
+                <img src="${item.image || 'https://via.placeholder.com/300x200/FF6B35/FFFFFF?text=Menu'}" alt="${item.name}" />
+                <div style="position:absolute; top:10px; right:10px; background:#FF6B35; color:white; padding:6px 12px; border-radius:20px; font-weight:bold; font-size:14px;">$${item.price}</div>
+                <h3 style="font-size:18px; font-weight:bold; margin:10px 0 5px 0; color:#2D3436;">${item.name}</h3>
+                <p style="color:#636e72; font-size:14px; margin:0 0 15px 0;">${item.description}</p>
                 <div class="qty-control">
                     <button onclick="updateQty('${safeId}', -1)">➖</button>
                     <span id="qty-${safeId}">0</span>
                     <button onclick="updateQty('${safeId}', 1)">➕</button>
                 </div>
-                <button onclick="addToCart('${safeId}')" class="add-cart-btn">Add to Cart</button>
-            </div>
-        `;
-        menuDisplay.appendChild(menuCard);
-    });
-      }
-        // Cart Management Functions
-        function updateQty(name, change) {
-            const qtyElement = document.getElementById(`qty-${name}`);
-            let currentQty = parseInt(qtyElement.textContent) || 0;
-            let newQty = Math.max(0, currentQty + change);
-            
-            qtyElement.textContent = newQty;
-            
-            // Update cart object
-            if (newQty === 0) {
-                delete cart[name];
-            } else {
-                const item = menuItems.find(item => getSafeId(item.name) === name);
-                if (item) {
-                    cart[name] = {
-                        ...item,
-                        quantity: newQty,
-                        total: item.price * newQty
-                    };
-                }
-            }
-            
-            updateTotal();
-            saveCart();
-            
-            // Animation for cart addition
-            if (change > 0) {
-                qtyElement.parentElement.parentElement.querySelector('button:last-child').classList.add('animate-bounce-in');
-                setTimeout(() => qtyElement.parentElement.parentElement.querySelector('button:last-child').classList.remove('animate-bounce-in'), 600);
-            }
-        }
-
-        function deleteItem(name) {
-            delete cart[name];
-            const item = menuItems.find(item => getSafeId(item.name) === name);
-            if (item) {
-                const safeId = getSafeId(item.name);
-                document.getElementById(`qty-${safeId}`).textContent = '0';
-            }
-            updateTotal();
-            renderDrawerItems();
-            saveCart();
-        }
-    function addToCart(name) {
-            const qtyElement = document.getElementById(`qty-${name}`);
-            const currentQty = parseInt(qtyElement.textContent) || 0;
-            if (currentQty === 0) {
-                updateQty(name, 1);
-            }
-            showNotification('Item added to cart!', 'success');
-        }
-
-        function updateTotal() {
-            const total = Object.values(cart).reduce((sum, item) => sum + item.total, 0);
-            const itemCount = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-            
-            updateTotalDisplay(total);
-            updateCheckoutBar(itemCount, total);
-            updateCartCount(itemCount);
-        }
-
-        function updateTotalDisplay(total) {
-            document.getElementById('total-price').textContent = `$${total.toFixed(2)}`;
-        }
-
-        function updateCheckoutBar(count, total) {
-            const checkoutBar = document.getElementById('checkout-bar');
-            const itemsCount = checkoutBar.querySelector('.text-sm');
-            const totalPrice = document.getElementById('total-price');
-            
-            itemsCount.textContent = `${count} ${currentLanguage === 'en' ? 'items' : 'ပစ္စည်း'}`;
-            totalPrice.textContent = `$${total.toFixed(2)}`;
-            
-            if (count > 0) {
-                checkoutBar.style.transform = 'translateY(0)';
-            } else {
-                checkoutBar.style.transform = 'translateY(100%)';
-            }
-        }
-
-        function updateCartCount(count) {
-            document.getElementById('cart-count').textContent = count;
-        }
-
-        function renderDrawerItems() {
-            const cartItems = document.getElementById('cart-items');
-            cartItems.innerHTML = '';
-            
-            if (Object.keys(cart).length === 0) {
-                cartItems.innerHTML = '<p class="text-gray-500 text-center py-8">Your cart is empty</p>';
-                return;
-            }
-            
-            Object.values(cart).forEach(item => {
-                const safeId = getSafeId(item.name);
-                const cartItem = document.createElement('div');
-                cartItem.className = 'flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cart-item-enter';
-                cartItem.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg">
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-brand-dark">${item.name}</h4>
-                        <p class="text-brand-orange font-semibold">$${item.price}</p>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="updateQty('${safeId}', -1)" class="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                            </svg>
-                        </button>
-                        <span class="w-8 text-center font-semibold">${item.quantity}</span>
-                        <button onclick="updateQty('${safeId}', 1)" class="w-6 h-6 rounded-full bg-brand-orange hover:bg-brand-light-orange text-white flex items-center justify-center">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                        </button>
-                        <button onclick="deleteItem('${safeId}')" class="w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center ml-2">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `;
-                cartItems.appendChild(cartItem);
-            });
-            
-            // Update drawer total
-            const total = Object.values(cart).reduce((sum, item) => sum + item.total, 0);
-            document.getElementById('drawer-total').textContent = `$${total.toFixed(2)}`;
-        }
-    
-
+                <button class="add-cart-btn" onclick="addToCart('${safeId}')">Add to Cart</button>
+            `;
+            menuDisplay.appendChild(menuCard);
+        });
         
+        console.log('Menu rendered:', items.length, 'items');
+    }, 500);
+}
+
+// Quantity Update Function
+function updateQty(name, change) {
+    console.log('updateQty called:', name, change);
+    const qtyElement = document.getElementById(`qty-${name}`);
+    if (!qtyElement) {
+        console.error('Quantity element not found:', name);
+        return;
+    }
     
+    let currentQty = parseInt(qtyElement.textContent) || 0;
+    let newQty = Math.max(0, currentQty + change);
+    qtyElement.textContent = newQty;
+    
+    // Update cart
+    if (newQty === 0) {
+        delete cart[name];
+    } else {
+        const item = menuItems.find(item => getSafeId(item.name) === name) || 
+                     allItems.find(item => getSafeId(item.name) === name);
+        if (item) {
+            cart[name] = { ...item, quantity: newQty, total: item.price * newQty };
+        }
+    }
+    
+    updateTotal();
+    saveCart();
+    console.log('Cart updated:', cart);
+}
+
+// Add to Cart Function
+function addToCart(name) {
+    console.log('addToCart called:', name);
+    const qtyElement = document.getElementById(`qty-${name}`);
+    if (qtyElement && parseInt(qtyElement.textContent) === 0) {
+        updateQty(name, 1);
+    }
+    updateTotal();
+}
+
+// Update Total & Show Cart Bar
+function updateTotal() {
+    const total = Object.values(cart).reduce((sum, item) => sum + item.total, 0);
+    const itemCount = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+    
+    // Update cart bar
+    const checkoutBar = document.getElementById('bottom-bar') || document.getElementById('checkout-bar');
+    if (checkoutBar) {
+        const itemsCount = checkoutBar.querySelector('.items-count') || checkoutBar.querySelector('span:first-child');
+        const totalPrice = document.getElementById('total-price-display') || checkoutBar.querySelector('span:last-child');
+        
+        if (itemsCount) itemsCount.textContent = itemCount || '0';
+        if (totalPrice) totalPrice.textContent = total.toLocaleString() || '0';
+        
+        if (itemCount > 0) {
+            checkoutBar.style.display = 'flex';
+            checkoutBar.style.transform = 'translateX(-50%) translateY(0)';
+        } else {
+            checkoutBar.style.display = 'none';
+        }
+    }
+    
+    console.log('Total:', total, 'Items:', itemCount);
+}
+
+// Save Cart
+function saveCart() {
+    localStorage.setItem('mtcart', JSON.stringify(cart));
+}
+
+// Load Cart
+function loadCart() {
+    const saved = localStorage.getItem('mtcart');
+    if (saved) {
+        cart = JSON.parse(saved);
+        updateTotal();
+    }
+}
+
+// Demo Data + Fetch Menu
+async function fetchMenu() {
+    // Demo data first
+    const demoData = [
+        { name: "မြင်းသား ရိုး့ခြောက်", price: 8500, image: "https://via.placeholder.com/300x200/FF6B35/FFFFFF?text=Roast", description: "Premium ရိုး့ခြောက်" },
+        { name: "ငါး သုပ်", price: 4500, image: "https://via.placeholder.com/300x200/FF8C42/FFFFFF?text=Fish", description: "Fresh ငါးသုပ်" },
+        { name: "ကြက်သား ကင်", price: 6500, image: "https://via.placeholder.com/300x200/FF6B35/FFFFFF?text=Chicken", description: "Grilled ကြက်သား" },
+        { name: "ဆန်ပြုတ်", price: 3500, image: "https://via.placeholder.com/300x200/FF8C42/FFFFFF?text=Rice", description: "Hot ဆန်ပြုတ်" }
+    ];
+    
+    allItems = demoData;
+    menuItems = demoData;
+    renderMenu(demoData);
+    
+    // Try Supabase too
+    try {
+        const { data } = await supabase.from('menuitems').select();
+        if (data && data.length > 0) {
+            allItems = data;
+            menuItems = data;
+            renderMenu(data);
+        }
+    } catch(e) {
+        console.log('Supabase not available, using demo data');
+    }
+}
+
+// Initialize
+window.onload = function() {
+    fetchMenu();
+    loadCart();
+}
     
 
     async function submitOrder(platform) {
