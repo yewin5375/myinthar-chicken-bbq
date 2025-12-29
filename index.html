@@ -359,6 +359,10 @@
 
     window.onload = () => { fetchMenu(); loadCart(); };
 
+    function getSafeId(name) {
+    return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    }
+    
     async function fetchMenu() {
     console.log("Fetching data from Supabase..."); // ဒါလေး ထည့်စစ်ပါ
     const { data, error } = await _supabase.from('menu_items').select('*');
@@ -377,26 +381,20 @@
     
 
        // ၁။ Menu ပြသပေးသည့် Function (Variable Name နှင့် Syntax ပြင်ထားသည်)
-function renderMenu(items) {
+     function renderMenu(items) {
     const display = document.getElementById('menu-display');
-    if (!display) return;
-    
     display.innerHTML = items.map(i => {
-        const safeId = i.name.replace(/\s+/g, '-');
+        const safeId = getSafeId(i.name); // Safe ID ကို ဒီမှာ သုံးမယ်
         return `
             <div class="menu-card">
-                <img src="${i.image_url || 'https://via.placeholder.com/150'}">
-                <div style="font-weight:600; font-size:14px; margin-top:8px;">${i.name}</div>
-                <div class="price-tag">${Number(i.price).toLocaleString()} K</div>
-                <div class="qty-control">
-                    <button onclick="updateQty('${i.name}', -1, ${i.price})">-</button>
-                    <span id="qty-${safeId}">${cart[i.name] || 0}</span> 
-                    <button onclick="updateQty('${i.name}', 1, ${i.price})">+</button>
-                </div>
+                ...
+                <span id="qty-${safeId}">${cart[i.name] || 0}</span> 
+                ...
             </div>
         `;
     }).join('');
-}
+     }
+    
 
 // ၂။ အရေအတွက် အတိုးအလျှော့လုပ်သည့် Function
 function updateQty(name, change, price) {
@@ -597,27 +595,22 @@ ${itemsBulletList}
 
         // ၆။ History သိမ်းခြင်း
         saveToHistory({ id: orderId, total: total, status: 'pending', date: date, time: time });
-// ၁။ Cart Object ကို အရင်ရှင်းမယ်
-cart = {}; 
 
-// ၂။ Menu ပေါ်က အရေအတွက် (Labels) တွေကို 0 ပြန်လုပ်မယ်
-// (allItems ထဲက ပစ္စည်းတစ်ခုချင်းစီကို ပတ်ကြည့်ပြီး 0 ပြောင်းတာဖြစ်လို့ Menu ပျောက်မသွားပါဘူး)
+
+// ၁။ Cart ကို အရင်ရှင်း (အဖြေ B က Array သုံးခိုင်းပေမဲ့ သင့် code က Object ဖြစ်လို့ {} သုံးပါ)
+cart = {};
+
+// ၂။ Menu ပေါ်က အရေအတွက်အားလုံးကို 0 ပြန်လုပ် (Menu မပျောက်ပါ)
 allItems.forEach(item => {
-    const safeId = item.name.replace(/\s+/g, '-');
+    const safeId = getSafeId(item.name);
     const qtyLabel = document.getElementById(`qty-${safeId}`);
-    if (qtyLabel) {
-        qtyLabel.innerText = '0';
-    }
+    if (qtyLabel) qtyLabel.textContent = '0';
 });
 
-// ၃။ ခြင်းတောင်းထဲက စာရင်းကို ရှင်းထုတ်မယ်
-renderDrawerItems(); 
-
-// ၄။ အောက်က "ခြင်းတောင်းကြည့်မည်" Bar ကို ဖျောက်မယ်
-updateTotal(); 
-
-// ၅။ Local Storage မှာ သိမ်းထားတဲ့ cart ကိုပါ ရှင်းမယ်
-saveCart();
+// ၃။ UI Update
+renderDrawerItems(); // ခြင်းတောင်းထဲက စာရင်းရှင်းမယ်
+updateTotal();       // အောက်က bar ကို ဖျောက်မယ်
+saveCart();          // ဖုန်းထဲမှာ သိမ်းထားတာပါ ရှင်းမယ်
         
 
         // ... (msg ရေးထားတဲ့နေရာအောက်တွင်) ...
