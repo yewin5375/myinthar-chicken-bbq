@@ -408,8 +408,8 @@ function updateQty(name, change, price) {
     saveCart();
     
     // ဒီအပိုင်းမှာ error မတက်အောင် if နဲ့ သေချာစစ်ပါ
-    const safeId = name.replace(/\s+/g, '-');
-    const qtyLabel = document.getElementById(`qty-${safeId}`);
+    const safeId = getSafeId(name);
+const qtyLabel = document.getElementById(`qty-${safeId}`);
     
     if (qtyLabel) {
         qtyLabel.innerText = cart[name] || 0;
@@ -428,12 +428,10 @@ function deleteItem(name) {
     renderDrawerItems();
     saveCart();
     // Menu ပေါ်က label ကိုပါ 0 ပြန်လုပ်ပေးရန်
-    const safeId = name.replace(/\s+/g, '-');
-    const qtyLabel = document.getElementById(`qty-${safeId}`);
-    if (qtyLabel) qtyLabel.innerText = 0;
-}
+    const safeId = getSafeId(name);
+const qtyLabel = document.getElementById(`qty-${safeId}`);
     
-    
+} 
         
     
         // Haptic & Animation
