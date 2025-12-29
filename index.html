@@ -597,13 +597,28 @@ ${itemsBulletList}
 
         // ၆။ History သိမ်းခြင်း
         saveToHistory({ id: orderId, total: total, status: 'pending', date: date, time: time });
+// ၁။ Cart Object ကို အရင်ရှင်းမယ်
+cart = {}; 
 
-        // ၇။ Cart Reset & Menu UI Update (အရေအတွက်များ 0 ပြန်ဖြစ်စေရန်)
-        cart = {}; 
-        saveCart();
-        updateTotal();
-        document.querySelectorAll('[id^="qty-"]').forEach(el => { el.innerText = '0'; });
-        renderDrawerItems();
+// ၂။ Menu ပေါ်က အရေအတွက် (Labels) တွေကို 0 ပြန်လုပ်မယ်
+// (allItems ထဲက ပစ္စည်းတစ်ခုချင်းစီကို ပတ်ကြည့်ပြီး 0 ပြောင်းတာဖြစ်လို့ Menu ပျောက်မသွားပါဘူး)
+allItems.forEach(item => {
+    const safeId = item.name.replace(/\s+/g, '-');
+    const qtyLabel = document.getElementById(`qty-${safeId}`);
+    if (qtyLabel) {
+        qtyLabel.innerText = '0';
+    }
+});
+
+// ၃။ ခြင်းတောင်းထဲက စာရင်းကို ရှင်းထုတ်မယ်
+renderDrawerItems(); 
+
+// ၄။ အောက်က "ခြင်းတောင်းကြည့်မည်" Bar ကို ဖျောက်မယ်
+updateTotal(); 
+
+// ၅။ Local Storage မှာ သိမ်းထားတဲ့ cart ကိုပါ ရှင်းမယ်
+saveCart();
+        
 
         // ... (msg ရေးထားတဲ့နေရာအောက်တွင်) ...
 
