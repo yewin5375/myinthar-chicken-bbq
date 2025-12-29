@@ -86,33 +86,78 @@
 .back-btn:active { transform: scale(0.9); }
 
 /* Menu Grid Fix */
-.menu-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
-    gap: 15px !important;
-    padding: 20px !important;
-    min-height: 400px;
-}
-
+/* Menu Card Complete Fix */
 .menu-card {
-    background: white !important;
-    border-radius: 20px !important;
-    padding: 15px !important;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08) !important;
-    text-align: center !important;
-    border: 1px solid #f0f0f0 !important;
-    transition: transform 0.3s ease !important;
+    background: white;
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    text-align: center;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
-
 .menu-card:hover {
-    transform: translateY(-5px) !important;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
 }
-
-.menu-card img {
-    width: 100% !important;
-    height: 120px !important;
-    object-fit: cover !important;
-    border-radius: 15px !important;
+.menu-image { position: relative; margin-bottom: 10px; }
+.price-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #FF6B35;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+}
+.menu-info h3 { font-size: 18px; font-weight: bold; margin: 0 0 5px 0; color: #2D3436; }
+.menu-info p { color: #636e72; font-size: 14px; margin: 0 0 15px 0; }
+.qty-control {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 25px;
+}
+.qty-control button {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.qty-control button:hover {
+    background: #FF6B35;
+    color: white;
+    transform: scale(1.1);
+}
+#qty-${safeId} { font-weight: bold; font-size: 16px; min-width: 30px; }
+.add-cart-btn {
+    width: 100%;
+    background: linear-gradient(90deg, #FF6B35, #FF8C42);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.add-cart-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(255,107,53,0.4);
 }
 /* Cart Drawer အတွင်းပိုင်း Layout */
 .cart-items-container { 
@@ -376,12 +421,17 @@
     const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
     const MY_PHONE = "959767287345";
     
-    let cart = {}; let allItems = [];
+    let cart = {};
+let allItems = [];
+let menuItems = []; // ဒီ line ထည့်ပါ
 
     window.onload = () => { fetchMenu(); loadCart(); };
 
     function getSafeId(name) {
-    return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    return name.toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')  // မြန်မာစာ ကို အကယ်၍ ရှိရင်
+        .replace(/^-+|-+$/g, '')     // နောက်ဆုံး သန့်ရှင်း
+        .substring(0, 20);           // ရှည်တာ တိုအောင်
     }
     
     // Menu အကွက်တွေ မပေါ်ရင် ဒီ demo data သုံးပါ
@@ -416,47 +466,32 @@ async function fetchMenu() {
 
        // ၁။ Menu ပြသပေးသည့် Function (Variable Name နှင့် Syntax ပြင်ထားသည်)
       function renderMenu(items) {
-            const menuDisplay = document.getElementById('menu-display');
-            menuDisplay.innerHTML = '';
-            
-            items.forEach(item => {
-                const safeId = getSafeId(item.name);
-                const menuCard = document.createElement('div');
-                menuCard.className = 'bg-white rounded-2xl shadow-lg overflow-hidden card-hover animate-fade-in';
-                menuCard.innerHTML = `
-                    <div class="relative">
-                        <img src="${item.image}" alt="${item.name}" class="w-full h-48 object-cover">
-                        <div class="absolute top-4 right-4 bg-brand-orange text-white px-3 py-1 rounded-full text-sm font-semibold">
-                            $${item.price}
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold text-brand-dark mb-2" data-name="${safeId}">${item.name}</h3>
-                        <p class="text-gray-600 mb-4">${item.description}</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <button onclick="updateQty('${safeId}', -1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                                    </svg>
-                                </button>
-                                <span id="qty-${safeId}" class="w-8 text-center font-semibold">0</span>
-                                <button onclick="updateQty('${safeId}', 1)" class="w-8 h-8 rounded-full bg-brand-orange hover:bg-brand-light-orange text-white flex items-center justify-center transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button onclick="addToCart('${safeId}')" class="bg-brand-orange hover:bg-brand-light-orange text-white px-4 py-2 rounded-lg font-semibold transition-colors">
-                                Add to Cart
-                            </button>
-                        </div>
-                    </div>
-                `;
-                menuDisplay.appendChild(menuCard);
-            });
-        }
-
+    const menuDisplay = document.getElementById('menu-display');
+    menuDisplay.innerHTML = ''; // ရှင်းပါ
+    
+    items.forEach(item => {
+        const safeId = getSafeId(item.name);
+        const menuCard = document.createElement('div');
+        menuCard.className = 'menu-card';
+        menuCard.innerHTML = `
+            <div class="menu-image">
+                <img src="${item.image}" alt="${item.name}" style="width:100%; height:120px; object-fit:cover; border-radius:15px;">
+                <div class="price-tag">$${item.price}</div>
+            </div>
+            <div class="menu-info">
+                <h3 data-name="${safeId}">${item.name}</h3>
+                <p>${item.description}</p>
+                <div class="qty-control">
+                    <button onclick="updateQty('${safeId}', -1)">➖</button>
+                    <span id="qty-${safeId}">0</span>
+                    <button onclick="updateQty('${safeId}', 1)">➕</button>
+                </div>
+                <button onclick="addToCart('${safeId}')" class="add-cart-btn">Add to Cart</button>
+            </div>
+        `;
+        menuDisplay.appendChild(menuCard);
+    });
+      }
         // Cart Management Functions
         function updateQty(name, change) {
             const qtyElement = document.getElementById(`qty-${name}`);
