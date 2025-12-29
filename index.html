@@ -710,6 +710,10 @@ ${itemsBulletList}
         let q = document.getElementById('search').value.toLowerCase();
         renderMenu(allItems.filter(i => i.name.toLowerCase().includes(q)));
     }
+    window.addEventListener("DOMContentLoaded", () => {
+    fetchMenu();
+    loadCart();
+});
 </script>
 </body>
 </html>
