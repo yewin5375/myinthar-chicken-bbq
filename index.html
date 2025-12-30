@@ -80,30 +80,26 @@
         .form-control { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; margin-top: 10px; background: #F9F9F9; box-sizing: border-box; }
 
         /* Modal Flow */
-        /* Premium Guide Modal CSS Fix */
+        /* Modal ကို အလယ်ဗဟို ပို့ပေးတဲ့ CSS */
 .modal {
     position: fixed; 
     inset: 0; 
     background: rgba(0,0,0,0.6); 
     display: none; 
-    align-items: center; /* အောက်ခြေအစား အလယ်သို့ ပြောင်းသည် */
-    justify-content: center; 
+    align-items: center;    /* အပေါ်အောက် အလယ်ပို့ရန် */
+    justify-content: center; /* ဘယ်ညာ အလယ်ပို့ရန် */
     z-index: 3000;
-    padding: 20px; /* ဘေးဘောင်များ မကပ်စေရန် */
+    padding: 20px;          /* ဘေးဘောင်များ မကပ်စေရန် */
 }
 
 .modal-content {
     background: white; 
     padding: 25px; 
-    border-radius: 25px; /* ဘေးပတ်ပတ်လည် ဝိုင်းရန် */
+    border-radius: 25px; 
     max-width: 400px; 
     width: 100%; 
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn { 
-    from { transform: scale(0.9); opacity: 0; } 
-    to { transform: scale(1); opacity: 1; } 
+    box-sizing: border-box; /* Padding ကြောင့် ဘေးထွက်မသွားစေရန် */
+    position: relative;
 }
         
     </style>
@@ -200,38 +196,28 @@
     </button>
 </div>
 
-<div class="modal" id="guide-modal">
+<div class="modal" id="flow-modal">
     <div class="modal-content">
-        <div style="text-align:center; margin-bottom: 15px;">
-            <h3 id="guide-title" style="margin:0; color: var(--text);">💡 မှာယူနည်းလမ်းညွှန်</h3>
-        </div>
+        <h3 id="modal-title">Voucher သိမ်းယူမလား?</h3>
+        <p id="modal-text" style="font-size: 14px; color: gray;">အော်ဒါအတည်ပြုရန် Voucher ကို သိမ်းဆည်းထားနိုင်ပါသည်။</p>
         
-        <div style="background: #f0f0ff; padding: 15px; border-radius: 15px; margin-bottom: 20px; border-left: 4px solid #7360f2;">
-            <p style="font-size: 13px; margin: 0 0 10px 0; color: #444; line-height: 1.6;">
-                ၁။ အော်ဒါစာသားများကို <b>Auto Copy</b> ယူပေးပါမည်။
-            </p>
-            <p style="font-size: 13px; margin: 0; color: #444; line-height: 1.6;">
-                ၂။ App ပွင့်လာပါက <b>Paste (ကူးထည့်)</b> လုပ်၍ ပို့ပေးပါ။
-            </p>
-            <p style="font-size: 12px; margin-top: 10px; color: var(--danger); font-weight: bold;">
-                ⚠️ အော်ဒါတင်ပြီးပါက 09767287345 သို့ ဖုန်းဆက်ပေးပါ။
-            </p>
+        <div id="voucher-action">
+            <button onclick="downloadAndNext()" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; margin-bottom:10px;">Voucher ဒေါင်းလုဒ်ဆွဲမည်</button>
+            <button onclick="showSocialOptions()" style="width:100%; background:none; color:gray; border:none; padding:10px;">မလိုပါ၊ မှာယူမည်</button>
         </div>
 
-        <button onclick="downloadVoucher()" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; margin-bottom:12px;">
-            <i class="fas fa-file-invoice"></i> Voucher ဒေါင်းမည်
-        </button>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom: 15px;">
-            <button id="viber-btn" style="background:#7360f2; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fab fa-viber"></i> Viber
-            </button>
-            <button id="tele-btn" style="background:#24A1DE; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fab fa-telegram"></i> Tele
-            </button>
+        <div id="social-action" style="display:none;">
+            <div class="viber-guide">
+                <b>💡 Viber ဖြင့် ပို့နည်းလမ်းညွှန်:</b><br>
+                ၁။ ခလုတ်နှိပ်လျှင် စာသားကို Auto Copy ယူပါမည်။<br>
+                ၂။ Viber ပွင့်လာလျှင် ဆိုင်ရှင် Chat တွင် Paste လုပ်၍ ပို့ပေးပါ။<br>
+                ⚠️ အော်ဒါတင်ပြီးပါက <b>09767287345</b> သို့ ဖုန်းဆက်ပေးပါ။
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <button onclick="sendOrder('viber')" style="background:#7360f2; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;"><i class="fab fa-viber"></i> Viber</button>
+                <button onclick="sendOrder('telegram')" style="background:#24A1DE; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;"><i class="fab fa-telegram"></i> Telegram</button>
+            </div>
         </div>
-
-        <button onclick="document.getElementById('guide-modal').style.display='none'" style="width:100%; background:none; border:none; color:var(--gray); font-size: 14px;">ပိတ်မည်</button>
     </div>
 </div>
         
