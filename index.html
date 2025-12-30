@@ -16,6 +16,7 @@
             --text: #2D3436;
             --gray: #8E8E93;
             --border: #EEEEEE;
+            --danger: #FF3B30;
         }
 
         body { 
@@ -35,80 +36,65 @@
         }
 
         .header { background: white; padding: 25px 20px; border-bottom: 1px solid var(--border); }
-        
-        /* Customer Profile Info */
         .profile-bar { padding: 10px 20px; font-size: 13px; color: var(--primary); font-weight: bold; background: white; }
 
-        /* Recent Orders Horizontal Scroll */
+        /* Recent Orders */
         .recent-section { padding: 10px 20px; }
         .recent-scroll { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; scrollbar-width: none; }
-        .recent-card { 
-            min-width: 140px; background: white; padding: 12px; border-radius: 15px; 
-            border: 1px solid var(--border); font-size: 11px;
-        }
+        .recent-card { min-width: 140px; background: white; padding: 12px; border-radius: 15px; border: 1px solid var(--border); font-size: 11px; }
         .reorder-btn { background: var(--primary-light); color: var(--primary); border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; margin-top: 5px; font-weight: bold; }
 
         /* Search & Category */
         .search-area { padding: 15px 20px; }
         .search-bar { background: white; border: 1.5px solid var(--border); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; }
         .search-bar input { border: none; outline: none; width: 100%; margin-left: 10px; }
-
         .cat-scroll { display: flex; overflow-x: auto; padding: 0 20px 15px; gap: 10px; scrollbar-width: none; }
         .cat-btn { padding: 10px 18px; border-radius: 12px; border: 1px solid var(--border); background: white; font-weight: bold; color: var(--gray); cursor: pointer; white-space: nowrap; }
         .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         /* Menu Grid */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
-        .menu-card { background: white; border-radius: 20px; border: 1px solid var(--border); text-align: center; padding-bottom: 15px; }
-        .menu-card img { width: 100%; height: 110px; object-fit: cover; border-radius: 20px 20px 0 0; }
+        .menu-card { background: white; border-radius: 20px; border: 1px solid var(--border); text-align: center; padding-bottom: 15px; overflow: hidden; }
+        .menu-card img { width: 100%; height: 110px; object-fit: cover; }
         .add-btn { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 5px; }
 
-        /* Drawer Premium Cart */
+        /* Drawer */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; z-index: 2000; }
-        .drawer { position: fixed; bottom: -100%; left: 0; width: 100%; height: 90%; background: white; border-radius: 32px 32px 0 0; z-index: 2001; transition: 0.4s cubic-bezier(0, 1, 0, 1); overflow: hidden; }
+        .drawer { position: fixed; bottom: -100%; left: 0; width: 100%; height: 90%; background: white; border-radius: 32px 32px 0 0; z-index: 2001; transition: 0.4s ease; overflow: hidden; }
         .drawer.active { bottom: 0; }
         .step-container { display: flex; width: 200%; height: 100%; transition: 0.3s ease; }
         .step { width: 50%; padding: 25px; box-sizing: border-box; overflow-y: auto; }
 
-        /* Cart Controls UI */
         .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #FAFAFA; padding: 12px; border-radius: 15px; }
         .qty-controls { display: flex; align-items: center; gap: 10px; }
         .qty-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: white; font-weight: bold; cursor: pointer; }
         .qty-input { width: 40px; text-align: center; border: 1px solid var(--border); border-radius: 5px; padding: 4px; font-weight: bold; }
-        .del-btn { color: #FF3B30; background: none; border: none; font-size: 18px; margin-left: 10px; }
+        .del-btn { color: var(--danger); background: none; border: none; font-size: 18px; margin-left: 10px; }
+        .form-control { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; margin-top: 5px; background: #F9F9F9; box-sizing: border-box; }
 
-        .form-control { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; margin-top: 10px; background: #F9F9F9; box-sizing: border-box; }
-
-        /* Modal Flow */
-        /* Modal ကို အလယ်ဗဟို ပို့ပေးတဲ့ CSS */
-.modal {
-    position: fixed; 
-    inset: 0; 
-    background: rgba(0,0,0,0.6); 
-    display: none; 
-    align-items: center;    /* အပေါ်အောက် အလယ်ပို့ရန် */
-    justify-content: center; /* ဘယ်ညာ အလယ်ပို့ရန် */
-    z-index: 3000;
-    padding: 20px;          /* ဘေးဘောင်များ မကပ်စေရန် */
-}
-
-.modal-content {
-    background: white; 
-    padding: 25px; 
-    border-radius: 25px; 
-    max-width: 400px; 
-    width: 100%; 
-    box-sizing: border-box; /* Padding ကြောင့် ဘေးထွက်မသွားစေရန် */
-    position: relative;
-}
+        /* Modal Fix */
+        .modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); 
+            display: none; align-items: center; justify-content: center; 
+            z-index: 3000; padding: 20px;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 25px; 
+            width: 100%; max-width: 380px; box-sizing: border-box; 
+            text-align: center; position: relative;
+        }
+        .viber-guide { background: #F0F0FF; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: left; font-size: 13px; border-left: 4px solid #7360f2; }
         
+        /* Spinner for loading effect */
+        .fa-spin { margin-right: 10px; }
     </style>
 </head>
 <body>
 
 <div class="cart-trigger" id="cart-icon" onclick="toggleDrawer(true)">
     <i class="fas fa-shopping-basket"></i>
-    <div class="cart-badge" id="cart-count" style="position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 11px; padding: 4px 8px; border-radius: 20px; border: 2px solid white;">0</div>
+    <div class="cart-badge" id="cart-count">0</div>
 </div>
 
 <div class="header">
@@ -129,7 +115,7 @@
     </div>
 </div>
 
-<div class="cat-scroll" id="category-tabs">
+<div class="cat-scroll">
     <button class="cat-btn active" onclick="filterCategory('All', this)">အားလုံး</button>
     <button class="cat-btn" onclick="filterCategory('အသား', this)">အသား</button>
     <button class="cat-btn" onclick="filterCategory('အရိုး', this)">အရိုး</button>
@@ -140,6 +126,7 @@
 <div class="menu-grid" id="menu-display"></div>
 
 <div class="overlay" id="overlay" onclick="toggleDrawer(false)"></div>
+
 <div class="drawer" id="drawer">
     <div class="step-container" id="step-wrapper">
         <div class="step">
@@ -155,72 +142,65 @@
         </div>
 
         <div class="step">
-    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-        <i class="fas fa-chevron-left" onclick="goToStep(1)" style="cursor:pointer"></i>
-        <h2 style="margin:0">အချက်အလက်</h2>
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label style="font-size: 13px; font-weight: bold; color: var(--text); margin-left: 5px;">အမည် *</label>
-        <input type="text" id="cust-name" class="form-control" placeholder="အမည် ရိုက်ထည့်ပါ">
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label style="font-size: 13px; font-weight: bold; color: var(--text); margin-left: 5px;">ဖုန်းနံပါတ် *</label>
-        <input type="tel" id="cust-phone" class="form-control" placeholder="၀၉xxxxxxxxx">
-    </div>
-
-    <div style="display:flex; gap:10px; margin-bottom: 15px;">
-        <div style="flex:1">
-            <label style="font-size: 12px; font-weight: bold; color: var(--text); margin-left: 5px;">လာယူမည့်ရက်</label>
-            <input type="date" id="pickup-date" class="form-control">
+            <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+                <i class="fas fa-chevron-left" onclick="goToStep(1)" style="cursor:pointer"></i>
+                <h2 style="margin:0">အချက်အလက်</h2>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; font-weight:bold; margin-left:5px;">အမည် *</label>
+                <input type="text" id="cust-name" class="form-control" placeholder="အမည် ရိုက်ထည့်ပါ">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; font-weight:bold; margin-left:5px;">ဖုန်းနံပါတ် *</label>
+                <input type="tel" id="cust-phone" class="form-control" placeholder="၀၉xxxxxxxxx">
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div style="flex:1">
+                    <label style="font-size:12px; font-weight:bold;">ရက်စွဲ</label>
+                    <input type="date" id="pickup-date" class="form-control">
+                </div>
+                <div style="flex:1">
+                    <label style="font-size:12px; font-weight:bold;">အချိန်</label>
+                    <input type="time" id="pickup-time" class="form-control">
+                </div>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; font-weight:bold;">မှတ်ချက် (Note)</label>
+                <textarea id="order-note" class="form-control" style="height:80px;" placeholder="အသားကျက်ကျက်..."></textarea>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; font-weight:bold; color:var(--primary);">စရံငွေ (ရှိလျှင်)</label>
+                <input type="number" id="deposit-input" class="form-control" placeholder="0">
+            </div>
+            <button onclick="handleOrderFlow()" style="width:100%; background:var(--primary); color:white; border:none; padding:18px; border-radius:15px; font-weight:bold; margin-top:10px;">အော်ဒါတင်မည် (ဆက်လုပ်မည်)</button>
         </div>
-        <div style="flex:1">
-            <label style="font-size: 12px; font-weight: bold; color: var(--text); margin-left: 5px;">အချိန်</label>
-            <input type="time" id="pickup-time" class="form-control">
-        </div>
     </div>
-
-    <div style="margin-bottom: 15px;">
-        <label style="font-size: 13px; font-weight: bold; color: var(--text); margin-left: 5px;">မှတ်ချက် (Note)</label>
-        <textarea id="order-note" class="form-control" style="height: 80px;" placeholder="အသားကျက်ကျက်၊ အစပ်လျှော့ စသည်ဖြင့်..."></textarea>
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label style="font-size: 13px; font-weight: bold; color: var(--primary); margin-left: 5px;">စရံငွေ (ရှိလျှင်)</label>
-        <input type="number" id="deposit-input" class="form-control" placeholder="ပေးချေထားသော စရံငွေပမာဏ">
-    </div>
-
-    <button onclick="handleOrderFlow()" style="width:100%; background:var(--primary); color:white; border:none; padding:18px; border-radius:15px; font-weight:bold; margin-top:10px; box-shadow: 0 4px 15px rgba(255,107,53,0.2);">
-        အော်ဒါတင်မည် (ဆက်လုပ်မည်)
-    </button>
 </div>
 
 <div class="modal" id="flow-modal">
     <div class="modal-content">
-        <h3 id="modal-title">Voucher သိမ်းယူမလား?</h3>
+        <h3 id="modal-title" style="margin-top:0;">Voucher သိမ်းယူမလား?</h3>
         <p id="modal-text" style="font-size: 14px; color: gray;">အော်ဒါအတည်ပြုရန် Voucher ကို သိမ်းဆည်းထားနိုင်ပါသည်။</p>
         
         <div id="voucher-action">
-            <button onclick="downloadAndNext()" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; margin-bottom:10px;">Voucher ဒေါင်းလုဒ်ဆွဲမည်</button>
-            <button onclick="showSocialOptions()" style="width:100%; background:none; color:gray; border:none; padding:10px;">မလိုပါ၊ မှာယူမည်</button>
+            <button id="dl-btn" onclick="downloadAndNext(event)" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; margin-bottom:10px;">Voucher ဒေါင်းလုဒ်ဆွဲမည်</button>
+            <button onclick="showSocialOptions()" style="width:100%; background:none; color:gray; border:none; padding:10px; cursor:pointer;">မလိုပါ၊ မှာယူမည်</button>
         </div>
 
         <div id="social-action" style="display:none;">
             <div class="viber-guide">
-                <b>💡 Viber ဖြင့် ပို့နည်းလမ်းညွှန်:</b><br>
-                ၁။ ခလုတ်နှိပ်လျှင် စာသားကို Auto Copy ယူပါမည်။<br>
-                ၂။ Viber ပွင့်လာလျှင် ဆိုင်ရှင် Chat တွင် Paste လုပ်၍ ပို့ပေးပါ။<br>
-                ⚠️ အော်ဒါတင်ပြီးပါက <b>09767287345</b> သို့ ဖုန်းဆက်ပေးပါ။
+                <b>💡 မှာယူနည်းလမ်းညွှန်:</b><br>
+                ၁။ ခလုတ်နှိပ်လျှင် စာသားကို Copy ယူပါမည်။<br>
+                ၂။ App ပွင့်လာလျှင် Chat တွင် Paste လုပ်၍ ပို့ပေးပါ။
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                 <button onclick="sendOrder('viber')" style="background:#7360f2; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;"><i class="fab fa-viber"></i> Viber</button>
                 <button onclick="sendOrder('telegram')" style="background:#24A1DE; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;"><i class="fab fa-telegram"></i> Telegram</button>
             </div>
+            <button onclick="document.getElementById('flow-modal').style.display='none'" style="margin-top:15px; background:none; border:none; color:gray;">ပိတ်မည်</button>
         </div>
     </div>
 </div>
-        
 
 <div style="position:fixed; top:-9999px;">
     <div id="voucher-ui" style="background:white; padding:30px; width:360px; color:black;">
@@ -243,18 +223,28 @@
     const MY_PHONE = "959767287345";
     let cart = {};
     const menuData = [
-        { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'အသား' },
-        { id: 2, name: 'ကြက်ရင်အုံ', price: 4000, category: 'အသား' },
-        { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'အသား' },
-        { id: 4, name: 'အသား ချောင်း(ကြက်)', price: 800, category: 'အသား' },
-        { id: 5, name: 'အရေခွံ', price: 500, category: 'အရေခွံ' },
-        { id: 6, name: 'အတောင်ပျံ', price: 500, category: 'အရိုး' },
-        { id: 16, name: 'အသားတု', price: 400, category: 'အသီးအရွက်' },
-        { id: 17, name: 'ရုံးပတေသီး', price: 300, category: 'အသီးအရွက်' },
-        { id: 19, name: 'ငုံးဥ', price: 1000, category: 'ဥ' }
-    ];
+    { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'အသား' },
+    { id: 2, name: 'ကြက်ရင်အုံ', price: 4000, category: 'အသား' },
+    { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'အသား' },
+    { id: 4, name: 'အသား ချောင်း(ကြက်)', price: 800, category: 'အသား' },
+    { id: 5, name: 'အရေခွံ', price: 500, category: 'အရေခွံ' },
+    { id: 6, name: 'အတောင်ပျံ', price: 500, category: 'အရိုး' },
+    { id: 7, name: 'အတောင်ပျံ (CP)', price: 1000, category: 'အရိုး' },
+    { id: 8, name: 'အူ', price: 500, category: 'ကလီစာ' },
+    { id: 9, name: 'ခေါင်း', price: 300, category: 'အရိုး' },
+    { id: 10, name: 'လည် ချောင်း', price: 300, category: 'အရိုး' },
+    { id: 11, name: 'အသည်းမြစ်', price: 500, category: 'ကလီစာ' },
+    { id: 12, name: 'ခြေထောက်', price: 300, category: 'အရိုး' },
+    { id: 13, name: 'ခြေထောက်(CP)', price: 700, category: 'အရိုး' },
+    { id: 14, name: 'လက်မောင်းလုံး', price: 1000, category: 'အသား' },
+    { id: 15, name: 'အဆီပူး', price: 800, category: 'အရေခွံ' },
+    { id: 16, name: 'အသားတု', price: 400, category: 'အသီးအရွက်' },
+    { id: 17, name: 'ရုံးပတေသီး', price: 300, category: 'အသီးအရွက်' },
+    { id: 18, name: 'အပ်မှို', price: 1000, category: 'အသီးအရွက်' },
+    { id: 19, name: 'ငုံးဥ', price: 1000, category: 'ဥ' }
+];
+    
 
-    // Load Profile & History
     window.onload = () => {
         const savedProfile = JSON.parse(localStorage.getItem('mt_profile'));
         if(savedProfile) {
@@ -288,11 +278,9 @@
     }
 
     function changeQty(id, val) {
-        if(cart[id]) {
-            cart[id].qty = Math.max(0, parseInt(val) || 0);
-            if(cart[id].qty === 0) delete cart[id];
-            updateUI();
-        }
+        cart[id].qty = Math.max(0, parseInt(val) || 0);
+        if(cart[id].qty === 0) delete cart[id];
+        updateUI();
     }
 
     function updateUI() {
@@ -308,7 +296,7 @@
                 </div>
                 <div class="qty-controls">
                     <button class="qty-btn" onclick="changeQty(${i.id}, ${i.qty-1})">-</button>
-                    <input type="number" class="qty-input" value="${i.qty}" onchange="changeQty(${i.id}, this.value)">
+                    <input type="number" class="qty-input" value="${i.qty}" readonly>
                     <button class="qty-btn" onclick="changeQty(${i.id}, ${i.qty+1})">+</button>
                     <button class="del-btn" onclick="delete cart[${i.id}]; updateUI();"><i class="fas fa-trash"></i></button>
                 </div>
@@ -317,19 +305,34 @@
     }
 
     function handleOrderFlow() {
-        if(!document.getElementById('cust-name').value || !document.getElementById('cust-phone').value) return alert("အချက်အလက်ပြည့်စုံစွာဖြည့်ပါ။");
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+        if (!name || !phone) return alert("အမည်နှင့် ဖုန်းဖြည့်ပါ");
+
         document.getElementById('flow-modal').style.display = 'flex';
+        document.getElementById('voucher-action').style.display = 'block';
+        document.getElementById('social-action').style.display = 'none';
+        document.getElementById('modal-title').innerText = "Voucher သိမ်းယူမလား?";
     }
 
     function showSocialOptions() {
         document.getElementById('voucher-action').style.display = 'none';
         document.getElementById('social-action').style.display = 'block';
-        document.getElementById('modal-title').innerText = "Viber / Telegram သို့ပို့မည်";
+        document.getElementById('modal-title').innerText = "ပို့မည့် App ကို ရွေးပါ";
     }
 
-    async function downloadAndNext() {
+    async function downloadAndNext(event) {
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ခဏစောင့်ပါ (၃ စက္ကန့်ခန့်)...`;
+        
         await downloadVoucher();
         showSocialOptions();
+        
+        btn.disabled = false;
+        btn.innerHTML = originalText;
     }
 
     async function downloadVoucher() {
@@ -341,6 +344,8 @@
         `).join('');
         document.getElementById('v-total').innerText = document.getElementById('subtotal').innerText;
         document.getElementById('v-dep').innerText = (document.getElementById('deposit-input').value || 0) + " K";
+
+        await new Promise(resolve => setTimeout(resolve, 800));
 
         const canvas = await html2canvas(document.getElementById('voucher-ui'), { scale: 2 });
         const link = document.createElement('a');
@@ -354,16 +359,15 @@
         const phone = document.getElementById('cust-phone').value;
         const msg = `🍗 MYIN THAR ROAST ORDER\n👤 Name: ${name}\n📞 Phone: ${phone}\n🛒 Items:\n${Object.values(cart).map(i => `• ${i.name} (${i.qty})`).join('\n')}\n💰 Total: ${document.getElementById('subtotal').innerText}`;
         
-        // Save to History
+        localStorage.setItem('mt_profile', JSON.stringify({ name, phone }));
+        
         const orderData = { id: Date.now(), items: Object.values(cart), date: new Date().toLocaleDateString(), total: document.getElementById('subtotal').innerText };
         let history = JSON.parse(localStorage.getItem('mt_history')) || [];
         history.unshift(orderData);
         localStorage.setItem('mt_history', JSON.stringify(history.slice(0, 5)));
 
-        // Save Profile
-        localStorage.setItem('mt_profile', JSON.stringify({ name, phone }));
-
         navigator.clipboard.writeText(msg).then(() => {
+            alert("စာသားများကို Copy ကူးပြီးပါပြီ။ App တွင် Paste လုပ်၍ ပို့ပေးပါ။");
             if(platform === 'viber') window.location.href = `viber://contact?number=${MY_PHONE}`;
             else window.location.href = `https://t.me/+${MY_PHONE}?text=${encodeURIComponent(msg)}`;
         });
@@ -379,7 +383,6 @@
                     <span style="color:gray">${h.date}</span><br>
                     <span>${h.total}</span><br>
                     <button class="reorder-btn" onclick='reorder(${JSON.stringify(h.items)})'>Re-order</button>
-                    <div style="font-size:9px; color:orange; margin-top:5px;">● Pending Tracking</div>
                 </div>
             `).join('');
         }
@@ -392,6 +395,15 @@
         toggleDrawer(true);
     }
 
+    function toggleDrawer(s) {
+        document.getElementById('drawer').classList.toggle('active', s);
+        document.getElementById('overlay').style.display = s ? 'block' : 'none';
+    }
+
+    function goToStep(s) {
+        document.getElementById('step-wrapper').style.transform = `translateX(-${(s-1)*50}%)`;
+    }
+
     function filterCategory(cat, btn) {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -401,15 +413,6 @@
     function filterSearch() {
         const q = document.getElementById('searchInput').value.toLowerCase();
         renderMenu(menuData.filter(i => i.name.toLowerCase().includes(q)));
-    }
-
-    function toggleDrawer(s) {
-        document.getElementById('drawer').classList.toggle('active', s);
-        document.getElementById('overlay').style.display = s ? 'block' : 'none';
-    }
-
-    function goToStep(s) {
-        document.getElementById('step-wrapper').style.transform = `translateX(-${(s-1)*50}%)`;
     }
 </script>
 </body>
