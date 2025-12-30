@@ -170,22 +170,13 @@
     <span id="total-price">0 K</span>
 </div>
 
-<div id="cart-drawer" class="cart-drawer">
-    <div class="drawer-header" style="display:flex; align-items:center; padding:15px 20px; border-bottom:1px solid #eee;">
-        <button class="back-btn-circle" onclick="toggleDrawer()">
-            <i class="fas fa-chevron-down"></i>
-        </button>
-        <h3 style="margin:0; flex:1; text-align:center;">သင့်ခြင်းတောင်း</h3>
-    </div>
+<button class="checkout-bar" id="bottom-bar" 
+        style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999; width:90%; background:#FF6B35; color:white; padding:15px; border-radius:15px; border:none; justify-content:space-between; align-items:center;" 
+        onclick="toggleDrawer()">
+    <span>ခြင်းတောင်းထဲမှာ <span id="cart-count">0</span> ခုရှိသည်</span>
+    <span>စုစုပေါင်း: <span id="total-price-display">0</span> K</span>
+</button>
     
-    <div class="cart-items-container" id="drawer-items-list" style="flex:1; overflow-y:auto; padding:15px;">
-        </div>
-
-    <div class="summary-card" style="padding:20px; background:#f9f9f9; border-radius:20px 20px 0 0;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span>စုစုပေါင်း:</span><span id="sub-total-text">0 K</span>
-           <span id="grand-total-text"></span>
-        </div>
         <button onclick="openCheckout()" style="width:100%; background:#FF6B35; color:white; border:none; padding:16px; border-radius:15px; font-weight:bold;">
             အော်ဒါတင်မည်
         </button>
@@ -326,25 +317,28 @@ function addToCart(name) {
 
 // Update Total & Show Cart Bar
 function updateTotal() {
-    const total = Object.values(cart).reduce((sum, item) => sum + item.total, 0);
-    const itemCount = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+    const total = Object.values(cart).reduce((sum, item) => sum + (item.total || 0), 0);
+    const itemCount = Object.values(cart).reduce((sum, item) => sum + (item.quantity || 0), 0);
     
-    // Update cart bar
-    const checkoutBar = document.getElementById('bottom-bar') || document.getElementById('checkout-bar');
+    const checkoutBar = document.getElementById('bottom-bar');
+    const totalPriceDisplay = document.getElementById('total-price-display');
+    const cartCount = document.getElementById('cart-count'); // အပေါ်က HTML မှာပေးခဲ့တဲ့ ID
+
     if (checkoutBar) {
-        const itemsCount = checkoutBar.querySelector('.items-count') || checkoutBar.querySelector('span:first-child');
-        const totalPrice = document.getElementById('total-price-display') || checkoutBar.querySelector('span:last-child');
-        
-        if (itemsCount) itemsCount.textContent = itemCount || '0';
-        if (totalPrice) totalPrice.textContent = total.toLocaleString() || '0';
-        
         if (itemCount > 0) {
             checkoutBar.style.display = 'flex';
-            checkoutBar.style.transform = 'translateX(-50%) translateY(0)';
+            // CSS မှာ ပျောက်နေတာမျိုးရှိရင် ဒါလေးထည့်ပေးပါ
+            checkoutBar.style.opacity = '1';
+            checkoutBar.style.visibility = 'visible';
+            
+            if (totalPriceDisplay) totalPriceDisplay.textContent = total.toLocaleString();
+            if (cartCount) cartCount.textContent = itemCount;
         } else {
             checkoutBar.style.display = 'none';
         }
     }
+}
+    
     
     console.log('Total:', total, 'Items:', itemCount);
 }
