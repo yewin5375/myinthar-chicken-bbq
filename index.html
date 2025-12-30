@@ -266,7 +266,10 @@ function renderMenu(items) {
         const menuCard = document.createElement('div');
         menuCard.className = 'menu-card';
         menuCard.innerHTML = `
-            <img src="${item.image}" alt="${item.name}" class="menu-img">
+            <img src="${item.image}" 
+     onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'" 
+     alt="${item.name}" 
+     class="w-full h-48 object-cover">
             <div class="price-tag">$${item.price.toLocaleString()}</div>
             <h3>${item.name}</h3>
             <p>${item.description}</p>
@@ -362,30 +365,23 @@ function loadCart() {
 
 // Demo Data + Fetch Menu
 async function fetchMenu() {
-    // Demo data first
-    const demoData = [
-        { name: "မြင်းသား ရိုး့ခြောက်", price: 8500, image: "https://via.placeholder.com/300x200/FF6B35/FFFFFF?text=Roast", description: "Premium ရိုး့ခြောက်" },
-        { name: "ငါး သုပ်", price: 4500, image: "https://via.placeholder.com/300x200/FF8C42/FFFFFF?text=Fish", description: "Fresh ငါးသုပ်" },
-        { name: "ကြက်သား ကင်", price: 6500, image: "https://via.placeholder.com/300x200/FF6B35/FFFFFF?text=Chicken", description: "Grilled ကြက်သား" },
-        { name: "ဆန်ပြုတ်", price: 3500, image: "https://via.placeholder.com/300x200/FF8C42/FFFFFF?text=Rice", description: "Hot ဆန်ပြုတ်" }
-    ];
-    
-    allItems = demoData;
-    menuItems = demoData;
-    renderMenu(demoData);
-    
-    // Try Supabase too
     try {
-        const { data } = await supabase.from('menuitems').select();
-        if (data && data.length > 0) {
-            allItems = data;
-            menuItems = data;
-            renderMenu(data);
-        }
-    } catch(e) {
-        console.log('Supabase not available, using demo data');
+        const { data, error } = await _supabase
+            .from('menu_items')
+            .select('*');
+
+        if (error) throw error;
+        
+        menuItems = data;
+        renderMenu(menuItems);
+    } catch (error) {
+        console.error('Error fetching menu:', error);
+        // Database မချိတ်ရသေးရင် Sample Data နဲ့ အလုပ်လုပ်အောင်ထားနိုင်ပါတယ်
+        menuItems = sampleMenuItems;
+        renderMenu(menuItems);
     }
 }
+    
 
 // Initialize
 window.onload = function() {
@@ -401,12 +397,20 @@ window.onload = function() {
     const time = document.getElementById('pickup-time').value;
     const notes = document.getElementById('notes').value;
     const total = document.getElementById('total-price-display').innerText;
+    
+    // သင်သတ်မှတ်ထားတဲ့ ဖုန်းနံပါတ်
+    const MY_PHONE = "959767287345"; 
 
     // ၁။ အချက်အလက် ပြည့်စုံမှု စစ်ဆေးခြင်း
     if (!name || !phone || !date || !time) {
         return alert("အမည်၊ ဖုန်း၊ လာယူမည့်ရက်နှင့် အချိန်တို့ကို ပြည့်စုံစွာဖြည့်ပါ။");
     }
 
+    if (phone.length < 9) {
+        alert('ဖုန်းနံပါတ် မှားယွင်းနေပါသည်။');
+        return;
+    }
+        
     if (Object.keys(cart).length === 0) {
         return alert("ခြင်းတောင်းထဲမှာ ပစ္စည်းမရှိသေးပါ");
     }
@@ -431,7 +435,7 @@ window.onload = function() {
         if (error) throw error;
         const orderId = data[0].id;
 
-        // ၄။ Voucher Image (ပြေစာပုံ) ထုတ်ရန်အတွက် Data ထည့်ခြင်း
+        // ၄။ Voucher Image (ပြေစာပုံ) ထုတ်ရန်
         document.getElementById('inv-order-id').innerText = `Order ID: #${orderId}`;
         document.getElementById('inv-date').innerText = `Date: ${new Date().toLocaleString()}`;
         document.getElementById('inv-total').innerText = `Total: ${total} K`;
@@ -439,7 +443,6 @@ window.onload = function() {
         for (let n in cart) itemsHtml += `<p>${n} x ${cart[n]}</p>`;
         document.getElementById('inv-items').innerHTML = itemsHtml;
 
-        // HTML ကို ပုံအဖြစ်ပြောင်းခြင်း (Voucher Photo)
         const vWrap = document.getElementById('voucher-wrap');
         vWrap.style.left = "0"; vWrap.style.top = "0";
         const canvas = await html2canvas(document.querySelector("#invoice-card"), { useCORS: true, scale: 2 });
@@ -458,44 +461,34 @@ ${itemsBulletList}
 💰 *Total:* *${total} MMK*
 ━━━━━━━━━━━━━━━━━━
 📝 *Notes:* ${notes || '-'}
-⚠️ အော်ဒါတင်ပြီးပါက 09767287345 သို့ ဖုန်းဆက်ပေးပါ။`;
+⚠️ အော်ဒါတင်ပြီးပါက ${MY_PHONE} သို့ ဖုန်းဆက်ပေးပါ။`;
 
-        // ⭐️ ၆။ Clipboard ထဲသို့ Message ကို Auto Copy ကူးခြင်း
-        try {
-            await navigator.clipboard.writeText(msg);
-            console.log('Copied to clipboard');
-        } catch (err) {
-            // Browser အဟောင်းများအတွက် Fallback နည်းလမ်း
-            const textArea = document.createElement("textarea");
-            textArea.value = msg;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-        }
+        // ၆။ Clipboard ထဲသို့ Copy ကူးခြင်း
+        await navigator.clipboard.writeText(msg);
 
-        // ၇။ Voucher ပုံကို ဖုန်းထဲသို့ Download ချပေးခြင်း
+        // ၇။ Voucher ပုံကို Download ချပေးခြင်း
         const link = document.createElement('a');
         link.download = `Voucher_${orderId}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
 
-        // ၈။ Viber/Telegram သို့ ပို့ဆောင်ခြင်း
+        // ၈။ Viber/Telegram သို့ ပို့ဆောင်ခြင်း (ပြင်ဆင်ထားသော Link များ)
         const encodedMsg = encodeURIComponent(msg);
-        showAppGuide(platform); // Guide အရင်ပြမယ်
 
         setTimeout(() => {
             if (platform === 'viber') {
-                window.location.href = `viber://contact?number=${MY_PHONE}&draft=${encodedMsg}`;
+                // Viber အတွက် Link
+                window.location.href = `viber://chat?number=${MY_PHONE}&draft=${encodedMsg}`;
             } else {
+                // Telegram အတွက် Link (ဖုန်းနံပါတ်ဖြင့် တိုက်ရိုက်ပို့ရန်)
                 window.location.href = `https://t.me/+${MY_PHONE}?text=${encodedMsg}`;
             }
 
-            // ၉။ နောက်ဆုံးအဆင့် - UI Reset လုပ်ပြီး 0 ဖြစ်အောင် Refresh လုပ်မယ်
+            // ၉။ နောက်ဆုံးအဆင့် - Reset & Refresh
             setTimeout(() => {
-                cart = {}; // Cart ရှင်းမယ်
-                localStorage.removeItem('mt_cart'); // LocalStorage ရှင်းမယ်
-                location.reload(); // Page ကို Refresh လုပ်လိုက်ရင် Menu Design ပြန်မှန်သွားပြီး Quantity 0 ဖြစ်သွားပါမယ်
+                cart = {}; 
+                localStorage.removeItem('mt_cart'); 
+                location.reload(); 
             }, 3000);
 
         }, 2000);
@@ -506,8 +499,6 @@ ${itemsBulletList}
         document.getElementById('loader').style.display = 'none';
     }
     }
-    
-            
     
 
     
