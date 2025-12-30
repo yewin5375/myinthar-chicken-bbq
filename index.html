@@ -50,6 +50,25 @@
         }
         .search-bar input { border: none; outline: none; width: 100%; margin-left: 10px; font-size: 15px; }
 
+        /* Category Button Styles */
+.cat-btn {
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: white;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--gray);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.cat-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
         /* Menu Grid */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
         .menu-card { 
@@ -117,25 +136,6 @@
             font-weight: bold; font-size: 12px; flex-shrink: 0;
         }
 
-        /* Category Button Styles */
-.cat-btn {
-    padding: 10px 20px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: white;
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--gray);
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.cat-btn.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px var(--primary-glow);
-}
         
         /* Invoice */
         #voucher-ui { background: #fff; padding: 40px; width: 380px; color: #1a1a1a; font-family: sans-serif; }
