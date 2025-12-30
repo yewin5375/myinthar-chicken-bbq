@@ -62,6 +62,12 @@
             background: white; color: var(--primary); border: 1.5px solid var(--primary);
             padding: 8px 15px; border-radius: 10px; font-weight: bold; cursor: pointer;
         }
+        /* Fly Animation */
+        .flying-item {
+            position: fixed; z-index: 9999; pointer-events: none;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--primary); transition: all 0.8s cubic-bezier(0.1, 0.5, 0.1, 1);
+        }
 
         /* Drawer & Steps */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); display: none; z-index: 2000; }
@@ -247,11 +253,27 @@
 <script>
     let cart = {};
     const menuData = [
-        { id: 1, name: 'ကြက်ပေါင်', price: 4000 }, { id: 2, name: 'ကြက်ရင်အုံ', price: 4000 },
-        { id: 3, name: 'ဆိတ်သားကင်', price: 1500 }, { id: 4, name: 'အသား ချောင်း(ကြက်)', price: 800 },
-        { id: 5, name: 'အရေခွံ', price: 500 }, { id: 6, name: 'အတောင်ပျံ', price: 500 },
-        { id: 16, name: 'အသားတု', price: 400 }, { id: 18, name: 'အပ်မှို', price: 1000 }
+        { id: 1, name: 'ကြက်ပေါင်', price: 4000 },
+        { id: 2, name: 'ကြက်ရင်အုံ', price: 4000 },
+        { id: 3, name: 'ဆိတ်သားကင်', price: 1500 },
+        { id: 4, name: 'အသား ချောင်း(ကြက်)', price: 800 },
+        { id: 5, name: 'အရေခွံ', price: 500 },
+        { id: 6, name: 'အတောင်ပျံ', price: 500 },
+        { id: 7, name: 'အတောင်ပျံ (CP)', price: 1000 },
+        { id: 8, name: 'အူ', price: 500 },
+        { id: 9, name: 'ခေါင်း', price: 300 },
+        { id: 10, name: 'လည် ချောင်း', price: 300 },
+        { id: 11, name: 'အသည်းမြစ်', price: 500 },
+        { id: 12, name: 'ခြေထောက်', price: 300 },
+        { id: 13, name: 'ခြေထောက်(CP)', price: 700 },
+        { id: 14, name: 'လက်မောင်းလုံး', price: 1000 },
+        { id: 15, name: 'အဆီပူး', price: 800 },
+        { id: 16, name: 'အသားတု', price: 400 },
+        { id: 17, name: 'ရုံးပတေသီး', price: 300 },
+        { id: 18, name: 'အပ်မှို', price: 1000 },
+        { id: 19, name: 'ငုံးဥ', price: 1000 }
     ];
+    
 
     function renderMenu(items) {
         document.getElementById('menu-display').innerHTML = items.map(i => `
