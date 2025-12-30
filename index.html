@@ -357,7 +357,7 @@
     function sendOrder(platform) {
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
-        const msg = `🍗 MYIN THAR ROAST ORDER\n👤 Name: ${name}\n📞 Phone: ${phone}\n🛒 Items:\n${Object.values(cart).map(i => `• ${i.name} (${i.qty})`).join('\n')}\n💰 Total: ${document.getElementById('subtotal').innerText}`;
+        const msg = `🍗 *မြင်သာကြက်ကင် (အော်ဒါ #${data[0].id})*\n━━━━━━━━━━━━━━━━━━\n👤 *ဝယ်သူ:* ${name}\n📞 *ဖုန်း:* ${phone}\n📅 *လာယူမည်:* ${pickupTime}\n━━━━━━━━━━━━━━━━━━\n🛒 *မှာယူမှု:*\n${itemsArr.map(i => "▪️ " + i).join('\n')}\n\n💰 *စုစုပေါင်း:* *${total} MMK*\n━━━━━━━━━━━━━━━━━━\n⚠️ အော်ဒါတင်ပြီးပါက 09767287345 သို့ ဖုန်းဆက်ပေးပါ။`;
         
         localStorage.setItem('mt_profile', JSON.stringify({ name, phone }));
         
