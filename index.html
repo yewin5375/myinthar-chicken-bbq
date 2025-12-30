@@ -117,6 +117,26 @@
             font-weight: bold; font-size: 12px; flex-shrink: 0;
         }
 
+        /* Category Button Styles */
+.cat-btn {
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: white;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--gray);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.cat-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+        
         /* Invoice */
         #voucher-ui { background: #fff; padding: 40px; width: 380px; color: #1a1a1a; font-family: sans-serif; }
         .inv-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f9f9f9; }
@@ -142,6 +162,30 @@
     </div>
 </div>
 
+    <div style="padding: 0 20px; overflow-x: auto; white-space: nowrap; margin-bottom: 15px; scrollbar-width: none; -ms-overflow-style: none;">
+    <style>
+        .cat-tabs::-webkit-scrollbar { display: none; }
+        .cat-btn {
+            display: inline-block; padding: 10px 18px; border-radius: 12px;
+            border: 1px solid #eee; background: white; font-size: 14px;
+            font-weight: bold; color: #888; cursor: pointer; margin-right: 8px;
+            transition: 0.3s;
+        }
+        .cat-btn.active {
+            background: #FF6B35; color: white; border-color: #FF6B35;
+        }
+    </style>
+    <div class="cat-tabs" id="category-list">
+        <button onclick="filterCategory('All')" class="cat-btn active">အားလုံး</button>
+        <button onclick="filterCategory('အသား')" class="cat-btn">အသား</button>
+        <button onclick="filterCategory('အရိုး')" class="cat-btn">အရိုး</button>
+        <button onclick="filterCategory('ကလီစာ')" class="cat-btn">ကလီစာ</button>
+        <button onclick="filterCategory('အရေခွံ')" class="cat-btn">အရေခွံ</button>
+        <button onclick="filterCategory('အသီးအရွက်')" class="cat-btn">အသီးအရွက်</button>
+        <button onclick="filterCategory('ဥ')" class="cat-btn">ဥ</button>
+    </div>
+    </div>
+    
 <div class="menu-grid" id="menu-display"></div>
 
 <div class="overlay" id="overlay" onclick="toggleDrawer(false)"></div>
@@ -252,27 +296,29 @@
 
 <script>
     let cart = {};
+    const MY_PHONE = "959767287345";
     const menuData = [
-        { id: 1, name: 'ကြက်ပေါင်', price: 4000 },
-        { id: 2, name: 'ကြက်ရင်အုံ', price: 4000 },
-        { id: 3, name: 'ဆိတ်သားကင်', price: 1500 },
-        { id: 4, name: 'အသား ချောင်း(ကြက်)', price: 800 },
-        { id: 5, name: 'အရေခွံ', price: 500 },
-        { id: 6, name: 'အတောင်ပျံ', price: 500 },
-        { id: 7, name: 'အတောင်ပျံ (CP)', price: 1000 },
-        { id: 8, name: 'အူ', price: 500 },
-        { id: 9, name: 'ခေါင်း', price: 300 },
-        { id: 10, name: 'လည် ချောင်း', price: 300 },
-        { id: 11, name: 'အသည်းမြစ်', price: 500 },
-        { id: 12, name: 'ခြေထောက်', price: 300 },
-        { id: 13, name: 'ခြေထောက်(CP)', price: 700 },
-        { id: 14, name: 'လက်မောင်းလုံး', price: 1000 },
-        { id: 15, name: 'အဆီပူး', price: 800 },
-        { id: 16, name: 'အသားတု', price: 400 },
-        { id: 17, name: 'ရုံးပတေသီး', price: 300 },
-        { id: 18, name: 'အပ်မှို', price: 1000 },
-        { id: 19, name: 'ငုံးဥ', price: 1000 }
-    ];
+    { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'အသား' },
+    { id: 2, name: 'ကြက်ရင်အုံ', price: 4000, category: 'အသား' },
+    { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'အသား' },
+    { id: 4, name: 'အသား ချောင်း(ကြက်)', price: 800, category: 'အသား' },
+    { id: 5, name: 'အရေခွံ', price: 500, category: 'အရေခွံ' },
+    { id: 6, name: 'အတောင်ပျံ', price: 500, category: 'အရိုး' },
+    { id: 7, name: 'အတောင်ပျံ (CP)', price: 1000, category: 'အရိုး' },
+    { id: 8, name: 'အူ', price: 500, category: 'ကလီစာ' },
+    { id: 9, name: 'ခေါင်း', price: 300, category: 'အရိုး' },
+    { id: 10, name: 'လည် ချောင်း', price: 300, category: 'အရိုး' },
+    { id: 11, name: 'အသည်းမြစ်', price: 500, category: 'ကလီစာ' },
+    { id: 12, name: 'ခြေထောက်', price: 300, category: 'အရိုး' },
+    { id: 13, name: 'ခြေထောက်(CP)', price: 700, category: 'အရိုး' },
+    { id: 14, name: 'လက်မောင်းလုံး', price: 1000, category: 'အသား' },
+    { id: 15, name: 'အဆီပူး', price: 800, category: 'အရေခွံ' },
+    { id: 16, name: 'အသားတု', price: 400, category: 'အသီးအရွက်' },
+    { id: 17, name: 'ရုံးပတေသီး', price: 300, category: 'အသီးအရွက်' },
+    { id: 18, name: 'အပ်မှို', price: 1000, category: 'အသီးအရွက်' },
+    { id: 19, name: 'ငုံးဥ', price: 1000, category: 'ဥ' }
+];
+    
     
 
     function renderMenu(items) {
@@ -356,10 +402,20 @@
         
         let msg = `🍗 MYIN THAR ROAST ORDER\n--------------------\n👤 အမည်: ${name}\n📞 ဖုန်း: ${phone}\n📅 လာယူမည့်ရက်: ${pDate}\n⏰ အချိန်: ${pTime}\n📝 မှတ်ချက်: ${note}\n--------------------\n${itemsMsg}\n--------------------\n💰 စုစုပေါင်း: ${total}\n💵 စရံငွေ: ${parseInt(dep).toLocaleString()} K\n--------------------`;
 
-        navigator.clipboard.writeText(msg);
-        const encoded = encodeURIComponent(msg);
-        if(platform === 'viber') window.location.href = `viber://chat?number=%2B959767287345&draft=${encoded}`;
-        else window.location.href = `https://t.me/share/url?url=${encoded}&text=${encoded}`;
+        if (sendVia === 'viber') {
+            // Viber အတွက် စာသားကို Copy ယူခြင်း
+            navigator.clipboard.writeText(msg).then(() => {
+                alert("အော်ဒါစာသားကို Copy ယူပြီးပါပြီ။ Viber ပွင့်လာပါက ဆိုင်ရှင် Chat ထဲတွင် Paste လုပ်၍ ပို့ပေးပါ။");
+                window.location.href = `viber://contact?number=${MY_PHONE}`;
+            }).catch(err => {
+                // Clipboard error backup
+                window.location.href = `viber://contact?number=${MY_PHONE}&draft=${encodeURIComponent(msg)}`;
+            });
+        } else {
+            // Telegram အတွက် Direct Send Link
+            const teleMsg = msg.replace(/\*/g, ''); // Telegram link formats can be sensitive
+            window.location.href = `https://t.me/+${MY_PHONE}?text=${encodeURIComponent(msg)}`;
+        }
     }
 
     async function downloadVoucher() {
@@ -391,12 +447,26 @@
         document.getElementById('step-wrapper').style.transform = `translateX(-${(s-1)*50}%)`;
     }
 
-    function filterMenu() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        renderMenu(menuData.filter(i => i.name.toLowerCase().includes(q)));
-    }
+    function filterCategory(cat) {
+    // နှိပ်လိုက်တဲ့ Button ကို Active ဖြစ်အောင်လုပ်ခြင်း
+    const btns = document.querySelectorAll('.cat-btn');
+    btns.forEach(btn => {
+        btn.classList.remove('active');
+        // မြန်မာစာ "အားလုံး" သို့မဟုတ် category နာမည် တူရင် active ပေးမယ်
+        if (btn.innerText === cat || (cat === 'All' && btn.innerText === 'အားလုံး')) {
+            btn.classList.add('active');
+        }
+    });
 
-    renderMenu(menuData);
+    // Menu ကို Category အလိုက် စစ်ထုတ်ပြခြင်း
+    if (cat === 'All') {
+        renderMenu(menuData);
+    } else {
+        const filtered = menuData.filter(item => item.category === cat);
+        renderMenu(filtered);
+    }
+}
+
 </script>
 </body>
 </html>
