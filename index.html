@@ -223,26 +223,27 @@
     const MY_PHONE = "959767287345";
     let cart = {};
     const menuData = [
-    { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'အသား' },
-    { id: 2, name: 'ကြက်ရင်အုံ', price: 4000, category: 'အသား' },
-    { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'အသား' },
-    { id: 4, name: 'အသား ချောင်း(ကြက်)', price: 800, category: 'အသား' },
-    { id: 5, name: 'အရေခွံ', price: 500, category: 'အရေခွံ' },
-    { id: 6, name: 'အတောင်ပျံ', price: 500, category: 'အရိုး' },
-    { id: 7, name: 'အတောင်ပျံ (CP)', price: 1000, category: 'အရိုး' },
-    { id: 8, name: 'အူ', price: 500, category: 'ကလီစာ' },
-    { id: 9, name: 'ခေါင်း', price: 300, category: 'အရိုး' },
-    { id: 10, name: 'လည် ချောင်း', price: 300, category: 'အရိုး' },
-    { id: 11, name: 'အသည်းမြစ်', price: 500, category: 'ကလီစာ' },
-    { id: 12, name: 'ခြေထောက်', price: 300, category: 'အရိုး' },
-    { id: 13, name: 'ခြေထောက်(CP)', price: 700, category: 'အရိုး' },
-    { id: 14, name: 'လက်မောင်းလုံး', price: 1000, category: 'အသား' },
-    { id: 15, name: 'အဆီပူး', price: 800, category: 'အရေခွံ' },
-    { id: 16, name: 'အသားတု', price: 400, category: 'အသီးအရွက်' },
-    { id: 17, name: 'ရုံးပတေသီး', price: 300, category: 'အသီးအရွက်' },
-    { id: 18, name: 'အပ်မှို', price: 1000, category: 'အသီးအရွက်' },
-    { id: 19, name: 'ငုံးဥ', price: 1000, category: 'ဥ' }
+    { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'အသား', image: '' },
+    { id: 2, name: 'ကြက်ရင်အုံ', price: 4000, category: 'အသား', image: '' },
+    { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'အသား', image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png' },
+    { id: 4, name: 'အသား ချောင်း(ကြက်)', price: 800, category: 'အသား', image: '' },
+    { id: 5, name: 'အရေခွံ', price: 500, category: 'အရေခွံ', image: '' },
+    { id: 6, name: 'အတောင်ပျံ', price: 500, category: 'အရိုး', image: '' },
+    { id: 7, name: 'အတောင်ပျံ (CP)', price: 1000, category: 'အရိုး', image: '' },
+    { id: 8, name: 'အူ', price: 500, category: 'ကလီစာ', image: '' },
+    { id: 9, name: 'ခေါင်း', price: 300, category: 'အရိုး', image: '' },
+    { id: 10, name: 'လည် ချောင်း', price: 300, category: 'အရိုး', image: '' },
+    { id: 11, name: 'အသည်းမြစ်', price: 500, category: 'ကလီစာ', image: '' },
+    { id: 12, name: 'ခြေထောက်', price: 300, category: 'အရိုး', image: '' },
+    { id: 13, name: 'ခြေထောက်(CP)', price: 700, category: 'အရိုး', image: '' },
+    { id: 14, name: 'လက်မောင်းလုံး', price: 1000, category: 'အသား', image: '' },
+    { id: 15, name: 'အဆီပူး', price: 800, category: 'အရေခွံ', image: '' },
+    { id: 16, name: 'အသားတု', price: 400, category: 'အသီးအရွက်', image: '' },
+    { id: 17, name: 'ရုံးပတေသီး', price: 300, category: 'အသီးအရွက်', image: '' },
+    { id: 18, name: 'အပ်မှို', price: 1000, category: 'အသီးအရွက်', image: '' },
+    { id: 19, name: 'ငုံးဥ', price: 1000, category: 'ဥ', image: '' }
 ];
+    
     
 
     window.onload = () => {
@@ -258,17 +259,20 @@
     };
 
     function renderMenu(items) {
-        document.getElementById('menu-display').innerHTML = items.map(i => `
-            <div class="menu-card">
-                <img src="https://via.placeholder.com/150/FFF1EB/FF6B35?text=${i.name}">
-                <div style="padding:10px;">
-                    <div style="font-weight:bold; font-size:14px;">${i.name}</div>
-                    <div style="color:var(--primary); font-weight:800; margin:5px 0;">${i.price.toLocaleString()} K</div>
-                    <button class="add-btn" onclick="addToCart(${i.id})">Add</button>
-                </div>
+    document.getElementById('menu-display').innerHTML = items.map(i => `
+        <div class="menu-card" style="background: white; border-radius: 20px; overflow: hidden; border: 1px solid var(--border);">
+            <img src="${i.image || 'https://via.placeholder.com/150'}" 
+                 style="width: 100%; height: 140px; object-fit: cover;" 
+                 alt="${i.name}">
+            <div style="padding:12px; text-align: center;">
+                <div style="font-weight:bold; font-size:14px;">${i.name}</div>
+                <div style="color:var(--primary); font-weight:800; margin:5px 0;">${i.price.toLocaleString()} K</div>
+                <button class="add-btn" onclick="addToCart(${i.id})">Add</button>
             </div>
-        `).join('');
+        </div>
+    `).join('');
     }
+    
 
     function addToCart(id) {
         const item = menuData.find(m => m.id === id);
