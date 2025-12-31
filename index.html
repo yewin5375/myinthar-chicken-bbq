@@ -372,8 +372,13 @@
 
         navigator.clipboard.writeText(msg).then(() => {
             alert("စာသားများကို Copy ကူးပြီးပါပြီ။ App တွင် Paste လုပ်၍ ပို့ပေးပါ။");
-            if(platform === 'viber') window.location.href = `viber://contact?number=${MY_PHONE}`;
-            else window.location.href = `https://t.me/+${MY_PHONE}?text=${encodeURIComponent(msg)}`;
+            if(platform === 'viber') {
+                // Viber အတွက် နံပါတ်ရှေ့က + ကိုဖြုတ်ပြီး chat?number နဲ့ သုံးရပါမယ်
+                window.location.href = `viber://chat?number=959767287345`;
+            } else {
+                // Telegram အတွက် နံပါတ်အစား Username သို့မဟုတ် t.me/phone link ကို သုံးရပါမယ်
+                window.location.href = `https://t.me/959767287345`;
+            }
         });
     }
 
