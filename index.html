@@ -359,30 +359,26 @@
         link.click();
     }
 
-    function sendOrder(platform) {
+    function sendOrder(p) {
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
-        const msg = `🍗 *မြင်သာကြက်ကင် (အော်ဒါ #${data[0].id})*\n━━━━━━━━━━━━━━━━━━\n👤 *ဝယ်သူ:* ${name}\n📞 *ဖုန်း:* ${phone}\n📅 *လာယူမည်:* ${pickupTime}\n━━━━━━━━━━━━━━━━━━\n🛒 *မှာယူမှု:*\n${itemsArr.map(i => "▪️ " + i).join('\n')}\n\n💰 *စုစုပေါင်း:* *${total} MMK*\n━━━━━━━━━━━━━━━━━━\n⚠️ အော်ဒါတင်ပြီးပါက 09767287345 သို့ ဖုန်းဆက်ပေးပါ။`;
+        const subtotal = document.getElementById('subtotal').innerText;
+        const note = document.getElementById('order-note').value || "-";
+        const items = Object.values(cart).map(i => `• ${i.name} (${i.qty})`).join('\n');
         
-        localStorage.setItem('mt_profile', JSON.stringify({ name, phone }));
+        const msg = `🍗 *MYIN THAR ROAST ORDER*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n📝 မှတ်ချက်: ${note}\n━━━━━━━━━━━━━━\n🛒 မှာယူမှု:\n${items}\n💰 စုစုပေါင်း: ${subtotal}`;
         
-        const orderData = { id: Date.now(), items: Object.values(cart), date: new Date().toLocaleDateString(), total: document.getElementById('subtotal').innerText };
-        let history = JSON.parse(localStorage.getItem('mt_history')) || [];
-        history.unshift(orderData);
-        localStorage.setItem('mt_history', JSON.stringify(history.slice(0, 5)));
+        localStorage.setItem('mt_profile', JSON.stringify({name, phone}));
+        const history = JSON.parse(localStorage.getItem('mt_history')) || [];
+        history.unshift({id: Date.now(), total: subtotal, items: Object.values(cart), date: new Date().toLocaleDateString()});
+        localStorage.setItem('mt_history', JSON.stringify(history.slice(0,5)));
 
         navigator.clipboard.writeText(msg).then(() => {
-            alert("စာသားများကို Copy ကူးပြီးပါပြီ။ App တွင် Paste လုပ်၍ ပို့ပေးပါ။");
-            if(platform === 'viber') {
-                // Viber အတွက် နံပါတ်ရှေ့က + ကိုဖြုတ်ပြီး chat?number နဲ့ သုံးရပါမယ်
-                window.location.href = `viber://chat?number=959767287345`;
-            } else {
-                // Telegram အတွက် နံပါတ်အစား Username သို့မဟုတ် t.me/phone link ကို သုံးရပါမယ်
-                window.location.href = `https://t.me/959767287345`;
-            }
+            alert("စာသား Copy ယူပြီးပါပြီ။ App ပွင့်လာပါက Paste လုပ်ပေးပါ။");
+            if(p === 'viber') window.location.href = `viber://chat?number=959767287345`;
+            else window.location.href = `https://t.me/959767287345`;
         });
     }
-
     function renderHistory() {
         const history = JSON.parse(localStorage.getItem('mt_history')) || [];
         if(history.length > 0) {
