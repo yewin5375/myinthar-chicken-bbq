@@ -192,8 +192,7 @@
         const { data } = await q; renderMenuList(data);
     }
 
-    // ပုံကို Resize လုပ်ဖို့ Variable တစ်ခုထားမယ်
-let currentBase64 = "";
+    let currentBase64 = ""; // ဒါကို global အနေနဲ့ ထားပါ
 
 function previewImg(input) {
     if (input.files && input.files[0]) {
@@ -202,23 +201,26 @@ function previewImg(input) {
             const img = new Image();
             img.src = e.target.result;
             img.onload = function() {
-                // Canvas သုံးပြီး ပုံကို Resize လုပ်မယ် (Database နေရာမစားအောင်)
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                const MAX_WIDTH = 400; // အကျယ်ကို 400px ပဲထားမယ်
+
+                // ပုံရဲ့ အချိုးအစားအတိုင်း အကျယ် 400px ထားပြီး ကျုံ့မယ်
+                const MAX_WIDTH = 400;
                 const scale = MAX_WIDTH / img.width;
                 canvas.width = MAX_WIDTH;
                 canvas.height = img.height * scale;
+
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 
-                // ထွက်လာတဲ့ Base64 ကို variable ထဲသိမ်း
-                currentBase64 = canvas.toDataURL('image/jpeg', 0.7); 
-                document.getElementById('file-label').innerText = "Photo Selected ✅";
+                // 70% Quality နဲ့ JPG အဖြစ်ပြောင်းမယ် (File size အရမ်းသေးသွားမယ်)
+                currentBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                document.getElementById('file-label').innerText = "ပုံရွေးပြီးပါပြီ ✅";
             }
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
+    
 
 async function saveItem() {
     const name = document.getElementById('m-name').value;
