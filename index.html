@@ -326,7 +326,7 @@
                 window.location.href = `viber://chat?number=+${myPhone}`;
             } else if(platform === 'telegram') {
                 // Telegram အတွက် ဖုန်းနံပါတ်ဖြင့် တိုက်ရိုက်သွားသော Link
-                window.location.href = `https://t.me/+${myPhone}`;
+                window.location.href =`https://t.me/+${MY_PHONE}?text=${encodeURIComponent(msg)}`;
             }
             
             // ခဏအကြာတွင် Loader ကိုပြန်ပိတ်ခြင်း
@@ -338,6 +338,7 @@
     });
 }
 
+    
 </script>
 </body>
 </html>
