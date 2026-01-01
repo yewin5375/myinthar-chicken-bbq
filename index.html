@@ -7,6 +7,7 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -56,34 +57,17 @@
         .reorder-btn { background: var(--primary-light); color: var(--primary); border: none; padding: 6px; border-radius: 8px; font-weight: bold; margin-top: 8px; cursor: pointer; width: 100%; }
 
         /* Menu Grid */
-        .menu-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    padding: 20px;
-    align-items: stretch; /* Card အမြင့်တွေကို တူညီအောင် ညှိပေးတယ် */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; align-items: stretch; }
+        .menu-card {
+            background: white; border-radius: 20px; border: 1px solid var(--border);
+            text-align: center; padding-bottom: 12px; overflow: hidden;
+            display: flex; flex-direction: column; height: 100%;
+        }
+        .menu-card img {
+            width: 100%; height: 140px; object-fit: cover; background: #f0f0f0;
         }
         
-        .menu-card {
-    background: white;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    text-align: center;
-    padding-bottom: 12px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column; /* အောက်က Button တွေ တစ်ညီတည်းဖြစ်အောင် */
-    height: 100%; /* Card အမြင့်တွေကို တူအောင်လုပ်မယ် */
-}
-
-.menu-card img {
-    width: 100%;
-    height: 140px; /* အမြင့်ကို Fixed ပေးလိုက်ပါ */
-    object-fit: cover; /* ပုံကို မပြဲသွားစေဘဲ အံကိုက်ဖြတ်ပေးမယ့် function */
-    background: #f0f0f0;
-}
-        
-        .add-btn { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .add-btn { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: auto; margin-bottom: 5px; margin-left: 10px; margin-right: 10px; }
 
         /* Drawer System */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; z-index: 2000; }
@@ -194,8 +178,7 @@
         </div>
 
         <div id="social-action" style="display:none;">
-            <div class="guide-box" id="app-guide">
-                </div>
+            <div class="guide-box" id="app-guide"></div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                 <button onclick="sendOrder('viber')" style="background:#7360f2; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;"><i class="fab fa-viber"></i> Viber</button>
                 <button onclick="sendOrder('telegram')" style="background:#24A1DE; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;"><i class="fab fa-telegram"></i> Telegram</button>
@@ -216,13 +199,12 @@
     </div>
 </div>
 
-    <div id="chat-btn" onclick="toggleChat(true)" style="position:fixed; bottom:25px; left:25px; background:var(--primary); color:white; width:55px; height:55px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:1002; box-shadow: 0 10px 25px rgba(255,107,53,0.4); cursor:pointer;">
+<div id="chat-btn" onclick="toggleChat(true)" style="position:fixed; bottom:25px; left:25px; background:var(--primary); color:white; width:55px; height:55px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:1002; box-shadow: 0 10px 25px rgba(255,107,53,0.4); cursor:pointer;">
     <i class="fas fa-comments" style="font-size: 24px;"></i>
     <div id="msg-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:3px 7px; border-radius:10px; border:2px solid white;">1</div>
 </div>
 
 <div id="chat-window" style="position:fixed; bottom:-100%; left:0; width:100%; height:80%; background:white; z-index:2005; transition:0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius:30px 30px 0 0; display:flex; flex-direction:column; box-shadow:0 -10px 40px rgba(0,0,0,0.15);">
-    
     <div style="padding:20px; background:white; border-bottom:1px solid #eee; border-radius:30px 30px 0 0; display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:10px; height:10px; background:#05CD99; border-radius:50%;"></div>
@@ -233,24 +215,16 @@
         </div>
         <i class="fas fa-times" onclick="toggleChat(false)" style="font-size:20px; color:#ccc; cursor:pointer;"></i>
     </div>
-
-    <div id="chat-messages" style="flex:1; padding:20px; overflow-y:auto; background:#f9f9fb; display:flex; flex-direction:column; gap:12px;">
-        <div style="align-self: flex-start; background: #eee; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 80%; font-size:14px;">
-            မင်္ဂလာပါ MT Roast မှ ကြိုဆိုပါတယ်။ ဘာများကူညီပေးရမလဲခင်ဗျာ။
-        </div>
-    </div>
-
+    <div id="chat-messages" style="flex:1; padding:20px; overflow-y:auto; background:#f9f9fb; display:flex; flex-direction:column; gap:12px;"></div>
     <div style="padding:15px 20px 30px 20px; background:white; border-top:1px solid #eee; display:flex; gap:10px; align-items:center;">
-        <input type="text" id="chat-input" placeholder="စာရိုက်ပါ..." 
-               style="flex:1; border:none; background:#f0f2f5; padding:14px 20px; border-radius:25px; outline:none; font-size:15px;">
+        <input type="text" id="chat-input" placeholder="စာရိုက်ပါ..." style="flex:1; border:none; background:#f0f2f5; padding:14px 20px; border-radius:25px; outline:none; font-size:15px;">
         <button onclick="sendChatMessage()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 5px 15px rgba(255,107,53,0.3);">
             <i class="fas fa-paper-plane"></i>
         </button>
     </div>
 </div>
     
-    
-    <script>
+<script>
     // ၁။ Supabase ချိတ်ဆက်မှု
     const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTk2MDYsImV4cCI6MjA4MjMzNTYwNn0.Kxy3QW1gq-J-tzUF2fxQd0l989Wr7BI2uRTbWDTNL6k";
@@ -258,7 +232,7 @@
 
     // ၂။ ကိန်းရှင်များ သတ်မှတ်ချက်
     const MY_PHONE = "959767287345";
-    let menuData = []; // Database ကလာမယ့် data သိမ်းဖို့ (တစ်ခါပဲ ကြေညာပါ)
+    let menuData = []; 
     let cart = {};
     let myChatId = localStorage.getItem('chat_id') || "user_" + Math.random().toString(36).slice(2, 9);
     localStorage.setItem('chat_id', myChatId);
@@ -266,53 +240,57 @@
     // ၃။ Window Load ဖြစ်ချိန်မှာ Data ဆွဲယူခြင်း
     window.onload = async () => {
         document.getElementById('global-loader').style.display = 'flex';
-        
-        // Database ကနေ Menu Items တွေယူမယ်
-        const { data, error } = await _sb.from('products').select('*');
-        
-        if(!error && data.length > 0) {
-            menuData = data;
-        } else {
-            // အကယ်၍ Database မှာ ဘာမှမရှိသေးရင် နမူနာပြဖို့ (Testing အတွက်သာ)
-            menuData = [
-                { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'ကြက်', image: 'https://via.placeholder.com/150', stock_qty: 10 },
-                { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'ဆိတ်', image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png', stock_qty: 5 }
-            ];
+        try {
+            const { data, error } = await _sb.from('products').select('*');
+            if(!error && data && data.length > 0) {
+                menuData = data;
+            } else {
+                console.log("No data or error:", error);
+                // Fallback test data
+                menuData = [
+                    { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'အသား', image: '', stock_qty: 10 }
+                ];
+            }
+            renderMenu(menuData);
+        } catch (e) {
+            console.error(e);
         }
-        
-        renderMenu(menuData);
-        loadRecentOrders();
         document.getElementById('global-loader').style.display = 'none';
     };
 
     // ၄။ Menu Render လုပ်ခြင်း
     function renderMenu(data) {
-    if (!data || data.length === 0) {
-        document.getElementById('menu-display').innerHTML = "<p style='text-align:center;'>ပစ္စည်းစာရင်း မရှိသေးပါ။</p>";
-        return;
-    }
+        const display = document.getElementById('menu-display');
+        if (!data || data.length === 0) {
+            display.innerHTML = "<p style='text-align:center; grid-column: span 2;'>ပစ္စည်းစာရင်း မရှိသေးပါ။</p>";
+            return;
+        }
 
-    document.getElementById('menu-display').innerHTML = data.map(i => 
-        <div class="menu-card" style="${(i.stock_qty || 0) <= 0 ? 'opacity:0.6;' : ''}">
-            <img src="${i.image || 'https://via.placeholder.com/150'}">
-            <div style="padding:10px;">
-                <div style="font-weight:bold;">${i.name}</div>
-                <div style="color:var(--primary); font-weight:bold; margin:5px 0;">${(i.price || 0).toLocaleString()} K</div>
-                ${(i.stock_qty || 0) > 0 
-                    ? <button class="add-btn" onclick="addToCart(${i.id})">Add</button> 
-                    : <button class="add-btn" style="background:#ccc; cursor:not-allowed;" disabled>Out of Stock</button>
-                }
+        display.innerHTML = data.map(i => `
+            <div class="menu-card" style="${(i.stock_qty || 0) <= 0 ? 'opacity:0.6;' : ''}">
+                <img src="${i.image || 'https://via.placeholder.com/150?text=No+Photo'}" onerror="this.src='https://via.placeholder.com/150?text=Error'">
+                <div style="padding:10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="font-weight:bold; font-size:14px;">${i.name}</div>
+                        <div style="color:var(--primary); font-weight:bold; margin:5px 0;">${(i.price || 0).toLocaleString()} K</div>
+                    </div>
+                    ${(i.stock_qty || 0) > 0 
+                        ? `<button class="add-btn" onclick="addToCart(${i.id})">Add</button>` 
+                        : `<button class="add-btn" style="background:#ccc; cursor:not-allowed;" disabled>Out of Stock</button>`
+                    }
+                </div>
             </div>
-        </div>
-    ).join('');
+        `).join('');
     }
-        
 
-    // --- ကျန်တဲ့ Function များ (ယခင်အတိုင်း) ---
     function filterCategory(cat, btn) {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        renderMenu(cat === 'All' ? menuData : menuData.filter(i => i.category === cat));
+        if (cat === 'All') {
+            renderMenu(menuData);
+        } else {
+            renderMenu(menuData.filter(i => i.category === cat));
+        }
     }
 
     function filterSearch() {
@@ -333,9 +311,9 @@
         document.getElementById('subtotal').innerText = items.reduce((s,i) => s + (i.price*i.qty), 0).toLocaleString() + " K";
         document.getElementById('cart-items-list').innerHTML = items.map(i => `
             <div class="cart-item">
-                <img src="${i.image}" class="cart-img">
+                <img src="${i.image || 'https://via.placeholder.com/150'}" class="cart-img">
                 <div style="flex:1"><b>${i.name}</b><br><span style="color:var(--primary)">${i.price.toLocaleString()} K</span></div>
-                <div class="qty-controls">
+                <div style="display:flex; align-items:center;">
                     <input type="number" class="qty-input" value="${i.qty}" onchange="manualQty(${i.id}, this.value)">
                     <i class="fas fa-trash" style="color:red; cursor:pointer; margin-left:10px;" onclick="delete cart[${i.id}]; updateUI();"></i>
                 </div>
@@ -349,7 +327,57 @@
         updateUI();
     }
 
-    // --- Order & Social Functions ---
+    // Modal & Steps Functions
+    function toggleDrawer(s) { 
+        document.getElementById('drawer').classList.toggle('active', s); 
+        document.getElementById('overlay').style.display = s ? 'block' : 'none'; 
+    }
+    
+    function goToStep(s) { document.getElementById('step-wrapper').style.transform = `translateX(-${(s-1)*50}%)`; }
+    
+    function openModal() {
+        if(Object.keys(cart).length === 0) return alert("ပစ္စည်း အရင်ရွေးပါ");
+        document.getElementById('flow-modal').style.display = 'flex';
+        showVoucherStep();
+    }
+
+    function closeModal() { document.getElementById('flow-modal').style.display = 'none'; }
+
+    function showVoucherStep() {
+        document.getElementById('voucher-action').style.display = 'block';
+        document.getElementById('social-action').style.display = 'none';
+    }
+
+    function showSocialOptions() {
+        document.getElementById('voucher-action').style.display = 'none';
+        document.getElementById('social-action').style.display = 'block';
+        document.getElementById('app-guide').innerHTML = "<b>မှာယူနည်း:</b> ပို့မည့် App ကိုရွေးပါ။ စာသားများကို Copy ကူးပြီးသားဖြစ်သဖြင့် Chat ထဲတွင် Paste လုပ်ရုံသာ။";
+    }
+
+    async function generateVoucher() {
+        const vInfo = document.getElementById('v-info');
+        vInfo.innerHTML = `ဝယ်သူ: ${document.getElementById('cust-name').value}<br>ဖုန်း: ${document.getElementById('cust-phone').value}<br>ရက်စွဲ: ${new Date().toLocaleDateString()}`;
+        
+        const vBody = document.getElementById('v-body');
+        vBody.innerHTML = Object.values(cart).map(i => `
+            <tr style="border-bottom: 1px solid #eee;">
+                <td>${i.name}</td>
+                <td align="center">${i.price.toLocaleString()}</td>
+                <td align="center">${i.qty}</td>
+                <td align="right">${(i.price * i.qty).toLocaleString()}</td>
+            </tr>
+        `).join('');
+        
+        document.getElementById('v-total-area').innerText = "Total: " + document.getElementById('subtotal').innerText;
+
+        const canvas = await html2canvas(document.getElementById('voucher-ui'));
+        const link = document.createElement('a');
+        link.download = 'MT_Roast_Voucher.png';
+        link.href = canvas.toDataURL();
+        link.click();
+        showSocialOptions();
+    }
+
     async function sendOrder(platform) {
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
@@ -361,15 +389,13 @@
         const subtotal = document.getElementById('subtotal').innerText;
         const itemsMsg = Object.values(cart).map(i => `• ${i.name} (${i.qty} x ${i.price} K)`).join('\n');
         
-        const { error } = await _sb.from('orders').insert([{
+        await _sb.from('orders').insert([{
             customer_name: name,
             phone: phone,
             items_text: itemsMsg + `\n\n⏰ Time: ${date} ${time}\n📝 Note: ${note}`,
             total_amount: subtotal,
             status: 1
         }]);
-
-        if(error) return alert("Database Error!");
 
         const msg = `🍗 *MYIN THAR ROAST ORDER*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n📅 ရက်စွဲ: ${date} ${time}\n━━━━━━━━━━━━━━\n🛒 မှာယူမှု:\n${itemsMsg}\n━━━━━━━━━━━━━━\n💰 စုစုပေါင်း: ${subtotal}`;
         
@@ -379,7 +405,7 @@
         });
     }
 
-    // --- Chat Functions ---
+    // Chat Functions
     function toggleChat(s) {
         document.getElementById('chat-window').style.bottom = s ? '0' : '-100%';
         if(s) loadChatHistory();
@@ -391,11 +417,13 @@
         if(!msg) return;
         input.value = "";
         await _sb.from('chats').insert([{ customer_id: myChatId, sender: 'customer', message: msg }]);
+        loadChatHistory();
     }
 
     async function loadChatHistory() {
         const { data } = await _sb.from('chats').select('*').eq('customer_id', myChatId).order('created_at', {ascending: true});
         const box = document.getElementById('chat-messages');
+        if(!data) return;
         box.innerHTML = data.map(m => `
             <div style="align-self: ${m.sender === 'customer' ? 'flex-end' : 'flex-start'}; background: ${m.sender === 'customer' ? 'var(--primary)' : 'white'}; color: ${m.sender === 'customer' ? 'white' : 'black'}; padding: 12px 16px; border-radius: 15px; max-width: 75%; font-size:14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom:5px;">
                 ${m.message}
@@ -408,10 +436,7 @@
         if(payload.new.customer_id === myChatId) loadChatHistory();
     }).subscribe();
 
-    // Drawer & Steps
-    function toggleDrawer(s) { document.getElementById('drawer').classList.toggle('active', s); document.getElementById('overlay').style.display = s ? 'block' : 'none'; }
-    function goToStep(s) { document.getElementById('step-wrapper').style.transform = `translateX(-${(s-1)*50}%)`; }
-    function loadRecentOrders() { /* History logic here */ }
+    function loadRecentOrders() {}
 </script>
 </body>
 </html>
