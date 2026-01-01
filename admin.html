@@ -53,7 +53,14 @@
 <div id="dashboard-view" class="container active">
     <div class="header">
         <h2 style="margin:0">MT Roast Dashboard</h2>
-        <div class="stat-grid">
+        <div class="stat-box">
+    <h4>Revenue Target (1,000,000 K)</h4>
+    <h2 id="st-rev">0 K</h2>
+    <div style="width: 100%; background: #eee; height: 8px; border-radius: 5px; margin-top: 10px;">
+        <div id="rev-progress" style="width: 0%; background: var(--success); height: 100%; border-radius: 5px; transition: 1s;"></div>
+    </div>
+        </div>
+        
             <div class="stat-box"><h4>Revenue</h4><h2 id="st-rev">0 K</h2></div>
             <div class="stat-box"><h4>New Orders</h4><h2 id="st-ord">0</h2></div>
             <div class="stat-box"><h4>Products</h4><h2 id="st-item">0</h2></div>
@@ -81,6 +88,19 @@
     <h3>Customer Inbox</h3>
     <div id="message-list"></div>
 </div>
+    
+    <div id="order-view" class="container">
+    <h3>Orders Status</h3>
+    <input type="text" id="orderSearch" placeholder="Customer နာမည်ဖြင့် ရှာရန်..." onkeyup="searchOrders()" style="margin-bottom: 15px; border-radius: 20px; padding: 10px 20px;">
+    
+    <div class="order-tabs">
+        <button class="tab-btn active" onclick="filterOrders(1, this)">New (1)</button>
+        <button class="tab-btn" onclick="filterOrders(2, this)">Cooking (2)</button>
+        <button class="tab-btn" onclick="filterOrders(3, this)">Finished (3)</button>
+    </div>
+    <div id="order-list"></div>
+    </div>
+    
 
 <div class="modal-overlay" id="add-modal" onclick="if(event.target===this) closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
@@ -243,20 +263,80 @@
     async function delMsg(id) { await _sb.from('messages').delete().eq('id', id); loadInbox(); }
 
     // --- STATS ---
-    async function loadStats() {
+        async function loadStats() {
+        // ၁။ Database ကနေ Data တွေယူမယ်
         const { data: ords } = await _sb.from('orders').select('total_amount');
         const { count: prod } = await _sb.from('products').select('*', {count:'exact', head:true});
         const { count: msg } = await _sb.from('messages').select('*', {count:'exact', head:true});
         const { count: newOrd } = await _sb.from('orders').select('*', {count:'exact', head:true}).eq('status', 1);
 
-        let rev = ords ? ords.reduce((s, o) => s + parseInt(o.total_amount.replace(/\D/g,'') || 0), 0) : 0;
+        // ၂။ ဝင်ငွေ (Revenue) ကို ပေါင်းမယ်
+        let rev = ords ? ords.reduce((s, o) => {
+            // total_amount ထဲက " K" တို့ ဘာတို့ ဖယ်ပြီး ဂဏန်းပြောင်းပေါင်းတာပါ
+            let amt = parseInt(o.total_amount.toString().replace(/\D/g,'')) || 0;
+            return s + amt;
+        }, 0) : 0;
+
+        // ၃။ ဂဏန်းတွေကို UI မှာ ပြမယ်
         document.getElementById('st-rev').innerText = rev.toLocaleString() + " K";
         document.getElementById('st-ord').innerText = newOrd || 0;
         document.getElementById('st-item').innerText = prod || 0;
         document.getElementById('st-msg').innerText = msg || 0;
+
+        // --- ဒီနေရာက သင်မေးထားတဲ့ Progress Bar တွက်တဲ့အပိုင်းပါ ---
+        let target = 1000000; // သတ်မှတ်ထားတဲ့ ရောင်းအားပန်းတိုင် (၁၀ သိန်း)
+        let percent = (rev / target) * 100;
+        
+        // Progress Bar အတန်းလေး ရှည်လာအောင် လုပ်တာပါ
+        const progressBar = document.getElementById('rev-progress');
+        if (progressBar) {
+            progressBar.style.width = (percent > 100 ? 100 : percent) + "%";
+        }
+        // ---------------------------------------------------
     }
 
+
     window.onload = loadStats;
+    // အော်ဒါအသစ်တက်လာရင် မြည်မယ့်အသံ (Online က အသံတစ်ခုခု သုံးနိုင်ပါတယ်)
+const notifySound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+    function searchOrders() {
+    let input = document.getElementById('orderSearch').value.toUpperCase();
+    let cards = document.getElementById('order-list').getElementsByClassName('item-card');
+
+    for (let i = 0; i < cards.length; i++) {
+        let name = cards[i].getElementsByTagName("b")[0];
+        if (name) {
+            let txtValue = name.textContent || name.innerText;
+            if (txtValue.toUpperCase().indexOf(input) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+    }
+    
+function enableRealtime() {
+    _sb.channel('custom-all-channel')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+        console.log('New Order Received!', payload.new);
+        notifySound.play(); // အသံမြည်မယ်
+        alert("အော်ဒါအသစ် ရောက်ရှိလာပါပြီ!");
+        loadStats(); // Dashboard refresh လုပ်မယ်
+        if(document.getElementById('order-view').classList.contains('active')) {
+            filterOrders(1, document.querySelector('.tab-btn')); // Order list refresh လုပ်မယ်
+        }
+    })
+    .subscribe();
+}
+
+// window.onload မှာ ဒါလေး ထည့်ပေးပါ
+window.onload = () => {
+    loadStats();
+    enableRealtime();
+};
+    
 </script>
 </body>
 </html>
