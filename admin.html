@@ -3,191 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Myin Thar Roast - Admin Panel</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>MT Roast - Pro Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #FF6B35;
-            --primary-dark: #E85A2A;
-            --bg: #F0F2F5;
+            --accent: #7360F2;
+            --bg: #F4F7FE;
             --white: #FFFFFF;
-            --text: #2D3436;
-            --gray: #8E8E93;
-            --success: #4CD964;
+            --text: #2B3674;
+            --gray: #A3AED0;
         }
 
-        body { font-family: 'Segoe UI', 'Pyidaungsu', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 80px; overflow-x: hidden; }
 
-        /* Mobile Bottom Nav */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #ddd; z-index: 1000; }
-        .nav-item { color: var(--gray); font-size: 20px; cursor: pointer; text-align: center; }
+        /* Header & Dashboard Stats */
+        .header { background: var(--white); padding: 25px 20px; border-radius: 0 0 30px 30px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stat-box { background: var(--white); padding: 20px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.02); border: 1px solid #E9EDF7; }
+        .stat-box h4 { margin: 0; color: var(--gray); font-size: 13px; }
+        .stat-box h2 { margin: 8px 0; font-size: 20px; }
+        .percent { font-size: 11px; font-weight: bold; }
+        .up { color: #05CD99; } .down { color: #EE5D50; }
+
+        /* Content Sections */
+        .container { padding: 20px; display: none; }
+        .container.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Order UI with Status Tabs */
+        .order-tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { padding: 8px 15px; border-radius: 10px; border: none; background: #E9EDF7; color: var(--text); font-weight: 600; font-size: 12px; cursor: pointer; white-space: nowrap; }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        /* Cards */
+        .card { background: white; padding: 15px; border-radius: 18px; margin-bottom: 12px; border: 1px solid #E9EDF7; display: flex; align-items: center; gap: 15px; }
+        .order-badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+
+        /* FAB & Pop-up Animation */
+        .fab { position: fixed; bottom: 100px; right: 25px; background: var(--primary); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 10px 20px rgba(255,107,53,0.4); z-index: 999; cursor: pointer; }
+        
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); display: none; z-index: 1000; justify-content: center; align-items: flex-end; }
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 30px 30px 0 0; padding: 30px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active { display: flex; }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        /* Inputs */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 1.5px solid #E9EDF7; border-radius: 12px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+        .upload-area { border: 2px dashed #E9EDF7; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer; }
+
+        /* Bottom Nav */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #E9EDF7; z-index: 1001; }
+        .nav-item { color: var(--gray); text-align: center; cursor: pointer; font-size: 11px; }
         .nav-item.active { color: var(--primary); }
-        .nav-item span { display: block; font-size: 10px; margin-top: 4px; }
-
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 100; }
-
-        .content-section { padding: 20px; padding-bottom: 100px; display: none; }
-        .content-section.active { display: block; }
-
-        /* Dashboard Cards */
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; }
-        .stat-card i { font-size: 24px; color: var(--primary); margin-bottom: 10px; }
-        .stat-card h3 { margin: 5px 0; font-size: 18px; }
-        .stat-card p { margin: 0; color: var(--gray); font-size: 12px; }
-
-        /* Order List */
-        .order-card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid var(--primary); position: relative; }
-        .status-badge { position: absolute; top: 15px; right: 15px; background: #FFF1EB; color: var(--primary); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; }
-
-        /* Product List & Form */
-        .form-box { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; box-sizing: border-box; }
-        .btn-add { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-
-        .prod-item { display: flex; align-items: center; background: white; padding: 10px; border-radius: 15px; margin-bottom: 10px; gap: 15px; }
-        .prod-img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2 style="margin:0">Admin Dashboard</h2>
-</div>
-
-<div id="dash" class="content-section active">
-    <div class="stat-grid">
-        <div class="stat-card">
-            <i class="fas fa-shopping-bag"></i>
-            <h3 id="total-orders">0</h3>
-            <p>စုစုပေါင်းအော်ဒါ</p>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-money-bill-wave"></i>
-            <h3 id="total-sales">0 K</h3>
-            <p>စုစုပေါင်းရောင်းအား</p>
+<div id="dashboard-view" class="container active">
+    <div class="header">
+        <h2 style="margin:0">Dashboard</h2>
+        <p style="color:var(--gray); font-size:13px;">Welcome back, Myin Thar Roast</p>
+        
+        <div class="stat-grid">
+            <div class="stat-box">
+                <h4>Total Revenue</h4>
+                <h2 id="total-revenue">0 K</h2>
+                <span class="percent up"><i class="fas fa-arrow-up"></i> 12.5% this month</span>
+            </div>
+            <div class="stat-box">
+                <h4>Total Orders</h4>
+                <h2 id="total-orders">0</h2>
+                <span class="percent up"><i class="fas fa-arrow-up"></i> 5.2% this week</span>
+            </div>
+            <div class="stat-box">
+                <h4>Total Customers</h4>
+                <h2 id="total-customers">0</h2>
+                <span class="percent down"><i class="fas fa-arrow-down"></i> 1.1% today</span>
+            </div>
+            <div class="stat-box">
+                <h4>Active Inventory</h4>
+                <h2 id="total-inv">0 Items</h2>
+                <span class="percent up">Stable</span>
+            </div>
         </div>
     </div>
-    <h3>လက်ရှိအော်ဒါများ</h3>
-    <div id="admin-order-list"></div>
 </div>
 
-<div id="prods" class="content-section">
-    <div class="form-box">
-        <h3 style="margin-top:0">မီနူးအသစ်ထည့်ရန်</h3>
-        <input type="text" id="p-name" placeholder="အမည် (ဥပမာ- ကြက်သားကင်)">
-        <input type="number" id="p-price" placeholder="ဈေးနှုန်း (ဥပမာ- ၅၀၀၀)">
-        <select id="p-cat">
-            <option value="ကြက်">ကြက်သား</option>
-            <option value="ဆိတ်">ဆိတ်သား</option>
-            <option value="အခြား">အခြား</option>
-        </select>
-        <input type="text" id="p-img" placeholder="ပုံ Link (URL)">
-        <button class="btn-add" onclick="addProduct()">မီနူးအသစ်သိမ်းမည်</button>
+<div id="order-view" class="container">
+    <h3>Order Management</h3>
+    <div class="order-tabs">
+        <button class="tab-btn active" onclick="filterStatus('New', this)">New</button>
+        <button class="tab-btn" onclick="filterStatus('Pending', this)">Pending</button>
+        <button class="tab-btn" onclick="filterStatus('Pickup', this)">Pickup</button>
     </div>
+    <div id="order-list"></div>
+</div>
 
-    <h3>မီနူးစာရင်း</h3>
-    <div id="admin-prod-list"></div>
+<div id="inventory-view" class="container">
+    <h3>Inventory Stock</h3>
+    <div id="inventory-list"></div>
+</div>
+
+<div class="fab" onclick="toggleMenuModal(true)">
+    <i class="fas fa-plus"></i>
+</div>
+
+<div class="modal-overlay" id="menu-modal" onclick="if(event.target === this) toggleMenuModal(false)">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0">Add New Menu</h3>
+            <i class="fas fa-times" onclick="toggleMenuModal(false)" style="cursor:pointer"></i>
+        </div>
+        
+        <div class="form-group">
+            <label>Menu Image</label>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size:30px; color:var(--primary)"></i>
+                <p id="file-status" style="font-size:12px; color:var(--gray)">Click to upload from phone</p>
+                <input type="file" id="fileInput" hidden accept="image/*" onchange="handleFileUpload(this)">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Item Name</label>
+            <input type="text" id="p-name" placeholder="Enter name">
+        </div>
+        
+        <div class="form-group">
+            <label>Price (Kyats)</label>
+            <input type="number" id="p-price" placeholder="Enter price">
+        </div>
+
+        <div class="form-group">
+            <label>Category</label>
+            <select id="p-cat">
+                <option value="ကြက်">ကြက်သား</option>
+                <option value="ဆိတ်">ဆိတ်သား</option>
+                <option value="အခြား">အခြား</option>
+            </select>
+        </div>
+
+        <button class="btn-cloud" style="background:var(--primary); color:white; border:none; padding:18px; border-radius:15px; width:100%; font-weight:bold; margin-top:10px;" onclick="uploadProduct()">Add to Cloud</button>
+    </div>
 </div>
 
 <div class="nav-bar">
-    <div class="nav-item active" onclick="showTab('dash', this)">
-        <i class="fas fa-chart-line"></i>
-        <span>Dashboard</span>
-    </div>
-    <div class="nav-item" onclick="showTab('prods', this)">
-        <i class="fas fa-utensils"></i>
-        <span>Menu</span>
-    </div>
+    <div class="nav-item active" onclick="showSection('dashboard', this)"><i class="fas fa-th-large"></i><div>Dash</div></div>
+    <div class="nav-item" onclick="showSection('order', this)"><i class="fas fa-shopping-cart"></i><div>Orders</div></div>
+    <div class="nav-item" onclick="showSection('inventory', this)"><i class="fas fa-boxes"></i><div>Stock</div></div>
+    <div class="nav-item" onclick="showSection('message', this)"><i class="fas fa-comment-alt"></i><div>Inbox</div></div>
 </div>
 
 <script>
-    // Initial Data
-    let products = JSON.parse(localStorage.getItem('menuData')) || [
-        { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'ကြက်', image: 'https://via.placeholder.com/150' },
-        { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'ဆိတ်', image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png' }
-    ];
+    const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njc1OTYwNiwiZXhwIjoyMDgyMzM1NjA2fQ.rNXHHO8PKO58ZXR4Eqzi6Bl0vzCIwH24jiwOVwbVPoc";
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    function showTab(tabId, el) {
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    let selectedImageBase64 = "";
+
+    // Section Switcher
+    function showSection(id, el) {
+        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
+        document.getElementById(id + '-view').classList.add('active');
         el.classList.add('active');
-        if(tabId === 'dash') renderDashboard();
-        if(tabId === 'prods') renderProducts();
+        if(id === 'dashboard') loadDashboardData();
+        if(id === 'order') fetchOrders();
+        if(id === 'inventory') fetchInventory();
     }
 
-    function renderDashboard() {
-        const orders = JSON.parse(localStorage.getItem('recentOrders') || "[]");
-        document.getElementById('total-orders').innerText = orders.length;
-        
-        let sales = orders.reduce((sum, o) => sum + parseInt(o.total.replace(/,/g, '')), 0);
-        document.getElementById('total-sales').innerText = sales.toLocaleString() + " K";
-
-        document.getElementById('admin-order-list').innerHTML = orders.reverse().map(o => `
-            <div class="order-card">
-                <div class="status-badge">New</div>
-                <b>${o.id.toString().slice(-6)}</b><br>
-                <small>${o.date}</small>
-                <div style="margin-top:10px; border-top: 1px dashed #eee; padding-top:10px;">
-                    ${o.total}
-                </div>
-            </div>
-        `).join('');
+    // Modal Control
+    function toggleMenuModal(show) {
+        const modal = document.getElementById('menu-modal');
+        if(show) modal.classList.add('active');
+        else modal.classList.remove('active');
     }
 
-    function renderProducts() {
-        document.getElementById('admin-prod-list').innerHTML = products.map(p => `
-            <div class="prod-item">
-                <img src="${p.image}" class="prod-img">
-                <div style="flex:1">
-                    <b>${p.name}</b><br>
-                    <small style="color:var(--primary)">${p.price.toLocaleString()} K</small>
-                </div>
-                <i class="fas fa-trash" style="color:red" onclick="deleteProduct(${p.id})"></i>
-            </div>
-        `).join('');
-        localStorage.setItem('menuData', JSON.stringify(products));
-    }
-
-    function addProduct() {
-        const name = document.getElementById('p-name').value;
-        const price = document.getElementById('p-price').value;
-        const cat = document.getElementById('p-cat').value;
-        const img = document.getElementById('p-img').value || 'https://via.placeholder.com/150';
-
-        if(!name || !price) return alert("အချက်အလက်ပြည့်စုံစွာဖြည့်ပါ");
-
-        const newProd = {
-            id: Date.now(),
-            name: name,
-            price: parseInt(price),
-            category: cat,
-            image: img
+    // Image Upload to Base64 (No URL needed)
+    function handleFileUpload(input) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            selectedImageBase64 = reader.result;
+            document.getElementById('file-status').innerText = "Image Selected: " + file.name;
         };
-
-        products.push(newProd);
-        renderProducts();
-        alert("မီနူးအသစ် ထည့်သွင်းပြီးပါပြီ");
-        
-        // Clear inputs
-        document.getElementById('p-name').value = '';
-        document.getElementById('p-price').value = '';
+        reader.readAsDataURL(file);
     }
 
-    function deleteProduct(id) {
-        if(confirm("ဖျက်မှာ သေချာပါသလား?")) {
-            products = products.filter(p => p.id !== id);
-            renderProducts();
+    // Dashboard Data Analytics
+    async function loadDashboardData() {
+        const { data: orders } = await _supabase.from('orders').select('*');
+        if(orders) {
+            let revenue = orders.reduce((sum, o) => sum + parseInt(o.total_amount.replace(/,/g, '')), 0);
+            document.getElementById('total-revenue').innerText = revenue.toLocaleString() + " K";
+            document.getElementById('total-orders').innerText = orders.length;
+            
+            // Unique Customer Count
+            const customers = [...new Set(orders.map(o => o.phone))];
+            document.getElementById('total-customers').innerText = customers.length;
         }
     }
 
-    window.onload = () => {
-        renderDashboard();
-        renderProducts();
-    };
-</script>
+    // Orders with Status Filter
+    async function fetchOrders(status = 'New') {
+        const { data } = await _supabase.from('orders').select('*').eq('status', status).order('created_at', { ascending: false });
+        const list = document.getElementById('order-list');
+        list.innerHTML = data.length ? data.map(o => `
+            <div class="card">
+                <div style="flex:1">
+                    <div style="display:flex; justify-content:space-between">
+                        <b>${o.customer_name}</b>
+                        <span class="order-badge" style="background:#FFF1EB; color:var(--primary)">${o.status}</span>
+                    </div>
+                    <small style="color:var(--gray)">${o.phone} | ${new Date(o.created_at).toLocaleTimeString()}</small>
+                    <p style="font-size:13px; margin:8px 0;">${o.items_text}</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b style="color:var(--primary)">${o.total_amount}</b>
+                        <div>
+                            ${o.status === 'New' ? `<button onclick="updateStatus(${o.id}, 'Pending')" style="padding:5px 10px; border-radius:8px; border:none; background:var(--accent); color:white; font-size:10px;">Confirm</button>` : ''}
+                            ${o.status === 'Pending' ? `<button onclick="updateStatus(${o.id}, 'Pickup')" style="padding:5px 10px; border-radius:8px; border:none; background:#05CD99; color:white; font-size:10px;">Done</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('') : '<p style="text-align:center; color:var(--gray)">အော်ဒါမရှိသေးပါ</p>';
+    }
 
+    async function updateStatus(id, newStatus) {
+        await _supabase.from('orders').update({ status: newStatus }).eq('id', id);
+        fetchOrders(newStatus === 'Pending' ? 'New' : 'Pending');
+    }
+
+    function filterStatus(status, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        fetchOrders(status);
+    }
+
+    // Upload Menu with Base64 Image
+    async function uploadProduct() {
+        const name = document.getElementById('p-name').value;
+        const price = document.getElementById('p-price').value;
+        const category = document.getElementById('p-cat').value;
+
+        if(!name || !price || !selectedImageBase64) return alert("အချက်အလက်အားလုံးဖြည့်ပါ။ ပုံထည့်ပါ။");
+
+        const { error } = await _supabase.from('products').insert([{
+            name, price, category, image: selectedImageBase64
+        }]);
+
+        if(!error) {
+            alert("မီနူးအသစ်ကို Cloud ပေါ်သို့ သိမ်းဆည်းပြီးပါပြီ");
+            toggleMenuModal(false);
+            location.reload();
+        }
+    }
+
+    window.onload = () => loadDashboardData();
+</script>
 </body>
 </html>
 
