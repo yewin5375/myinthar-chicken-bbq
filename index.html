@@ -187,22 +187,39 @@
     </div>
 </div>
 
-    <div id="chat-btn" onclick="toggleChat(true)" style="position:fixed; bottom:20px; left:20px; background:var(--accent); color:white; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:1002; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
-    <i class="fas fa-comment-dots"></i>
+    <div id="chat-btn" onclick="toggleChat(true)" style="position:fixed; bottom:25px; left:25px; background:var(--primary); color:white; width:55px; height:55px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:1002; box-shadow: 0 10px 25px rgba(255,107,53,0.4); cursor:pointer;">
+    <i class="fas fa-comments" style="font-size: 24px;"></i>
+    <div id="msg-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:3px 7px; border-radius:10px; border:2px solid white;">1</div>
 </div>
 
-<div id="chat-window" style="position:fixed; bottom:-100%; left:0; width:100%; height:70%; background:white; z-index:1003; transition:0.4s; border-radius:30px 30px 0 0; display:flex; flex-direction:column; box-shadow:0 -5px 20px rgba(0,0,0,0.1);">
-    <div style="padding:20px; background:var(--accent); color:white; border-radius:30px 30px 0 0; display:flex; justify-content:space-between;">
-        <b>Live Chat</b>
-        <i class="fas fa-times" onclick="toggleChat(false)"></i>
-    </div>
-    <div id="chat-messages" style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+<div id="chat-window" style="position:fixed; bottom:-100%; left:0; width:100%; height:80%; background:white; z-index:2005; transition:0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius:30px 30px 0 0; display:flex; flex-direction:column; box-shadow:0 -10px 40px rgba(0,0,0,0.15);">
+    
+    <div style="padding:20px; background:white; border-bottom:1px solid #eee; border-radius:30px 30px 0 0; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:10px; height:10px; background:#05CD99; border-radius:50%;"></div>
+            <div>
+                <b style="display:block; font-size:16px;">MT Roast Support</b>
+                <small style="color:gray;">Active Now</small>
+            </div>
         </div>
-    <div style="padding:15px; border-top:1px solid #eee; display:flex; gap:10px;">
-        <input type="text" id="chat-input" placeholder="စာရိုက်ပါ..." style="flex:1; border:none; background:#f0f0f0; padding:12px; border-radius:20px; outline:none;">
-        <button onclick="sendChatMessage()" style="background:var(--accent); color:white; border:none; width:45px; height:45px; border-radius:50%;"><i class="fas fa-paper-plane"></i></button>
+        <i class="fas fa-times" onclick="toggleChat(false)" style="font-size:20px; color:#ccc; cursor:pointer;"></i>
+    </div>
+
+    <div id="chat-messages" style="flex:1; padding:20px; overflow-y:auto; background:#f9f9fb; display:flex; flex-direction:column; gap:12px;">
+        <div style="align-self: flex-start; background: #eee; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 80%; font-size:14px;">
+            မင်္ဂလာပါ MT Roast မှ ကြိုဆိုပါတယ်။ ဘာများကူညီပေးရမလဲခင်ဗျာ။
+        </div>
+    </div>
+
+    <div style="padding:15px 20px 30px 20px; background:white; border-top:1px solid #eee; display:flex; gap:10px; align-items:center;">
+        <input type="text" id="chat-input" placeholder="စာရိုက်ပါ..." 
+               style="flex:1; border:none; background:#f0f2f5; padding:14px 20px; border-radius:25px; outline:none; font-size:15px;">
+        <button onclick="sendChatMessage()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 5px 15px rgba(255,107,53,0.3);">
+            <i class="fas fa-paper-plane"></i>
+        </button>
     </div>
 </div>
+    
     
 <script>
     // သင့်ရဲ့ Supabase URL နဲ့ Key
@@ -366,29 +383,70 @@ let menuData = []; // Database ကလာမယ့် data သိမ်းဖိ�
         }, 1200);
     }
 
-    let myId = localStorage.getItem('chat_id') || "user_" + Math.random().toString(36).slice(2, 7);
-localStorage.setItem('chat_id', myId);
+    async function sendMessage() {
+    const name = document.getElementById('msg-name').value;
+    const phone = document.getElementById('msg-phone').value;
+    const text = document.getElementById('msg-text').value;
 
-function toggleChat(s) { 
-    document.getElementById('chat-window').style.bottom = s ? '0' : '-100%'; 
-    if(s) loadChatHistory();
+    if(!name || !phone || !text) {
+        return alert("အချက်အလက်များကို ပြည့်စုံစွာ ဖြည့်ပေးပါ။");
+    }
+
+    // Loader ပြမယ်
+    document.getElementById('global-loader').style.display = 'flex';
+    document.getElementById('loader-text').innerText = "စာပို့နေပါသည်...";
+
+    // Supabase ရဲ့ messages table ထဲကို ပို့မယ်
+    const { error } = await _sb.from('messages').insert([{
+        customer_name: name,
+        phone: phone,
+        message_text: text
+    }]);
+
+    document.getElementById('global-loader').style.display = 'none';
+
+    if(!error) {
+        alert("စာပို့ခြင်း အောင်မြင်ပါသည်။ ဆိုင်မှ အကြောင်းပြန်ပေးပါမည်။");
+        // Form ကို ပြန်ရှင်းမယ်
+        document.getElementById('msg-name').value = "";
+        document.getElementById('msg-phone').value = "";
+        document.getElementById('msg-text').value = "";
+    } else {
+        alert("Error: " + error.message);
+    }
+    }
+
+    let myChatId = localStorage.getItem('chat_id') || "user_" + Math.random().toString(36).slice(2, 9);
+localStorage.setItem('chat_id', myChatId);
+
+function toggleChat(s) {
+    const win = document.getElementById('chat-window');
+    win.style.bottom = s ? '0' : '-100%';
+    if(s) {
+        document.getElementById('msg-badge').style.display = 'none';
+        loadChatHistory();
+    }
 }
 
 async function sendChatMessage() {
-    const msg = document.getElementById('chat-input').value;
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
     if(!msg) return;
 
-    await _sb.from('chats').insert([{
-        customer_id: myId,
+    input.value = ""; // စာပို့ပြီးရင် ချက်ချင်းဖျက်မယ်
+    const { error } = await _sb.from('chats').insert([{
+        customer_id: myChatId,
         sender: 'customer',
         message: msg
     }]);
 
-    document.getElementById('chat-input').value = "";
+    if(error) console.error(error);
 }
 
 async function loadChatHistory() {
-    const { data } = await _sb.from('chats').select('*').eq('customer_id', myId).order('created_at', {ascending: true});
+    const { data } = await _sb.from('chats').select('*')
+        .eq('customer_id', myChatId)
+        .order('created_at', {ascending: true});
     renderChat(data);
 }
 
@@ -396,22 +454,31 @@ function renderChat(data) {
     const box = document.getElementById('chat-messages');
     box.innerHTML = data.map(m => `
         <div style="align-self: ${m.sender === 'customer' ? 'flex-end' : 'flex-start'}; 
-                    background: ${m.sender === 'customer' ? 'var(--accent)' : '#eee'}; 
+                    background: ${m.sender === 'customer' ? 'var(--primary)' : 'white'}; 
                     color: ${m.sender === 'customer' ? 'white' : 'black'}; 
-                    padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size:14px;">
+                    padding: 12px 16px; 
+                    border-radius: ${m.sender === 'customer' ? '18px 18px 4px 18px' : '18px 18px 18px 4px'}; 
+                    max-width: 75%; font-size:14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
             ${m.message}
         </div>
     `).join('');
     box.scrollTop = box.scrollHeight;
 }
 
-// Realtime နားထောင်ခြင်း
-_sb.channel('live-chats').on('postgres_changes', { 
-    event: 'INSERT', schema: 'public', table: 'chats', filter: `customer_id=eq.${myId}` 
+// Realtime Update - စာဝင်လာရင် ချက်ချင်းပြဖို့
+_sb.channel('chat-room').on('postgres_changes', { 
+    event: 'INSERT', schema: 'public', table: 'chats' 
 }, payload => {
-    loadChatHistory(); // စာအသစ်ဝင်လာတိုင်း screen မှာပြမယ်
+    if(payload.new.customer_id === myChatId) {
+        loadChatHistory();
+        if(document.getElementById('chat-window').style.bottom !== '0px') {
+            document.getElementById('msg-badge').style.display = 'block';
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play();
+        }
+    }
 }).subscribe();
     
+
     async function sendOrder(platform) {
     const name = document.getElementById('cust-name').value;
     const phone = document.getElementById('cust-phone').value;
@@ -455,6 +522,9 @@ _sb.channel('live-chats').on('postgres_changes', {
         }, 1000);
     });
     }
+    
+    
+    
     
 </script>
 </body>
