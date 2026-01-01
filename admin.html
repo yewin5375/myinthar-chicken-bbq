@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MT Roast - Pro Admin</title>
+    <title>MT Roast - Ultimate Admin Control</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -13,171 +13,156 @@
         /* Header & Dashboard Stats */
         .header { background: var(--white); padding: 25px 20px; border-radius: 0 0 30px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .stat-box { background: var(--white); padding: 20px; border-radius: 20px; border: 1px solid #E9EDF7; position: relative; overflow: hidden; }
+        .stat-box { background: var(--white); padding: 20px; border-radius: 20px; border: 1px solid #E9EDF7; }
         .stat-box h4 { margin: 0; color: var(--gray); font-size: 12px; }
         .stat-box h2 { margin: 10px 0; font-size: 20px; }
-        .trend { font-size: 11px; font-weight: bold; }
-        .trend.up { color: var(--success); }
 
         /* Sections */
         .container { padding: 20px; display: none; }
         .container.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Order Tabs */
-        .order-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
+        /* Tabs & Cards */
+        .order-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab-btn { padding: 10px 20px; border-radius: 12px; border: none; background: #E9EDF7; color: var(--text); font-weight: 600; cursor: pointer; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        /* Item Cards */
         .item-card { background: white; padding: 15px; border-radius: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid #E9EDF7; }
-        .item-img { width: 70px; height: 70px; border-radius: 15px; object-fit: cover; background: #eee; }
+        .item-img { width: 65px; height: 65px; border-radius: 12px; object-fit: cover; background: #eee; }
         .item-info { flex: 1; }
-        .item-info b { font-size: 16px; display: block; margin-bottom: 4px; }
         .price-tag { color: var(--primary); font-weight: bold; }
 
-        /* FAB Button */
-        .fab { position: fixed; bottom: 100px; right: 25px; background: var(--primary); width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 10px 20px rgba(255,107,53,0.4); z-index: 999; cursor: pointer; border: 3px solid white; }
-
-        /* Slide-up Modal */
+        /* FAB & Modals */
+        .fab { position: fixed; bottom: 100px; right: 25px; background: var(--primary); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 10px 20px rgba(255,107,53,0.3); z-index: 999; cursor: pointer; border: 2px solid white; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); display: none; z-index: 2000; align-items: flex-end; }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: white; width: 100%; border-radius: 30px 30px 0 0; padding: 30px; box-sizing: border-box; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-content { background: white; width: 100%; border-radius: 30px 30px 0 0; padding: 25px; box-sizing: border-box; transform: translateY(100%); transition: 0.3s; }
         .modal-overlay.active .modal-content { transform: translateY(0); }
 
-        input, select { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 12px; border: 1.5px solid #E9EDF7; outline: none; }
-        .btn-save { background: var(--primary); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #eee; outline: none; }
+        .btn-save { background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        /* Bottom Navigation */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #E9EDF7; z-index: 1001; }
-        .nav-item { color: var(--gray); text-align: center; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
-        .nav-item i { font-size: 22px; }
+        /* Nav Bar */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #eee; z-index: 1001; }
+        .nav-item { color: var(--gray); text-align: center; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div id="dashboard-view" class="container active">
     <div class="header">
-        <h2 style="margin:0">Admin Panel</h2>
+        <h2 style="margin:0">MT Roast Dashboard</h2>
         <div class="stat-grid">
-            <div class="stat-box"><h4>Revenue</h4><h2 id="stat-revenue">0 K</h2><span class="trend up"><i class="fas fa-arrow-up"></i> 15%</span></div>
-            <div class="stat-box"><h4>Orders</h4><h2 id="stat-orders">0</h2><span class="trend up"><i class="fas fa-arrow-up"></i> 8%</span></div>
-            <div class="stat-box"><h4>Customers</h4><h2 id="stat-customers">0</h2><span class="trend up">Stable</span></div>
-            <div class="stat-box"><h4>Items</h4><h2 id="stat-items">0</h2><span class="trend up">Menu</span></div>
+            <div class="stat-box"><h4>Revenue</h4><h2 id="st-rev">0 K</h2></div>
+            <div class="stat-box"><h4>New Orders</h4><h2 id="st-ord">0</h2></div>
+            <div class="stat-box"><h4>Products</h4><h2 id="st-item">0</h2></div>
+            <div class="stat-box"><h4>Messages</h4><h2 id="st-msg">0</h2></div>
         </div>
     </div>
 </div>
 
 <div id="order-view" class="container">
-    <h3>Order Management</h3>
+    <h3>Orders Status</h3>
     <div class="order-tabs">
-        <button class="tab-btn active" onclick="filterOrders('New', this)">New</button>
-        <button class="tab-btn" onclick="filterOrders('Pending', this)">Pending</button>
-        <button class="tab-btn" onclick="filterOrders('Pickup', this)">Pickup</button>
+        <button class="tab-btn active" onclick="filterOrders(1, this)">New (1)</button>
+        <button class="tab-btn" onclick="filterOrders(2, this)">Cooking (2)</button>
+        <button class="tab-btn" onclick="filterOrders(3, this)">Finished (3)</button>
     </div>
     <div id="order-list"></div>
 </div>
 
 <div id="inventory-view" class="container">
-    <h3>Inventory & Menu</h3>
+    <h3>Menu Management</h3>
     <div id="menu-list"></div>
 </div>
 
-<div class="modal-overlay" id="add-modal" onclick="if(event.target===this) closeMenuModal()">
-    <div class="modal-content">
-        <div style="width: 40px; height: 5px; background: #eee; border-radius: 10px; margin: -10px auto 20px;"></div>
-        <h3>Add New Menu</h3>
-        <div onclick="document.getElementById('fileInput').click()" style="border:2px dashed var(--gray); padding:20px; text-align:center; border-radius:15px; margin-bottom:15px; cursor:pointer;">
-            <i class="fas fa-camera" style="font-size:24px; color:var(--primary)"></i>
-            <p id="file-label" style="font-size:12px; color:var(--gray)">Upload Menu Photo</p>
-            <input type="file" id="fileInput" hidden accept="image/*" onchange="previewImage(this)">
+<div id="message-view" class="container">
+    <h3>Customer Inbox</h3>
+    <div id="message-list"></div>
+</div>
+
+<div class="modal-overlay" id="add-modal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 id="modal-title">Add Menu</h3>
+        <div onclick="document.getElementById('fileInput').click()" style="border:2px dashed #ccc; padding:15px; text-align:center; border-radius:10px; margin-bottom:10px; cursor:pointer;">
+            <p id="file-label" style="margin:0; font-size:13px; color:var(--gray)">Tap to upload photo</p>
+            <input type="file" id="fileInput" hidden accept="image/*" onchange="previewImg(this)">
         </div>
-        <input type="text" id="m-name" placeholder="Item Name">
-        <input type="number" id="m-price" placeholder="Price (Kyats)">
-        <input type="number" id="m-stock" placeholder="Initial Stock Qty">
+        <input type="text" id="m-name" placeholder="Name">
+        <input type="number" id="m-price" placeholder="Price (K)">
+        <input type="number" id="m-stock" placeholder="Stock Qty">
         <select id="m-cat">
-            <option value="Main">ပင်မဟင်းပွဲ</option>
-            <option value="Side">အပိုစာ</option>
-            <option value="Drink">အအေး</option>
+            <option value="Main">Main Dish</option>
+            <option value="Side">Side Dish</option>
+            <option value="Drink">Drinks</option>
         </select>
-        <button class="btn-save" onclick="saveNewMenu()">Add to Menu</button>
+        <button class="btn-save" onclick="saveItem()">Save Product</button>
     </div>
 </div>
 
-<div class="fab" onclick="openMenuModal()"><i class="fas fa-plus"></i></div>
+<div class="fab" onclick="openModal()"><i class="fas fa-plus"></i></div>
 
 <div class="nav-bar">
-    <div class="nav-item active" onclick="switchTab('dashboard', this)"><i class="fas fa-th-large"></i><div style="font-size:10px">Dash</div></div>
-    <div class="nav-item" onclick="switchTab('order', this)"><i class="fas fa-shopping-basket"></i><div style="font-size:10px">Orders</div></div>
-    <div class="nav-item" onclick="switchTab('inventory', this)"><i class="fas fa-box-open"></i><div style="font-size:10px">Inventory</div></div>
+    <div class="nav-item active" onclick="switchTab('dashboard', this)"><i class="fas fa-chart-line"></i><div style="font-size:10px">Home</div></div>
+    <div class="nav-item" onclick="switchTab('order', this)"><i class="fas fa-shopping-cart"></i><div style="font-size:10px">Orders</div></div>
+    <div class="nav-item" onclick="switchTab('inventory', this)"><i class="fas fa-list"></i><div style="font-size:10px">Items</div></div>
+    <div class="nav-item" onclick="switchTab('message', this)"><i class="fas fa-envelope"></i><div style="font-size:10px">Inbox</div></div>
 </div>
 
-        <script>
-    // Supabase Configuration with Service Role
+<script>
     const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njc1OTYwNiwiZXhwIjoyMDgyMzM1NjA2fQ.rNXHHO8PKO58ZXR4Eqzi6Bl0vzCIwH24jiwOVwbVPoc";
     const _sb = supabase.createClient(SB_URL, SB_KEY);
 
-    let base64Img = "";
-    let editingId = null; 
+    let base64 = "";
+    let editId = null;
 
-    // --- Modal Logic (Edit/Add) ---
-    function openMenuModal(editData = null) {
-        const modalTitle = document.getElementById('modal-title');
-        const saveBtn = document.querySelector('.btn-save');
+    // --- NAVIGATION ---
+    function switchTab(id, el) {
+        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id + '-view').classList.add('active');
+        el.classList.add('active');
+        if(id === 'inventory') loadMenu();
+        if(id === 'order') filterOrders(1, document.querySelector('.tab-btn'));
+        if(id === 'message') loadInbox();
+        if(id === 'dashboard') loadStats();
+    }
 
-        if (editData) {
-            // Edit Mode - Data တွေကို Form ထဲပြန်ဖြည့်မယ်
-            editingId = editData.id;
-            modalTitle.innerText = "Edit Menu Item";
-            document.getElementById('m-name').value = editData.name;
-            document.getElementById('m-price').value = editData.price;
-            document.getElementById('m-stock').value = editData.stock_qty || 0;
-            document.getElementById('m-cat').value = editData.category;
-            base64Img = editData.image; 
-            document.getElementById('file-label').innerText = "Image Loaded ✅";
-            saveBtn.innerText = "Save Changes";
-        } else {
-            // Add New Mode - Form ကို ရှင်းမယ်
-            editingId = null;
-            modalTitle.innerText = "Add New Menu";
-            document.getElementById('m-name').value = "";
-            document.getElementById('m-price').value = "";
-            document.getElementById('m-stock').value = "";
-            base64Img = "";
-            document.getElementById('file-label').innerText = "Upload Menu Photo";
-            saveBtn.innerText = "Add to Menu";
-        }
+    // --- MODAL & IMAGE ---
+    function openModal(data = null) {
+        editId = data ? data.id : null;
+        document.getElementById('modal-title').innerText = data ? "Edit Item" : "Add Item";
+        document.getElementById('m-name').value = data ? data.name : "";
+        document.getElementById('m-price').value = data ? data.price : "";
+        document.getElementById('m-stock').value = data ? data.stock_qty : "";
+        document.getElementById('m-cat').value = data ? data.category : "Main";
+        base64 = data ? data.image : "";
+        document.getElementById('file-label').innerText = data ? "Image Loaded ✅" : "Tap to upload photo";
         document.getElementById('add-modal').classList.add('active');
     }
+    function closeModal() { document.getElementById('add-modal').classList.remove('active'); }
 
-    function closeMenuModal() {
-        document.getElementById('add-modal').classList.remove('active');
-        editingId = null;
+    function previewImg(input) {
+        const reader = new FileReader();
+        reader.onload = (e) => { 
+            base64 = e.target.result;
+            document.getElementById('file-label').innerText = "Selected ✅";
+        };
+        reader.readAsDataURL(input.files[0]);
     }
 
-    // --- Image Preview Logic ---
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => { 
-                base64Img = e.target.result;
-                document.getElementById('file-label').innerText = "New Photo Selected ✅";
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // --- Database Operations (Add / Update) ---
-    async function saveNewMenu() {
+    // --- PRODUCTS (ADD/EDIT/DELETE) ---
+        async function saveItem() {
         const name = document.getElementById('m-name').value;
         const price = document.getElementById('m-price').value;
         const stock = document.getElementById('m-stock').value;
         const cat = document.getElementById('m-cat').value;
 
-        if(!name || !price || !base64Img) {
-            return alert("အချက်အလက်ပြည့်စုံစွာ ဖြည့်စွက်ပေးပါ။");
+        // Validation: အချက်အလက်စုံမစုံစစ်မယ်
+        if(!name || !price || !base64) {
+            return alert("ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ပြည့်စုံစွာဖြည့်ပါ။");
         }
 
         const payload = {
@@ -185,75 +170,94 @@
             price: parseInt(price),
             stock_qty: parseInt(stock) || 0,
             category: cat,
-            image: base64Img
+            image: base64
         };
 
-        let result;
-        if (editingId) {
-            // Update Existing Item
-            result = await _sb.from('products').update(payload).eq('id', editingId);
+        let response;
+
+        if (editId) {
+            // Edit လုပ်နေတာဆိုရင် Update လုပ်မယ်
+            response = await _sb.from('products').update(payload).eq('id', editId);
         } else {
-            // Insert New Item
-            result = await _sb.from('products').insert([payload]);
+            // အသစ်ထည့်တာဆိုရင် Insert လုပ်မယ်
+            response = await _sb.from('products').insert([payload]);
         }
 
-        if(!result.error) {
-            alert(editingId ? "ပြင်ဆင်မှု အောင်မြင်ပါသည်" : "Menu အသစ် ထည့်သွင်းပြီးပါပြီ");
-            closeMenuModal();
-            loadMenu(); // List ပြန်ခေါ်မယ်
+        if(!response.error) {
+            alert(editId ? "ပြင်ဆင်ပြီးပါပြီ" : "အသစ်ထည့်သွင်းပြီးပါပြီ");
+            closeModal();
+            loadMenu(); // List ကို Refresh လုပ်မယ်
+            loadStats(); // Dashboard က အရေအတွက်တွေကို Update လုပ်မယ်
         } else {
-            alert("Error: " + result.error.message);
+            alert("Error: " + response.error.message);
+            console.error(response.error);
         }
     }
 
-    // --- Delete Logic ---
-    async function deleteItem(id) {
-        if(confirm("ဤဟင်းပွဲကို ဖျက်ရန် သေချာပါသလား?")) {
-            const { error } = await _sb.from('products').delete().eq('id', id);
-            if(!error) {
-                loadMenu();
-                loadStats(); // Dashboard က အရေအတွက်ပါ ပြန်ညှိမယ်
-            } else {
-                alert("ဖျက်လို့မရပါ: " + error.message);
-            }
-        }
-    }
 
-    // --- Load Data into UI ---
     async function loadMenu() {
-        const { data, error } = await _sb.from('products').select('*').order('created_at', {ascending: false});
-        
-        if (error) return console.error("Error loading menu:", error);
-
-        const menuList = document.getElementById('menu-list');
-        menuList.innerHTML = data.map(i => `
+        const { data } = await _sb.from('products').select('*').order('created_at', {ascending:false});
+        document.getElementById('menu-list').innerHTML = data.map(i => `
             <div class="item-card">
-                <img src="${i.image}" class="item-img" onerror="this.src='https://via.placeholder.com/70'">
-                <div class="item-info">
-                    <b>${i.name}</b>
-                    <span class="price-tag">${i.price.toLocaleString()} K</span>
-                    <div style="font-size:11px; color:var(--gray)">Stock: ${i.stock_qty || 0} | Cat: ${i.category}</div>
-                </div>
-                <div style="display:flex; gap:12px;">
-                    <button onclick='openMenuModal(${JSON.stringify(i).replace(/'/g, "&apos;")})' 
-                        style="border:none; color:var(--accent); background:none; font-size:18px; cursor:pointer;">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deleteItem(${i.id})" 
-                        style="border:none; color:var(--danger); background:none; font-size:18px; cursor:pointer;">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                <img src="${i.image}" class="item-img">
+                <div class="item-info"><b>${i.name}</b><br><span class="price-tag">${i.price} K</span><br><small>Stock: ${i.stock_qty}</small></div>
+                <div style="display:flex; gap:10px;">
+                    <i class="fas fa-edit" onclick='openModal(${JSON.stringify(i)})' style="color:var(--accent)"></i>
+                    <i class="fas fa-trash" onclick="delItem(${i.id})" style="color:var(--danger)"></i>
                 </div>
             </div>
         `).join('');
     }
+    async function delItem(id) { if(confirm("Delete?")) { await _sb.from('products').delete().eq('id', id); loadMenu(); } }
 
-    // Start loading on page load
-    window.onload = () => {
-        loadMenu();
-        if(typeof loadStats === "function") loadStats();
-    };
-        </script>
+    // --- ORDERS (STATUS 1, 2, 3) ---
+    async function filterOrders(st, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const { data } = await _sb.from('orders').select('*').eq('status', st).order('created_at',{ascending:false});
+        document.getElementById('order-list').innerHTML = data.map(o => `
+            <div class="item-card" style="flex-direction:column; align-items:flex-start;">
+                <div style="display:flex; justify-content:space-between; width:100%;"><b>${o.customer_name}</b><small>${new Date(o.created_at).toLocaleTimeString()}</small></div>
+                <div style="font-size:13px; margin:5px 0;">${o.items_text}</div>
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <b class="price-tag">${o.total_amount} K</b>
+                    ${st==1 ? `<button onclick="updOrder(${o.id}, 2)" style="background:var(--accent); color:white; border:none; padding:5px 12px; border-radius:8px;">Confirm</button>` : ''}
+                    ${st==2 ? `<button onclick="updOrder(${o.id}, 3)" style="background:var(--success); color:white; border:none; padding:5px 12px; border-radius:8px;">Done</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+    async function updOrder(id, next) { await _sb.from('orders').update({status: next}).eq('id', id); switchTab('order', document.querySelectorAll('.nav-item')[1]); }
+
+    // --- INBOX ---
+    async function loadInbox() {
+        const { data } = await _sb.from('messages').select('*').order('created_at',{ascending:false});
+        document.getElementById('message-list').innerHTML = data.map(m => `
+            <div class="item-card" style="flex-direction:column; align-items:flex-start;">
+                <div style="display:flex; justify-content:space-between; width:100%;"><b>${m.customer_name}</b><small>${m.phone}</small></div>
+                <p style="font-size:14px; margin:5px 0;">${m.message_text}</p>
+                <button onclick="delMsg(${m.id})" style="border:none; background:none; color:var(--danger);"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+        `).join('');
+    }
+    async function delMsg(id) { await _sb.from('messages').delete().eq('id', id); loadInbox(); }
+
+    // --- STATS ---
+    async function loadStats() {
+        const { data: ords } = await _sb.from('orders').select('total_amount');
+        const { count: prod } = await _sb.from('products').select('*', {count:'exact', head:true});
+        const { count: msg } = await _sb.from('messages').select('*', {count:'exact', head:true});
+        const { count: newOrd } = await _sb.from('orders').select('*', {count:'exact', head:true}).eq('status', 1);
+
+        let rev = ords ? ords.reduce((s, o) => s + parseInt(o.total_amount.replace(/\D/g,'') || 0), 0) : 0;
+        document.getElementById('st-rev').innerText = rev.toLocaleString() + " K";
+        document.getElementById('st-ord').innerText = newOrd || 0;
+        document.getElementById('st-item').innerText = prod || 0;
+        document.getElementById('st-msg').innerText = msg || 0;
+    }
+
+    window.onload = loadStats;
+</script>
 </body>
 </html>
-    
+
