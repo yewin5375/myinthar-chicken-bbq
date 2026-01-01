@@ -110,10 +110,14 @@
         <input type="number" id="m-price" placeholder="Price (K)" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #eee;">
         <input type="number" id="m-stock" placeholder="Stock Quantity" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #eee;">
         <select id="m-cat" style="width:100%; padding:12px; margin-bottom:15px; border-radius:10px; border:1px solid #eee;">
-            <option value="Main">Main Dish</option>
-            <option value="Side">Side Dish</option>
-            <option value="Drink">Drinks</option>
+    <option value="အသား">အသား</option>
+    <option value="အရိုး">အရိုး</option>
+    <option value="ကလီစာ">ကလီစာ</option>
+    <option value="အရေခွံ">အရေခွံ</option>
+    <option value="အသီးအရွက်">အသီးအရွက်</option>
+    <option value="ဥ">ဥ</option>
         </select>
+        
         <button class="btn-save" onclick="saveItem()" style="width:100%; background:var(--primary); color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;">Save Product</button>
     </div>
 </div>
@@ -187,12 +191,63 @@
         if(cat !== 'All') q = q.eq('category', cat);
         const { data } = await q; renderMenuList(data);
     }
-    async function saveItem() {
-        const p = { name: document.getElementById('m-name').value, price: parseInt(document.getElementById('m-price').value), stock_qty: parseInt(document.getElementById('m-stock').value)||0, category: document.getElementById('m-cat').value, image: base64 };
-        if(!p.name || !p.price || !base64) return alert("Fill all fields!");
-        const { error } = editId ? await _sb.from('products').update(p).eq('id', editId) : await _sb.from('products').insert([p]);
-        if(!error) { closeModal(); loadMenu(); loadStats(); }
+
+    // ပုံကို Resize လုပ်ဖို့ Variable တစ်ခုထားမယ်
+let currentBase64 = "";
+
+function previewImg(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
+                // Canvas သုံးပြီး ပုံကို Resize လုပ်မယ် (Database နေရာမစားအောင်)
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const MAX_WIDTH = 400; // အကျယ်ကို 400px ပဲထားမယ်
+                const scale = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scale;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // ထွက်လာတဲ့ Base64 ကို variable ထဲသိမ်း
+                currentBase64 = canvas.toDataURL('image/jpeg', 0.7); 
+                document.getElementById('file-label').innerText = "Photo Selected ✅";
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
     }
+}
+
+async function saveItem() {
+    const name = document.getElementById('m-name').value;
+    const price = document.getElementById('m-price').value;
+    const stock = document.getElementById('m-stock').value;
+    const cat = document.getElementById('m-cat').value;
+
+    if(!name || !price) return alert("အမည်နှင့် ဈေးနှုန်း ဖြည့်ပေးပါ");
+
+    const payload = {
+        name: name,
+        price: parseInt(price),
+        stock_qty: parseInt(stock) || 0,
+        category: cat,
+        image: currentBase64 // Admin ကတင်လိုက်တဲ့ ပုံကို ပို့မယ်
+    };
+
+    const { error } = await _sb.from('products').insert([payload]);
+
+    if(!error) {
+        alert("Product သိမ်းဆည်းပြီးပါပြီ");
+        closeModal();
+        loadInventory(); // List ကို ပြန်ခေါ်မယ်
+        currentBase64 = ""; // ပုံကို ပြန်ရှင်းမယ်
+    } else {
+        alert("Error: " + error.message);
+    }
+}
+    
     async function delItem(id) { if(confirm("Delete?")) { await _sb.from('products').delete().eq('id', id); loadMenu(); loadStats(); } }
 
     // Order Logic
