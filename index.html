@@ -25,7 +25,6 @@
             overflow-x: hidden;
         }
 
-        /* Cart Icon */
         .cart-trigger {
             position: fixed; top: 20px; right: 20px;
             background: var(--primary); color: white;
@@ -38,37 +37,46 @@
 
         .header { background: white; padding: 25px 20px; border-bottom: 1px solid var(--border); text-align: center; }
         
-        /* Menu Grid */
+        /* Search & Category */
+        .search-area { padding: 15px 20px; background: white; }
+        .search-box { position: relative; }
+        .search-box input { width: 100%; padding: 12px 40px; border: 1px solid var(--border); border-radius: 15px; box-sizing: border-box; background: #F9F9F9; }
+        .search-box i { position: absolute; left: 15px; top: 15px; color: var(--gray); }
+
+        .categories { display: flex; gap: 10px; overflow-x: auto; padding: 15px 20px; scrollbar-width: none; }
+        .categories::-webkit-scrollbar { display: none; }
+        .cat-btn { padding: 8px 20px; background: white; border: 1px solid var(--border); border-radius: 20px; white-space: nowrap; font-size: 14px; cursor: pointer; }
+        .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Recent Orders */
+        #recent-section { padding: 10px 20px; display: none; }
+        .recent-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+        .recent-card { min-width: 140px; background: white; padding: 12px; border-radius: 15px; border: 1px solid var(--border); font-size: 12px; }
+        .reorder-btn { background: var(--primary-light); color: var(--primary); border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; margin-top: 5px; cursor: pointer; width: 100%; }
+
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
         .menu-card { background: white; border-radius: 20px; border: 1px solid var(--border); text-align: center; padding-bottom: 15px; overflow: hidden; }
         .menu-card img { width: 100%; height: 110px; object-fit: cover; }
         .add-btn { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 5px; }
 
-        /* Drawer & Steps */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; z-index: 2000; }
         .drawer { position: fixed; bottom: -100%; left: 0; width: 100%; height: 90%; background: white; border-radius: 32px 32px 0 0; z-index: 2001; transition: 0.4s ease; overflow: hidden; }
         .drawer.active { bottom: 0; }
         .step-container { display: flex; width: 200%; height: 100%; transition: 0.3s ease; }
         .step { width: 50%; padding: 25px; box-sizing: border-box; overflow-y: auto; }
 
-        /* Cart View Item */
         .cart-item { display: flex; align-items: center; gap: 12px; background: white; padding: 12px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 12px; }
         .cart-img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
         .qty-controls { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .qty-input { width: 45px; text-align: center; border: 1px solid var(--border); border-radius: 8px; padding: 5px; font-weight: bold; }
 
-        /* Modal & Back Button Design */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 20px; }
         .modal-content { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 380px; position: relative; text-align: center; }
-        
         .modal-back { position: absolute; top: 20px; left: 20px; color: var(--primary); cursor: pointer; font-size: 18px; display: flex; align-items: center; gap: 5px; font-weight: bold; }
 
         .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 12px; margin-top: 5px; background: #F9F9F9; box-sizing: border-box; }
         label { font-size: 13px; font-weight: bold; display: block; margin-top: 10px; margin-left: 5px; text-align: left; }
 
-        .guide-box { background: #F0F0FF; padding: 15px; border-radius: 15px; text-align: left; font-size: 13px; border-left: 4px solid #7360f2; margin: 15px 0; line-height: 1.6; }
-        
-        /* Global Loader */
         #global-loader { position: fixed; inset: 0; background: rgba(255,255,255,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -88,10 +96,27 @@
 
 <div class="header"><h2>MYIN THAR <span style="color:var(--primary)">ROAST</span></h2></div>
 
+<div class="search-area">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search menu..." onkeyup="filterSearch()">
+    </div>
+</div>
+
+<div class="categories">
+    <div class="cat-btn active" onclick="filterCategory('All', this)">All</div>
+    <div class="cat-btn" onclick="filterCategory('ကြက်', this)">ကြက်</div>
+    <div class="cat-btn" onclick="filterCategory('ဆိတ်', this)">ဆိတ်</div>
+</div>
+
+<div id="recent-section">
+    <p style="font-weight: bold; margin-bottom: 10px;">ယခင်မှာယူမှုများ</p>
+    <div class="recent-scroll" id="recent-orders-list"></div>
+</div>
+
 <div class="menu-grid" id="menu-display"></div>
 
 <div class="overlay" id="overlay" onclick="toggleDrawer(false)"></div>
-
 <div class="drawer" id="drawer">
     <div class="step-container" id="step-wrapper">
         <div class="step">
@@ -102,33 +127,19 @@
             </div>
             <button onclick="goToStep(2)" style="width:100%; background:var(--primary); color:white; border:none; padding:18px; border-radius:18px; font-weight:bold; margin-top:20px;">အချက်အလက်ဖြည့်ရန်</button>
         </div>
-
         <div class="step">
             <div style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
                 <i class="fas fa-chevron-left" onclick="goToStep(1)" style="cursor:pointer; font-size: 20px;"></i>
                 <h2 style="margin:0">အချက်အလက်</h2>
             </div>
-            <label>အမည် *</label>
-            <input type="text" id="cust-name" class="form-control" placeholder="အမည်">
-            <label>ဖုန်းနံပါတ် *</label>
-            <input type="tel" id="cust-phone" class="form-control" placeholder="၀၉xxxxxxxxx">
-            
+            <label>အမည် *</label><input type="text" id="cust-name" class="form-control" placeholder="အမည်">
+            <label>ဖုန်းနံပါတ် *</label><input type="tel" id="cust-phone" class="form-control" placeholder="၀၉xxxxxxxxx">
             <div style="display:flex; gap:10px;">
-                <div style="flex:1">
-                    <label>ရက်စွဲ</label>
-                    <input type="date" id="pickup-date" class="form-control">
-                </div>
-                <div style="flex:1">
-                    <label>အချိန်</label>
-                    <input type="time" id="pickup-time" class="form-control">
-                </div>
+                <div style="flex:1"><label>ရက်စွဲ</label><input type="date" id="pickup-date" class="form-control"></div>
+                <div style="flex:1"><label>အချိန်</label><input type="time" id="pickup-time" class="form-control"></div>
             </div>
-            
-            <label>မှတ်ချက် (Note)</label>
-            <textarea id="order-note" class="form-control" style="height:60px;" placeholder="အသားကျက်ကျက်..."></textarea>
-            <label>စရံငွေ (ရှိလျှင်)</label>
-            <input type="number" id="deposit-input" class="form-control" placeholder="0">
-            
+            <label>မှတ်ချက်</label><textarea id="order-note" class="form-control" style="height:60px;" placeholder="အသားကျက်ကျက်..."></textarea>
+            <label>စရံငွေ</label><input type="number" id="deposit-input" class="form-control" placeholder="0">
             <button onclick="openModal()" style="width:100%; background:var(--primary); color:white; border:none; padding:18px; border-radius:15px; font-weight:bold; margin-top:20px;">အော်ဒါတင်မည်</button>
         </div>
     </div>
@@ -136,26 +147,14 @@
 
 <div class="modal" id="flow-modal">
     <div class="modal-content">
-        <div class="modal-back" id="back-to-form-btn" onclick="closeModal()">
-            <i class="fas fa-chevron-left"></i> <span>နောက်သို့</span>
-        </div>
-        <div class="modal-back" id="back-to-voucher-btn" style="display:none;" onclick="showVoucherStep()">
-            <i class="fas fa-chevron-left"></i> <span>နောက်သို့</span>
-        </div>
-
-        <h3 id="modal-title" style="margin-top:45px;">Voucher သိမ်းယူမလား?</h3>
-        
+        <div class="modal-back" id="back-voucher-btn" onclick="closeModal()"><i class="fas fa-chevron-left"></i> <span>နောက်သို့</span></div>
+        <div class="modal-back" id="back-app-btn" style="display:none;" onclick="showVoucherStep()"><i class="fas fa-chevron-left"></i> <span>နောက်သို့</span></div>
+        <h3 id="modal-title" style="margin-top:40px;">Voucher သိမ်းယူမလား?</h3>
         <div id="voucher-action">
             <button onclick="generateVoucher()" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; margin-bottom:10px;">Voucher ဒေါင်းလုဒ်ဆွဲမည်</button>
             <button onclick="showSocialOptions()" style="width:100%; background:none; color:gray; border:none; padding:10px; cursor:pointer;">မလိုပါ၊ မှာယူမည်</button>
         </div>
-
         <div id="social-action" style="display:none;">
-            <div class="guide-box">
-                <b>💡 မှာယူနည်းလမ်းညွှန်:</b><br>
-                ၁။ ခလုတ်နှိပ်လျှင် အော်ဒါစာသားကို Copy ယူပါမည်။<br>
-                ၂။ App ပွင့်လာပါက ဆိုင်ရှင် Chat ထဲတွင် Paste လုပ်၍ ပို့ပေးပါ။
-            </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                 <button onclick="sendOrder('viber')" style="background:#7360f2; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;"><i class="fab fa-viber"></i> Viber</button>
                 <button onclick="sendOrder('telegram')" style="background:#24A1DE; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;"><i class="fab fa-telegram"></i> Telegram</button>
@@ -164,37 +163,28 @@
     </div>
 </div>
 
-<div style="position:fixed; top:-9999px;">
-    <div id="voucher-ui" style="background:white; padding:30px; width:400px; color:black;">
-        <h2 style="text-align:center; color:#FF6B35; margin:0;">MYIN THAR ROAST</h2>
-        <div id="v-info" style="margin:15px 0; font-size:14px; line-height:1.6;"></div>
-        <table style="width:100%; border-collapse: collapse; font-size: 13px;">
-            <thead>
-                <tr style="border-bottom: 2px solid #333;">
-                    <th align="left" style="padding:10px 0;">Item</th>
-                    <th align="center">Price</th>
-                    <th align="center">Qty</th>
-                    <th align="right">Total</th>
-                </tr>
-            </thead>
-            <tbody id="v-body"></tbody>
-        </table>
-        <div style="text-align:right; margin-top:20px; font-weight:bold; border-top:1px dashed #ccc; padding-top:10px;">
-            <div id="v-subtotal"></div>
-            <div id="v-deposit" style="color:var(--danger); font-size:12px;"></div>
-        </div>
-    </div>
-</div>
+<div style="position:fixed; top:-9999px;"><div id="voucher-ui" style="background:white; padding:30px; width:400px; color:black;">
+    <h2 style="text-align:center; color:#FF6B35; margin:0;">MYIN THAR ROAST</h2>
+    <div id="v-info" style="margin:15px 0; font-size:14px; line-height:1.6;"></div>
+    <table style="width:100%; border-collapse: collapse; font-size: 13px;"><tbody id="v-body"></tbody></table>
+    <div id="v-subtotal" style="text-align:right; margin-top:20px; font-weight:bold;"></div>
+</div></div>
 
 <script>
+    const MY_PHONE = "959767287345";
     let cart = {};
     const menuData = [
-        { id: 1, name: 'ကြက်ပေါင်', price: 4000, image: 'https://via.placeholder.com/150' },
-        { id: 3, name: 'ဆိတ်သားကင်', price: 1500, image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png' }
+        { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'ကြက်', image: 'https://via.placeholder.com/150' },
+        { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'ဆိတ်', image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png' }
     ];
 
     window.onload = () => {
-        document.getElementById('menu-display').innerHTML = menuData.map(i => `
+        renderMenu(menuData);
+        loadRecentOrders();
+    };
+
+    function renderMenu(data) {
+        document.getElementById('menu-display').innerHTML = data.map(i => `
             <div class="menu-card">
                 <img src="${i.image}">
                 <div style="padding:10px;">
@@ -204,7 +194,18 @@
                 </div>
             </div>
         `).join('');
-    };
+    }
+
+    function filterCategory(cat, btn) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderMenu(cat === 'All' ? menuData : menuData.filter(i => i.category === cat));
+    }
+
+    function filterSearch() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        renderMenu(menuData.filter(i => i.name.toLowerCase().includes(q)));
+    }
 
     function addToCart(id) {
         const item = menuData.find(m => m.id === id);
@@ -216,14 +217,10 @@
         const items = Object.values(cart);
         document.getElementById('cart-count').innerText = items.reduce((s,i) => s + i.qty, 0);
         document.getElementById('subtotal').innerText = items.reduce((s,i) => s + (i.price*i.qty), 0).toLocaleString() + " K";
-        
         document.getElementById('cart-items-list').innerHTML = items.map(i => `
             <div class="cart-item">
                 <img src="${i.image}" class="cart-img">
-                <div style="flex:1">
-                    <div style="font-weight:bold; font-size:14px;">${i.name}</div>
-                    <div style="color:var(--primary); font-size:12px;">${i.price.toLocaleString()} K</div>
-                </div>
+                <div style="flex:1"><b>${i.name}</b><br><span style="color:var(--primary)">${i.price.toLocaleString()} K</span></div>
                 <div class="qty-controls">
                     <input type="number" class="qty-input" value="${i.qty}" onchange="manualQty(${i.id}, this.value)">
                     <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="delete cart[${i.id}]; updateUI();"></i>
@@ -238,107 +235,75 @@
         updateUI();
     }
 
+    function loadRecentOrders() {
+        const history = JSON.parse(localStorage.getItem('recentOrders') || "[]");
+        if(history.length > 0) {
+            document.getElementById('recent-section').style.display = 'block';
+            document.getElementById('recent-orders-list').innerHTML = history.slice(-5).reverse().map(h => `
+                <div class="recent-card">
+                    <b>#${h.id.toString().slice(-4)}</b><br>
+                    <span style="color:gray">${h.date}</span><br>
+                    <span>${h.total}</span><br>
+                    <button class="reorder-btn" onclick='reorder(${JSON.stringify(h.items)})'>Re-order</button>
+                </div>
+            `).join('');
+        }
+    }
+
+    function reorder(items) {
+        cart = {};
+        items.forEach(i => { cart[i.id] = i; });
+        updateUI();
+        toggleDrawer(true);
+    }
+
     function toggleDrawer(s) { document.getElementById('drawer').classList.toggle('active', s); document.getElementById('overlay').style.display = s ? 'block' : 'none'; }
     function goToStep(s) { document.getElementById('step-wrapper').style.transform = `translateX(-${(s-1)*50}%)`; }
-
-    function openModal() {
-        if(!document.getElementById('cust-name').value || !document.getElementById('cust-phone').value) return alert("အမည်နှင့် ဖုန်းဖြည့်ပါ");
-        document.getElementById('flow-modal').style.display = 'flex';
-        showVoucherStep();
-    }
-
+    function openModal() { if(!document.getElementById('cust-name').value) return alert("အမည်ဖြည့်ပါ"); document.getElementById('flow-modal').style.display = 'flex'; showVoucherStep(); }
     function closeModal() { document.getElementById('flow-modal').style.display = 'none'; }
-
-    function showVoucherStep() {
-        document.getElementById('voucher-action').style.display = 'block';
-        document.getElementById('social-action').style.display = 'none';
-        document.getElementById('modal-title').innerText = "Voucher သိမ်းယူမလား?";
-        document.getElementById('back-to-form-btn').style.display = 'flex';
-        document.getElementById('back-to-voucher-btn').style.display = 'none';
-    }
-
-    function showSocialOptions() {
-        document.getElementById('voucher-action').style.display = 'none';
-        document.getElementById('social-action').style.display = 'block';
-        document.getElementById('modal-title').innerText = "ပို့မည့် App ကို ရွေးပါ";
-        document.getElementById('back-to-form-btn').style.display = 'none';
-        document.getElementById('back-to-voucher-btn').style.display = 'flex';
-    }
+    function showSocialOptions() { document.getElementById('voucher-action').style.display='none'; document.getElementById('social-action').style.display='block'; document.getElementById('back-voucher-btn').style.display='none'; document.getElementById('back-app-btn').style.display='flex'; }
+    function showVoucherStep() { document.getElementById('voucher-action').style.display='block'; document.getElementById('social-action').style.display='none'; document.getElementById('back-voucher-btn').style.display='flex'; document.getElementById('back-app-btn').style.display='none'; }
 
     async function generateVoucher() {
         document.getElementById('global-loader').style.display = 'flex';
-        document.getElementById('loader-text').innerText = "Voucher ဖန်တီးနေပါသည်...";
-
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
-        const date = document.getElementById('pickup-date').value;
-        const time = document.getElementById('pickup-time').value;
-        const dep = document.getElementById('deposit-input').value || 0;
-
-        document.getElementById('v-info').innerHTML = `<b>ဝယ်သူ:</b> ${name}<br><b>ဖုန်း:</b> ${phone}<br><b>အချိန်:</b> ${date || '-'} ${time || '-'}`;
-        document.getElementById('v-body').innerHTML = Object.values(cart).map(i => `
-            <tr>
-                <td style="padding:8px 0;">${i.name}</td>
-                <td align="center">${i.price.toLocaleString()}</td>
-                <td align="center">${i.qty}</td>
-                <td align="right">${(i.price * i.qty).toLocaleString()}</td>
-            </tr>
-        `).join('');
-        document.getElementById('v-subtotal').innerText = "Total: " + document.getElementById('subtotal').innerText;
-        document.getElementById('v-deposit').innerText = dep > 0 ? "Deposit: " + dep + " K" : "";
-
+        const subtotal = document.getElementById('subtotal').innerText;
+        document.getElementById('v-info').innerHTML = `<b>ဝယ်သူ:</b> ${name}<br><b>ဖုန်း:</b> ${phone}`;
+        document.getElementById('v-body').innerHTML = Object.values(cart).map(i => `<tr><td>${i.name}</td><td align="center">${i.qty}</td><td align="right">${(i.price*i.qty).toLocaleString()}</td></tr>`).join('');
+        document.getElementById('v-subtotal').innerText = "Total: " + subtotal;
+        
         setTimeout(async () => {
-            const canvas = await html2canvas(document.getElementById('voucher-ui'), { scale: 2 });
-            const link = document.createElement('a');
-            link.download = `Voucher-${name}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
+            const canvas = await html2canvas(document.getElementById('voucher-ui'));
+            const link = document.createElement('a'); link.download = `Voucher-${name}.png`; link.href = canvas.toDataURL(); link.click();
             document.getElementById('global-loader').style.display = 'none';
             showSocialOptions();
         }, 1500);
     }
 
     function sendOrder(platform) {
-    // သင့်ဖုန်းနံပါတ်ကို ဤနေရာတွင် ပြင်ဆင်နိုင်သည်
-    const myPhone = "959767287345"; 
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+        const total = document.getElementById('subtotal').innerText;
+        const itemsMsg = Object.values(cart).map(i => `• ${i.name} (${i.qty} x ${i.price})`).join('\n');
+        const msg = `🍗 *MYIN THAR ROAST*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n🛒 မှာယူမှု:\n${itemsMsg}\n💰 စုစုပေါင်း: ${total}`;
 
-    const name = document.getElementById('cust-name').value;
-    const phone = document.getElementById('cust-phone').value;
-    const date = document.getElementById('pickup-date').value;
-    const time = document.getElementById('pickup-time').value;
-    const note = document.getElementById('order-note').value || "-";
-    const deposit = document.getElementById('deposit-input').value || "0";
-    const subtotal = document.getElementById('subtotal').innerText;
-    
-    const items = Object.values(cart).map(i => `• ${i.name} (${i.qty} x ${i.price} K)`).join('\n');
+        // Save to Recent
+        const history = JSON.parse(localStorage.getItem('recentOrders') || "[]");
+        history.push({ id: Date.now(), date: new Date().toLocaleDateString(), total: total, items: Object.values(cart) });
+        localStorage.setItem('recentOrders', JSON.stringify(history));
 
-    const msg = `🍗 *MYIN THAR ROAST ORDER*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n📅 ရက်စွဲ/အချိန်: ${date} ${time}\n📝 မှတ်ချက်: ${note}\n💰 စရံငွေ: ${deposit} K\n━━━━━━━━━━━━━━\n🛒 မှာယူမှု:\n${items}\n━━━━━━━━━━━━━━\n💰 စုစုပေါင်း: ${subtotal}`;
-    
-    // Auto Copy လုပ်ဆောင်ချက်
-    navigator.clipboard.writeText(msg).then(() => {
-        // Loader ပြသခြင်း
-        document.getElementById('global-loader').style.display = 'flex';
-        document.getElementById('loader-text').innerText = "အော်ဒါစာသားကို Copy ကူးပြီးပါပြီ။ App သို့ သွားနေပါသည်...";
-        
-        setTimeout(() => {
-            if(platform === 'viber') {
-                // Viber အတွက် ဖုန်းနံပါတ်ရှေ့တွင် + ထည့်ပေးရန်လိုအပ်ပါသည်
-                window.location.href = `viber://chat?number=+${myPhone}`;
-            } else if(platform === 'telegram') {
-                // Telegram အတွက် ဖုန်းနံပါတ်ဖြင့် တိုက်ရိုက်သွားသော Link
-                window.location.href =`https://t.me/+${MY_PHONE}?text=${encodeURIComponent(msg)}`;
-            }
-            
-            // ခဏအကြာတွင် Loader ကိုပြန်ပိတ်ခြင်း
-            document.getElementById('global-loader').style.display = 'none';
-        }, 1200);
-    }).catch(err => {
-        console.error('Copy ကူးယူ၍မရပါ- ', err);
-        alert("စာသားကို Copy ကူး၍ မရနိုင်ပါ။");
-    });
-}
-
-    
+        navigator.clipboard.writeText(msg).then(() => {
+            document.getElementById('global-loader').style.display = 'flex';
+            document.getElementById('loader-text').innerText = "Auto Copy ယူပြီးပါပြီ။ App သို့ သွားနေပါသည်...";
+            setTimeout(() => {
+                if(platform === 'viber') window.location.href = `viber://chat?number=+${MY_PHONE}`;
+                else window.location.href = `https://t.me/+${MY_PHONE}?text=${encodeURIComponent(msg)}`;
+                document.getElementById('global-loader').style.display = 'none';
+            }, 1000);
+        });
+    }
 </script>
 </body>
 </html>
+
