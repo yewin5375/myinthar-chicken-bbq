@@ -77,9 +77,27 @@
 </div>
 
 <div id="message-view" class="container">
-    <h3>Inbox</h3>
-    <div id="message-list"></div>
+    <div style="display: grid; grid-template-columns: 120px 1fr; gap: 10px; height: 80vh; background: white; border-radius: 20px; overflow: hidden;">
+        
+        <div style="border-right: 1px solid #eee; overflow-y: auto; background: #f9f9f9;">
+            <div style="padding: 10px; font-size: 12px; font-weight: bold; color: var(--gray);">CHATS</div>
+            <div id="chat-users-list"></div>
+        </div>
+
+        <div id="admin-chat-window" style="display: flex; flex-direction: column; background: white;">
+            <div id="active-chat-user" style="padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; font-size: 14px;">
+                Customer ကို ရွေးပါ
+            </div>
+            <div id="admin-chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f4f7fe;">
+                </div>
+            <div id="admin-chat-input-area" style="padding: 10px; border-top: 1px solid #eee; display: none; gap: 8px;">
+                <input type="text" id="admin-reply-input" placeholder="စာပြန်ရန်..." style="flex: 1; border: 1px solid #eee; padding: 10px; border-radius: 20px; outline: none;">
+                <button onclick="sendAdminReply()" style="background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%;"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
 </div>
+    
 
 <div class="modal-overlay" id="add-modal" onclick="if(event.target===this) closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
@@ -221,6 +239,76 @@
         document.getElementById('message-list').innerHTML = data.map(m => `<div class="item-card" style="flex-direction:column; align-items:flex-start;"><b>${m.customer_name}</b><p>${m.message_text}</p></div>`).join('');
     }
 
+    let currentChatUserId = null;
+
+// စာပို့ထားတဲ့ လူစာရင်းကို ယူမယ်
+async function loadChatUsers() {
+    const { data } = await _sb.from('chats').select('customer_id').order('created_at', {ascending: false});
+    // Duplicate တွေကို ဖယ်ပြီး Unique User List လုပ်မယ်
+    const uniqueUsers = [...new Set(data.map(item => item.customer_id))];
+    
+    const list = document.getElementById('chat-users-list');
+    list.innerHTML = uniqueUsers.map(uid => `
+        <div onclick="openAdminChat('${uid}')" style="padding: 15px 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 11px; text-align: center; background: ${currentChatUserId === uid ? '#fff' : 'transparent'}">
+            <i class="fas fa-user-circle" style="font-size: 20px; color: var(--gray);"></i><br>
+            ${uid.slice(-5)}
+        </div>
+    `).join('');
+}
+
+// တစ်ဦးချင်းစီရဲ့ Chat ကို ဖွင့်မယ်
+async function openAdminChat(uid) {
+    currentChatUserId = uid;
+    document.getElementById('active-chat-user').innerText = "Chatting with: " + uid.slice(-5);
+    document.getElementById('admin-chat-input-area').style.display = 'flex';
+    
+    const { data } = await _sb.from('chats').select('*').eq('customer_id', uid).order('created_at', {ascending: true});
+    renderAdminChat(data);
+    loadChatUsers(); // List မှာ highlight ပြဖို့
+}
+
+function renderAdminChat(data) {
+    const box = document.getElementById('admin-chat-messages');
+    box.innerHTML = data.map(m => `
+        <div style="align-self: ${m.sender === 'admin' ? 'flex-end' : 'flex-start'}; 
+                    background: ${m.sender === 'admin' ? 'var(--primary)' : 'white'}; 
+                    color: ${m.sender === 'admin' ? 'white' : 'black'}; 
+                    padding: 8px 12px; border-radius: 12px; max-width: 80%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            ${m.message}
+        </div>
+    `).join('');
+    box.scrollTop = box.scrollHeight;
+}
+
+// Admin က ပြန်စာပို့မယ်
+async function sendAdminReply() {
+    const input = document.getElementById('admin-reply-input');
+    const msg = input.value.trim();
+    if(!msg || !currentChatUserId) return;
+
+    await _sb.from('chats').insert([{
+        customer_id: currentChatUserId,
+        sender: 'admin',
+        message: msg
+    }]);
+
+    input.value = "";
+    openAdminChat(currentChatUserId); // Refresh messages
+}
+
+// Realtime နားထောင်ခြင်း (Admin ဘက်မှာ Inbox update ဖြစ်ဖို့)
+_sb.channel('admin-live-chat').on('postgres_changes', { 
+    event: 'INSERT', schema: 'public', table: 'chats' 
+}, payload => {
+    loadChatUsers();
+    if(currentChatUserId === payload.new.customer_id) {
+        openAdminChat(currentChatUserId);
+    }
+}).subscribe();
+
+// Inbox Tab ကို နှိပ်ရင် User List ကို load လုပ်မယ်
+// switchTab function ထဲမှာ loadChatUsers(); ကို ထည့်ထားဖို့ မမေ့ပါနဲ့။
+    
     window.onload = loadStats;
 </script>
 </body>
