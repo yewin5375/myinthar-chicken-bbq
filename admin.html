@@ -3,234 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MT Roast - Ultimate Admin</title>
+    <title>MT Roast - Pro Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #FF6B35; --accent: #7360F2; --bg: #F4F7FE; --white: #FFFFFF; --text: #2B3674; --gray: #A3AED0; --danger: #FF4D4D; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 100px; }
+        :root { --primary: #FF6B35; --accent: #7360F2; --bg: #F4F7FE; --white: #FFFFFF; --text: #2B3674; --gray: #A3AED0; --danger: #FF4D4D; --success: #05CD99; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 120px; }
 
-        /* Fix Layout Header */
-        .header { background: var(--white); padding: 25px 20px; border-radius: 0 0 30px 30px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .stat-box { background: #f9f9ff; padding: 15px; border-radius: 15px; border: 1px solid #eee; }
-        .stat-box h4 { margin: 0; color: var(--gray); font-size: 11px; text-transform: uppercase; }
-        .stat-box h2 { margin: 5px 0; font-size: 18px; }
+        /* Header & Dashboard Stats */
+        .header { background: var(--white); padding: 25px 20px; border-radius: 0 0 30px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stat-box { background: var(--white); padding: 20px; border-radius: 20px; border: 1px solid #E9EDF7; position: relative; overflow: hidden; }
+        .stat-box h4 { margin: 0; color: var(--gray); font-size: 12px; }
+        .stat-box h2 { margin: 10px 0; font-size: 20px; }
+        .trend { font-size: 11px; font-weight: bold; }
+        .trend.up { color: var(--success); }
 
+        /* Sections */
         .container { padding: 20px; display: none; }
-        .container.active { display: block; }
+        .container.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Inventory Cards Pro */
-        .inv-card { background: white; padding: 15px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #E9EDF7; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-        .inv-header { display: flex; gap: 15px; align-items: center; }
-        .inv-img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: #eee; }
-        .inv-body { flex: 1; }
-        .inv-actions { display: flex; gap: 8px; margin-top: 12px; border-top: 1px solid #f4f4f4; padding-top: 10px; }
-        
-        /* Buttons */
-        .btn-sm { padding: 8px 12px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .btn-edit { background: #E9EDF7; color: var(--accent); }
-        .btn-del { background: #FFE5E5; color: var(--danger); }
-        .btn-stock { background: #E6FFFA; color: #05CD99; flex: 1; justify-content: center; }
+        /* Order Tabs */
+        .order-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
+        .tab-btn { padding: 10px 20px; border-radius: 12px; border: none; background: #E9EDF7; color: var(--text); font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        /* Floating Button Fix */
-        .fab { position: fixed; bottom: 110px; right: 20px; background: var(--primary); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 8px 20px rgba(255,107,53,0.3); z-index: 999; border: 2px solid white; }
-        
-        /* Modal Fix */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; z-index: 2000; align-items: flex-end; }
+        /* Item Cards */
+        .item-card { background: white; padding: 15px; border-radius: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid #E9EDF7; }
+        .item-img { width: 70px; height: 70px; border-radius: 15px; object-fit: cover; background: #eee; }
+        .item-info { flex: 1; }
+        .item-info b { font-size: 16px; display: block; margin-bottom: 4px; }
+        .price-tag { color: var(--primary); font-weight: bold; }
+
+        /* FAB Button */
+        .fab { position: fixed; bottom: 100px; right: 25px; background: var(--primary); width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 10px 20px rgba(255,107,53,0.4); z-index: 999; cursor: pointer; border: 3px solid white; }
+
+        /* Slide-up Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); display: none; z-index: 2000; align-items: flex-end; }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: white; width: 100%; border-radius: 30px 30px 0 0; padding: 25px; box-sizing: border-box; }
+        .modal-content { background: white; width: 100%; border-radius: 30px 30px 0 0; padding: 30px; box-sizing: border-box; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
 
-        /* Navigation Fix */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 1001; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { color: var(--gray); text-align: center; flex: 1; }
-        .nav-item.active { color: var(--primary); }
+        input, select { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 12px; border: 1.5px solid #E9EDF7; outline: none; }
+        .btn-save { background: var(--primary); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; }
+
+        /* Bottom Navigation */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #E9EDF7; z-index: 1001; }
+        .nav-item { color: var(--gray); text-align: center; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
+        .nav-item i { font-size: 22px; }
     </style>
 </head>
 <body>
 
 <div id="dashboard-view" class="container active">
     <div class="header">
-        <h2 style="margin:0">Dashboard</h2>
+        <h2 style="margin:0">Admin Panel</h2>
         <div class="stat-grid">
-            <div class="stat-box"><h4>Revenue</h4><h2 id="total-revenue">0 K</h2></div>
-            <div class="stat-box"><h4>Orders</h4><h2 id="total-orders">0</h2></div>
-            <div class="stat-box"><h4>Total Menu</h4><h2 id="total-items">0</h2></div>
-            <div class="stat-box"><h4>Stock Alert</h4><h2 id="low-stock-count" style="color:var(--danger)">0</h2></div>
+            <div class="stat-box"><h4>Revenue</h4><h2 id="stat-revenue">0 K</h2><span class="trend up"><i class="fas fa-arrow-up"></i> 15%</span></div>
+            <div class="stat-box"><h4>Orders</h4><h2 id="stat-orders">0</h2><span class="trend up"><i class="fas fa-arrow-up"></i> 8%</span></div>
+            <div class="stat-box"><h4>Customers</h4><h2 id="stat-customers">0</h2><span class="trend up">Stable</span></div>
+            <div class="stat-box"><h4>Items</h4><h2 id="stat-items">0</h2><span class="trend up">Menu</span></div>
         </div>
     </div>
-</div>
-
-<div id="inventory-view" class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0">Inventory & Menu</h3>
-        <span id="stock-p-analytic" style="font-size:12px; background:#eee; padding:5px 10px; border-radius:20px;">Health: 100%</span>
-    </div>
-    <div id="inventory-pro-list">Loading Menu...</div>
 </div>
 
 <div id="order-view" class="container">
-    <h3>Live Orders</h3>
+    <h3>Order Management</h3>
+    <div class="order-tabs">
+        <button class="tab-btn active" onclick="filterOrders('New', this)">New</button>
+        <button class="tab-btn" onclick="filterOrders('Pending', this)">Pending</button>
+        <button class="tab-btn" onclick="filterOrders('Pickup', this)">Pickup</button>
+    </div>
     <div id="order-list"></div>
 </div>
 
-<div class="modal-overlay" id="menu-modal">
+<div id="inventory-view" class="container">
+    <h3>Inventory & Menu</h3>
+    <div id="menu-list"></div>
+</div>
+
+<div class="modal-overlay" id="add-modal" onclick="if(event.target===this) closeMenuModal()">
     <div class="modal-content">
-        <h3 id="modal-title">Add New Menu</h3>
-        <input type="hidden" id="edit-id">
-        <div class="upload-area" onclick="document.getElementById('fileInput').click()" style="border:2px dashed #ddd; padding:20px; text-align:center; border-radius:15px; margin-bottom:10px;">
-            <i class="fas fa-image" style="font-size:24px; color:var(--gray)"></i>
-            <p id="file-status" style="font-size:12px">Tap to Change Image</p>
-            <input type="file" id="fileInput" hidden accept="image/*" onchange="handleFileUpload(this)">
+        <div style="width: 40px; height: 5px; background: #eee; border-radius: 10px; margin: -10px auto 20px;"></div>
+        <h3>Add New Menu</h3>
+        <div onclick="document.getElementById('fileInput').click()" style="border:2px dashed var(--gray); padding:20px; text-align:center; border-radius:15px; margin-bottom:15px; cursor:pointer;">
+            <i class="fas fa-camera" style="font-size:24px; color:var(--primary)"></i>
+            <p id="file-label" style="font-size:12px; color:var(--gray)">Upload Menu Photo</p>
+            <input type="file" id="fileInput" hidden accept="image/*" onchange="previewImage(this)">
         </div>
-        <input type="text" id="p-name" placeholder="Item Name">
-        <input type="number" id="p-price" placeholder="Price (K)">
-        <input type="number" id="p-stock" placeholder="Current Stock Qty">
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button onclick="toggleMenuModal(false)" style="flex:1; padding:15px; border-radius:12px; border:none;">Cancel</button>
-            <button onclick="saveProduct()" id="save-btn" style="flex:2; padding:15px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:bold;">Save Product</button>
-        </div>
+        <input type="text" id="m-name" placeholder="Item Name">
+        <input type="number" id="m-price" placeholder="Price (Kyats)">
+        <input type="number" id="m-stock" placeholder="Initial Stock Qty">
+        <select id="m-cat">
+            <option value="Main">ပင်မဟင်းပွဲ</option>
+            <option value="Side">အပိုစာ</option>
+            <option value="Drink">အအေး</option>
+        </select>
+        <button class="btn-save" onclick="saveNewMenu()">Add to Menu</button>
     </div>
 </div>
 
-<div class="fab" onclick="openAddModal()"><i class="fas fa-plus"></i></div>
+<div class="fab" onclick="openMenuModal()"><i class="fas fa-plus"></i></div>
 
 <div class="nav-bar">
-    <div class="nav-item active" onclick="showSection('dashboard', this)"><i class="fas fa-chart-pie"></i><div style="font-size:10px">Dash</div></div>
-    <div class="nav-item" onclick="showSection('inventory', this)"><i class="fas fa-boxes"></i><div style="font-size:10px">Inventory</div></div>
-    <div class="nav-item" onclick="showSection('order', this)"><i class="fas fa-clipboard-list"></i><div style="font-size:10px">Orders</div></div>
-    <div class="nav-item" onclick="showSection('message', this)"><i class="fas fa-comment-dots"></i><div style="font-size:10px">Inbox</div></div>
+    <div class="nav-item active" onclick="switchTab('dashboard', this)"><i class="fas fa-th-large"></i><div style="font-size:10px">Dash</div></div>
+    <div class="nav-item" onclick="switchTab('order', this)"><i class="fas fa-shopping-basket"></i><div style="font-size:10px">Orders</div></div>
+    <div class="nav-item" onclick="switchTab('inventory', this)"><i class="fas fa-box-open"></i><div style="font-size:10px">Inventory</div></div>
 </div>
 
-<script>
+        <script>
+    // Supabase Configuration with Service Role
     const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
-    const SB_KEY = "YOUR_KEY_HERE"; // အရှေ့ကပေးထားတဲ့ Key ကို ပြန်ထည့်ပါ
-    const _supabase = supabase.createClient(SB_URL, SB_KEY);
-    let selectedImageBase64 = "";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njc1OTYwNiwiZXhwIjoyMDgyMzM1NjA2fQ.rNXHHO8PKO58ZXR4Eqzi6Bl0vzCIwH24jiwOVwbVPoc";
+    const _sb = supabase.createClient(SB_URL, SB_KEY);
 
-    function showSection(id, el) {
-        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id + '-view').classList.add('active');
-        el.classList.add('active');
-        if(id === 'inventory') fetchInventoryPro();
-        if(id === 'dashboard') loadDashboardData();
-    }
+    let base64Img = "";
+    let editingId = null; 
 
-    // Modal Controls
-    function openAddModal() {
-        document.getElementById('modal-title').innerText = "Add New Menu";
-        document.getElementById('edit-id').value = "";
-        document.getElementById('p-name').value = "";
-        document.getElementById('p-price').value = "";
-        document.getElementById('p-stock').value = "";
-        selectedImageBase64 = "";
-        toggleMenuModal(true);
-    }
+    // --- Modal Logic (Edit/Add) ---
+    function openMenuModal(editData = null) {
+        const modalTitle = document.getElementById('modal-title');
+        const saveBtn = document.querySelector('.btn-save');
 
-    function toggleMenuModal(show) {
-        const modal = document.getElementById('menu-modal');
-        show ? modal.classList.add('active') : modal.classList.remove('active');
-    }
-
-    function handleFileUpload(input) {
-        const reader = new FileReader();
-        reader.onloadend = () => { 
-            selectedImageBase64 = reader.result; 
-            document.getElementById('file-status').innerText = "Image Selected ✅"; 
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-
-    // Inventory Pro Features
-    async function fetchInventoryPro() {
-        const { data } = await _supabase.from('products').select('*').order('name');
-        const list = document.getElementById('inventory-pro-list');
-        let lowStock = 0;
-
-        list.innerHTML = data.map(p => {
-            if(p.stock_qty < 5) lowStock++;
-            return `
-            <div class="inv-card">
-                <div class="inv-header">
-                    <img src="${p.image || 'https://via.placeholder.com/60'}" class="inv-img">
-                    <div class="inv-body">
-                        <b style="font-size:16px;">${p.name}</b><br>
-                        <span style="color:var(--primary); font-weight:bold;">${p.price} K</span>
-                    </div>
-                    <div style="text-align:right">
-                        <span style="font-size:11px; color:var(--gray)">Stock</span><br>
-                        <b style="color:${p.stock_qty < 5 ? 'red' : 'green'}">${p.stock_qty || 0}</b>
-                    </div>
-                </div>
-                <div class="inv-actions">
-                    <button class="btn-sm btn-edit" onclick="editProduct(${JSON.stringify(p).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i> Edit</button>
-                    <button class="btn-sm btn-del" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
-                    <button class="btn-sm btn-stock" onclick="quickAddStock(${p.id}, ${p.stock_qty || 0})"><i class="fas fa-plus-circle"></i> Restock</button>
-                </div>
-            </div>`;
-        }).join('');
-
-        // Anylyst Update
-        const health = Math.round(((data.length - lowStock) / data.length) * 100);
-        document.getElementById('stock-p-analytic').innerText = `Health: ${health}%`;
-        document.getElementById('low-stock-count').innerText = lowStock;
-    }
-
-    async function saveProduct() {
-        const id = document.getElementById('edit-id').value;
-        const payload = {
-            name: document.getElementById('p-name').value,
-            price: document.getElementById('p-price').value,
-            stock_qty: document.getElementById('p-stock').value
-        };
-        if(selectedImageBase64) payload.image = selectedImageBase64;
-
-        if(id) {
-            await _supabase.from('products').update(payload).eq('id', id);
+        if (editData) {
+            // Edit Mode - Data တွေကို Form ထဲပြန်ဖြည့်မယ်
+            editingId = editData.id;
+            modalTitle.innerText = "Edit Menu Item";
+            document.getElementById('m-name').value = editData.name;
+            document.getElementById('m-price').value = editData.price;
+            document.getElementById('m-stock').value = editData.stock_qty || 0;
+            document.getElementById('m-cat').value = editData.category;
+            base64Img = editData.image; 
+            document.getElementById('file-label').innerText = "Image Loaded ✅";
+            saveBtn.innerText = "Save Changes";
         } else {
-            await _supabase.from('products').insert([payload]);
+            // Add New Mode - Form ကို ရှင်းမယ်
+            editingId = null;
+            modalTitle.innerText = "Add New Menu";
+            document.getElementById('m-name').value = "";
+            document.getElementById('m-price').value = "";
+            document.getElementById('m-stock').value = "";
+            base64Img = "";
+            document.getElementById('file-label').innerText = "Upload Menu Photo";
+            saveBtn.innerText = "Add to Menu";
         }
-        toggleMenuModal(false);
-        fetchInventoryPro();
+        document.getElementById('add-modal').classList.add('active');
     }
 
-    function editProduct(p) {
-        document.getElementById('modal-title').innerText = "Edit Product";
-        document.getElementById('edit-id').value = p.id;
-        document.getElementById('p-name').value = p.name;
-        document.getElementById('p-price').value = p.price;
-        document.getElementById('p-stock').value = p.stock_qty || 0;
-        toggleMenuModal(true);
+    function closeMenuModal() {
+        document.getElementById('add-modal').classList.remove('active');
+        editingId = null;
     }
 
-    async function quickAddStock(id, current) {
-        const add = prompt("How many to add?", "10");
-        if(add) {
-            await _supabase.from('products').update({ stock_qty: current + parseInt(add) }).eq('id', id);
-            fetchInventoryPro();
+    // --- Image Preview Logic ---
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => { 
+                base64Img = e.target.result;
+                document.getElementById('file-label').innerText = "New Photo Selected ✅";
+            };
+            reader.readAsDataURL(input.files[0]);
         }
     }
 
-    async function deleteProduct(id) {
-        if(confirm("Are you sure to delete this item?")) {
-            await _supabase.from('products').delete().eq('id', id);
-            fetchInventoryPro();
+    // --- Database Operations (Add / Update) ---
+    async function saveNewMenu() {
+        const name = document.getElementById('m-name').value;
+        const price = document.getElementById('m-price').value;
+        const stock = document.getElementById('m-stock').value;
+        const cat = document.getElementById('m-cat').value;
+
+        if(!name || !price || !base64Img) {
+            return alert("အချက်အလက်ပြည့်စုံစွာ ဖြည့်စွက်ပေးပါ။");
+        }
+
+        const payload = {
+            name: name,
+            price: parseInt(price),
+            stock_qty: parseInt(stock) || 0,
+            category: cat,
+            image: base64Img
+        };
+
+        let result;
+        if (editingId) {
+            // Update Existing Item
+            result = await _sb.from('products').update(payload).eq('id', editingId);
+        } else {
+            // Insert New Item
+            result = await _sb.from('products').insert([payload]);
+        }
+
+        if(!result.error) {
+            alert(editingId ? "ပြင်ဆင်မှု အောင်မြင်ပါသည်" : "Menu အသစ် ထည့်သွင်းပြီးပါပြီ");
+            closeMenuModal();
+            loadMenu(); // List ပြန်ခေါ်မယ်
+        } else {
+            alert("Error: " + result.error.message);
         }
     }
 
-    async function loadDashboardData() {
-        const { data: ord } = await _supabase.from('orders').select('*');
-        const { count: items } = await _supabase.from('products').select('*', { count: 'exact' });
+    // --- Delete Logic ---
+    async function deleteItem(id) {
+        if(confirm("ဤဟင်းပွဲကို ဖျက်ရန် သေချာပါသလား?")) {
+            const { error } = await _sb.from('products').delete().eq('id', id);
+            if(!error) {
+                loadMenu();
+                loadStats(); // Dashboard က အရေအတွက်ပါ ပြန်ညှိမယ်
+            } else {
+                alert("ဖျက်လို့မရပါ: " + error.message);
+            }
+        }
+    }
+
+    // --- Load Data into UI ---
+    async function loadMenu() {
+        const { data, error } = await _sb.from('products').select('*').order('created_at', {ascending: false});
         
-        let rev = ord?.reduce((s, o) => s + parseInt(o.total_amount.replace(/\D/g,'') || 0), 0) || 0;
-        document.getElementById('total-revenue').innerText = rev.toLocaleString() + " K";
-        document.getElementById('total-orders').innerText = ord?.length || 0;
-        document.getElementById('total-items').innerText = items || 0;
+        if (error) return console.error("Error loading menu:", error);
+
+        const menuList = document.getElementById('menu-list');
+        menuList.innerHTML = data.map(i => `
+            <div class="item-card">
+                <img src="${i.image}" class="item-img" onerror="this.src='https://via.placeholder.com/70'">
+                <div class="item-info">
+                    <b>${i.name}</b>
+                    <span class="price-tag">${i.price.toLocaleString()} K</span>
+                    <div style="font-size:11px; color:var(--gray)">Stock: ${i.stock_qty || 0} | Cat: ${i.category}</div>
+                </div>
+                <div style="display:flex; gap:12px;">
+                    <button onclick='openMenuModal(${JSON.stringify(i).replace(/'/g, "&apos;")})' 
+                        style="border:none; color:var(--accent); background:none; font-size:18px; cursor:pointer;">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteItem(${i.id})" 
+                        style="border:none; color:var(--danger); background:none; font-size:18px; cursor:pointer;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
     }
 
-    window.onload = loadDashboardData;
-</script>
+    // Start loading on page load
+    window.onload = () => {
+        loadMenu();
+        if(typeof loadStats === "function") loadStats();
+    };
+        </script>
 </body>
 </html>
-
+    
