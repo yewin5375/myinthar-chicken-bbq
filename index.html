@@ -57,7 +57,7 @@
         .qty-controls { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .qty-input { width: 45px; text-align: center; border: 1px solid var(--border); border-radius: 8px; padding: 5px; font-weight: bold; }
 
-        /* Modal & Top-Left Back Button */
+        /* Modal & Back Button Design */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 20px; }
         .modal-content { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 380px; position: relative; text-align: center; }
         
@@ -136,14 +136,14 @@
 
 <div class="modal" id="flow-modal">
     <div class="modal-content">
-        <div class="modal-back" id="back-voucher-btn" onclick="closeModal()">
+        <div class="modal-back" id="back-to-form-btn" onclick="closeModal()">
             <i class="fas fa-chevron-left"></i> <span>နောက်သို့</span>
         </div>
-        <div class="modal-back" id="back-app-btn" style="display:none;" onclick="showVoucherStep()">
+        <div class="modal-back" id="back-to-voucher-btn" style="display:none;" onclick="showVoucherStep()">
             <i class="fas fa-chevron-left"></i> <span>နောက်သို့</span>
         </div>
 
-        <h3 id="modal-title" style="margin-top:40px;">Voucher သိမ်းယူမလား?</h3>
+        <h3 id="modal-title" style="margin-top:45px;">Voucher သိမ်းယူမလား?</h3>
         
         <div id="voucher-action">
             <button onclick="generateVoucher()" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; margin-bottom:10px;">Voucher ဒေါင်းလုဒ်ဆွဲမည်</button>
@@ -152,10 +152,9 @@
 
         <div id="social-action" style="display:none;">
             <div class="guide-box">
-                <b>💡 Viber ဖြင့် ပို့နည်းလမ်းညွှန်:</b><br>
-                ၁။ ခလုတ်နှိပ်လိုက်လျှင် အော်ဒါစာသားများကို Copy အလိုအလျောက် ယူသွားပါမည်။<br>
-                ၂။ Viber ပွင့်လာပါက ဆိုင်ရှင် Chat ထဲတွင် ခဏဖိနှိပ်ပြီး Paste (ကူးထည့်) လုပ်၍ ပို့ပေးပါ။<br>
-                ⚠️ အော်ဒါတင်ပြီးပါက 09767287345 သို့ ဖုန်းဖြင့် အကြောင်းကြားပေးပါ။
+                <b>💡 မှာယူနည်းလမ်းညွှန်:</b><br>
+                ၁။ ခလုတ်နှိပ်လျှင် အော်ဒါစာသားကို Copy ယူပါမည်။<br>
+                ၂။ App ပွင့်လာပါက ဆိုင်ရှင် Chat ထဲတွင် Paste လုပ်၍ ပို့ပေးပါ။
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                 <button onclick="sendOrder('viber')" style="background:#7360f2; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;"><i class="fab fa-viber"></i> Viber</button>
@@ -172,7 +171,7 @@
         <table style="width:100%; border-collapse: collapse; font-size: 13px;">
             <thead>
                 <tr style="border-bottom: 2px solid #333;">
-                    <th align="left" style="padding:10px 0;">Name</th>
+                    <th align="left" style="padding:10px 0;">Item</th>
                     <th align="center">Price</th>
                     <th align="center">Qty</th>
                     <th align="right">Total</th>
@@ -190,26 +189,9 @@
 <script>
     let cart = {};
     const menuData = [
-    { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'အသား', image: '' },
-    { id: 2, name: 'ကြက်ရင်အုံ', price: 4000, category: 'အသား', image: '' },
-    { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'အသား', image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png' },
-    { id: 4, name: 'အသား ချောင်း(ကြက်)', price: 800, category: 'အသား', image: 'https://i.ibb.co/rRd5P91j/1767118697374.png' },
-    { id: 5, name: 'အရေခွံ', price: 500, category: 'အရေခွံ', image: 'https://i.ibb.co/MkJqnDyG/1767147480724.png' },
-    { id: 6, name: 'အတောင်ပျံ', price: 500, category: 'အရိုး', image: 'https://i.ibb.co/rKJY26TM/1767147666947.png' },
-    { id: 7, name: 'အတောင်ပျံ (CP)', price: 1000, category: 'အရိုး', image: '' },
-    { id: 8, name: 'အူ', price: 500, category: 'ကလီစာ', image: '' },
-    { id: 9, name: 'ခေါင်း', price: 300, category: 'အရိုး', image: '' },
-    { id: 10, name: 'လည် ချောင်း', price: 300, category: 'အရိုး', image: '' },
-    { id: 11, name: 'အသည်းမြစ်', price: 500, category: 'ကလီစာ', image: 'https://i.ibb.co/twRsK5S7/1767147537379.png' },
-    { id: 12, name: 'ခြေထောက်', price: 300, category: 'အရိုး', image: '' },
-    { id: 13, name: 'ခြေထောက်(CP)', price: 700, category: 'အရိုး', image: '' },
-    { id: 14, name: 'လက်မောင်းလုံး', price: 1000, category: 'အသား', image: '' },
-    { id: 15, name: 'အဆီပူး', price: 800, category: 'အရေခွံ', image: 'https://i.ibb.co/PGcW9j6r/1767118749960.png' },
-    { id: 16, name: 'အသားတု', price: 400, category: 'အသီးအရွက်', image: '' },
-    { id: 17, name: 'ရုံးပတေသီး', price: 300, category: 'အသီးအရွက်', image: '' },
-    { id: 18, name: 'အပ်မှို', price: 1000, category: 'အသီးအရွက်', image: '' },
-    { id: 19, name: 'ငုံးဥ', price: 1000, category: 'ဥ', image: '' }
-];
+        { id: 1, name: 'ကြက်ပေါင်', price: 4000, image: 'https://via.placeholder.com/150' },
+        { id: 3, name: 'ဆိတ်သားကင်', price: 1500, image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png' }
+    ];
 
     window.onload = () => {
         document.getElementById('menu-display').innerHTML = menuData.map(i => `
@@ -260,32 +242,32 @@
     function goToStep(s) { document.getElementById('step-wrapper').style.transform = `translateX(-${(s-1)*50}%)`; }
 
     function openModal() {
-        if(!document.getElementById('cust-name').value) return alert("အမည်ဖြည့်ပါ");
+        if(!document.getElementById('cust-name').value || !document.getElementById('cust-phone').value) return alert("အမည်နှင့် ဖုန်းဖြည့်ပါ");
         document.getElementById('flow-modal').style.display = 'flex';
         showVoucherStep();
     }
 
     function closeModal() { document.getElementById('flow-modal').style.display = 'none'; }
 
-    function showSocialOptions() {
-        document.getElementById('voucher-action').style.display = 'none';
-        document.getElementById('social-action').style.display = 'block';
-        document.getElementById('modal-title').innerText = "ပို့မည့် App ကို ရွေးပါ";
-        document.getElementById('back-voucher-btn').style.display = 'none';
-        document.getElementById('back-app-btn').style.display = 'flex';
-    }
-
     function showVoucherStep() {
         document.getElementById('voucher-action').style.display = 'block';
         document.getElementById('social-action').style.display = 'none';
         document.getElementById('modal-title').innerText = "Voucher သိမ်းယူမလား?";
-        document.getElementById('back-voucher-btn').style.display = 'flex';
-        document.getElementById('back-app-btn').style.display = 'none';
+        document.getElementById('back-to-form-btn').style.display = 'flex';
+        document.getElementById('back-to-voucher-btn').style.display = 'none';
+    }
+
+    function showSocialOptions() {
+        document.getElementById('voucher-action').style.display = 'none';
+        document.getElementById('social-action').style.display = 'block';
+        document.getElementById('modal-title').innerText = "ပို့မည့် App ကို ရွေးပါ";
+        document.getElementById('back-to-form-btn').style.display = 'none';
+        document.getElementById('back-to-voucher-btn').style.display = 'flex';
     }
 
     async function generateVoucher() {
         document.getElementById('global-loader').style.display = 'flex';
-        document.getElementById('loader-text').innerText = "Voucher ဖန်တီးနေပါသည် (၃ စက္ကန့်ခန့်)...";
+        document.getElementById('loader-text').innerText = "Voucher ဖန်တီးနေပါသည်...";
 
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
@@ -317,30 +299,45 @@
     }
 
     function sendOrder(platform) {
-        const name = document.getElementById('cust-name').value;
-        const phone = document.getElementById('cust-phone').value;
-        const date = document.getElementById('pickup-date').value;
-        const time = document.getElementById('pickup-time').value;
-        const note = document.getElementById('order-note').value || "-";
-        const deposit = document.getElementById('deposit-input').value || "0";
-        const subtotal = document.getElementById('subtotal').innerText;
-        
-        const items = Object.values(cart).map(i => `• ${i.name} (${i.qty} x ${i.price} K)`).join('\n');
+    // သင့်ဖုန်းနံပါတ်ကို ဤနေရာတွင် ပြင်ဆင်နိုင်သည်
+    const myPhone = "959767287345"; 
 
-        const msg = `🍗 *MYIN THAR ROAST ORDER*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n📅 ရက်စွဲ/အချိန်: ${date} ${time}\n📝 မှတ်ချက်: ${note}\n💰 စရံငွေ: ${deposit} K\n━━━━━━━━━━━━━━\n🛒 မှာယူမှု:\n${items}\n━━━━━━━━━━━━━━\n💰 စုစုပေါင်း: ${subtotal}`;
+    const name = document.getElementById('cust-name').value;
+    const phone = document.getElementById('cust-phone').value;
+    const date = document.getElementById('pickup-date').value;
+    const time = document.getElementById('pickup-time').value;
+    const note = document.getElementById('order-note').value || "-";
+    const deposit = document.getElementById('deposit-input').value || "0";
+    const subtotal = document.getElementById('subtotal').innerText;
+    
+    const items = Object.values(cart).map(i => `• ${i.name} (${i.qty} x ${i.price} K)`).join('\n');
+
+    const msg = `🍗 *MYIN THAR ROAST ORDER*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n📅 ရက်စွဲ/အချိန်: ${date} ${time}\n📝 မှတ်ချက်: ${note}\n💰 စရံငွေ: ${deposit} K\n━━━━━━━━━━━━━━\n🛒 မှာယူမှု:\n${items}\n━━━━━━━━━━━━━━\n💰 စုစုပေါင်း: ${subtotal}`;
+    
+    // Auto Copy လုပ်ဆောင်ချက်
+    navigator.clipboard.writeText(msg).then(() => {
+        // Loader ပြသခြင်း
+        document.getElementById('global-loader').style.display = 'flex';
+        document.getElementById('loader-text').innerText = "အော်ဒါစာသားကို Copy ကူးပြီးပါပြီ။ App သို့ သွားနေပါသည်...";
         
-        navigator.clipboard.writeText(msg).then(() => {
-            document.getElementById('global-loader').style.display = 'flex';
-            document.getElementById('loader-text').innerText = "App သို့ သွားနေပါသည်...";
+        setTimeout(() => {
+            if(platform === 'viber') {
+                // Viber အတွက် ဖုန်းနံပါတ်ရှေ့တွင် + ထည့်ပေးရန်လိုအပ်ပါသည်
+                window.location.href = `viber://chat?number=+${myPhone}`;
+            } else if(platform === 'telegram') {
+                // Telegram အတွက် ဖုန်းနံပါတ်ဖြင့် တိုက်ရိုက်သွားသော Link
+                window.location.href = `https://t.me/+${myPhone}`;
+            }
             
-            setTimeout(() => {
-                const targetPhone = "959767287345";
-                if(platform === 'viber') window.location.href = `viber://chat?number=${targetPhone}`;
-                else window.location.href = `https://t.me/${targetPhone}`;
-                document.getElementById('global-loader').style.display = 'none';
-            }, 1000);
-        });
-    }
+            // ခဏအကြာတွင် Loader ကိုပြန်ပိတ်ခြင်း
+            document.getElementById('global-loader').style.display = 'none';
+        }, 1200);
+    }).catch(err => {
+        console.error('Copy ကူးယူ၍မရပါ- ', err);
+        alert("စာသားကို Copy ကူး၍ မရနိုင်ပါ။");
+    });
+}
+
 </script>
 </body>
 </html>
