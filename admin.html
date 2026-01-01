@@ -4,171 +4,287 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MT Roast - Smart Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
-        :root { --primary: #FF6B35; --secondary: #7360F2; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --danger: #EF4444; }
-        
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 90px; }
-        
-        .header { padding: 20px; background: white; border-radius: 0 0 30px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
-        .search-bar { background: #F1F5F9; border-radius: 15px; padding: 10px 15px; display: flex; align-items: center; margin: 15px 0; }
-        .search-bar input { background: none; border: none; outline: none; width: 100%; margin-left: 10px; font-family: inherit; }
+        :root {
+    --primary: #FF6B35;
+    --secondary: #7360F2;
+    --bg: #F8FAFC;
+    --card: #FFFFFF;
+    --text: #1E293B;
+    --danger: #EF4444;
+}
 
-        .container { padding: 20px; display: none; animation: fadeIn 0.4s ease; }
-        .container.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 90px; overflow-x: hidden; }
 
-        .order-card { background: white; border-radius: 24px; padding: 20px; margin-bottom: 20px; border: 1px solid #F1F5F9; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
-        .action-circle { background: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: var(--text); box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; border: 1px solid #F1F5F9; }
+/* Layouts */
+.header { padding: 20px; background: white; border-radius: 0 0 30px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+.container { padding: 20px; display: none; }
+.container.active { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Profile & Modal Styles */
-        .profile-modal { position: fixed; inset: 0; background: #F8FAFC; z-index: 3000; display: none; flex-direction: column; animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .profile-header { background: linear-gradient(135deg, #FF6B35, #FF8E64); padding: 40px 20px 60px; text-align: center; color: white; border-radius: 0 0 40px 40px; position: relative; }
-        .avatar-large { width: 80px; height: 80px; background: white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; color: var(--primary); }
-        
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 30px; padding: 25px; max-height: 85vh; overflow-y: auto; }
-        .premium-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-.premium-table th { text-align: left; font-size: 11px; color: #94A3B8; padding: 5px 0; border-bottom: 1px solid #eee; }
-.premium-table td { padding: 10px 0; font-size: 13px; font-weight: 600; border-bottom: 1px solid #f9f9f9; }
+/* Stats & Cards */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+.order-card { background: white; border-radius: 24px; padding: 20px; border: 1px solid #F1F5F9; position: relative; }
 
-.detail-overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; animation: fadeIn 0.3s; }
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.menu-card { background: white; border-radius: 20px; overflow: hidden; border: 1px solid #F1F5F9; }
-.menu-img { width: 100%; height: 120px; object-fit: cover; }
+/* Tabs */
+.tab-container { display: flex; background: #eee; padding: 5px; border-radius: 15px; margin-bottom: 20px; }
+.tab-btn { flex: 1; border: none; padding: 10px; border-radius: 12px; cursor: pointer; background: none; font-weight: 600; }
+.tab-btn.active { background: var(--primary); color: white; }
+
+/* Chat UI */
+.modal-full { position: fixed; inset: 0; background: white; z-index: 5000; display: none; flex-direction: column; }
+.chat-header { padding: 20px; background: var(--primary); color: white; display: flex; align-items: center; gap: 15px; font-weight: 700; }
+.chat-body { flex: 1; overflow-y: auto; padding: 20px; background: #f0f2f5; display: flex; flex-direction: column; gap: 10px; }
+.msg { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 14px; }
+.msg.sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+.msg.received { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
+.chat-footer { padding: 15px; display: flex; gap: 10px; background: white; border-top: 1px solid #eee; }
+.chat-footer input { flex: 1; border: 1px solid #eee; border-radius: 25px; padding: 10px 15px; outline: none; }
+.chat-footer button { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; }
+
+/* Buttons & Inputs */
+.btn-primary { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 15px; font-weight: 700; }
+.btn-danger { background: #fee2e2; color: var(--danger); border: none; padding: 12px; border-radius: 15px; font-weight: 700; }
+.modal-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #eee; border-radius: 12px; box-sizing: border-box; }
+
+/* Navigation */
+.nav-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #1E293B; height: 70px; border-radius: 25px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+.nav-item { color: #94A3B8; font-size: 20px; cursor: pointer; }
+.nav-item.active { color: white; }
+.dot { position: absolute; top: 15px; right: 25%; width: 8px; height: 8px; background: red; border-radius: 50%; display: none; }
         
-        .nav-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #1E293B; height: 70px; border-radius: 25px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-        .nav-item { color: #94A3B8; font-size: 20px; cursor: pointer; padding: 10px 20px; border-radius: 15px; }
-        .nav-item.active { color: white; background: var(--primary); }
-        
-        .history-card { background: white; padding: 15px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #F1F5F9; }
-   
     </style>
 </head>
 <body>
 
+<audio id="notiSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+<div class="header">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0; color:var(--primary);">MT Roast</h2>
+        <div style="display:flex; gap:15px;">
+            <i class="fas fa-share-alt" onclick="shareFullMenu()" style="font-size:20px; cursor:pointer;"></i>
+            <i class="fas fa-bell" onclick="enablePush()"></i>
+        </div>
+    </div>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="globalSearch" placeholder="Search customer or phone..." onkeyup="handleSearch()">
+        <i class="fas fa-microphone" onclick="startVoiceSearch()" id="mic-icon"></i>
+    </div>
+</div>
+
 <div id="dash-view" class="container active">
-    <div style="display:flex; gap:10px; margin-bottom:20px;">
-        <div class="search-bar" style="flex:1; margin:0;">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Quick search..." onfocus="switchTab('order', 1)">
-        </div>
-        <div id="order-view" class="container">
-    <div style="display:flex; background: #eee; padding: 5px; border-radius: 15px; margin-bottom: 20px;">
-        <button id="btn-tab-1" class="btn btn-primary" style="flex:1" onclick="loadOrders(1)">New</button>
-        <button id="btn-tab-2" class="btn" style="flex:1; background:none; color: #666;" onclick="loadOrders(2)">Cooking</button>
-        <button id="btn-tab-3" class="btn" style="flex:1; background:none; color: #666;" onclick="loadOrders(3)">Done</button>
-    </div>
-    <div id="order-list"></div>
-</div>
-
-<div id="menu-view" class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>Menu</h2>
-        <button class="btn btn-primary" onclick="openMenuModal()">+ Add Item</button>
-    </div>
-    <div id="menu-list" class="menu-grid"></div>
-</div>
-
-<div id="customerListModal" class="modal">
-    <div class="modal-content" style="max-width: 90%; height: 80vh;">
-        <h3 style="margin-top:0;">Customer Database</h3>
-        <div id="full-customer-list" style="margin-top:15px; max-height: 60vh; overflow-y: auto;"></div>
-        <button class="btn" style="width:100%; margin-top:20px; background:#eee;" onclick="closeModal('customerListModal')">Close</button>
-    </div>
-</div>
-
-<div id="customerProfile" class="profile-modal">
-    <div class="profile-header">
-        <i class="fas fa-chevron-left back-btn" onclick="closeProfile()" style="position:absolute; left:20px; top:40px; cursor:pointer;"></i>
-        <div class="avatar-large"><i class="fas fa-user"></i></div>
-        <h2 id="prof-name">-</h2>
-        <p id="prof-phone">-</p>
-        <div style="display:flex; justify-content:center; gap:15px; margin-top:15px;">
-            <a id="call-link" href="#" class="action-circle" style="width:45px; height:45px;"><i class="fas fa-phone"></i></a>
-            <div class="action-circle" style="width:45px; height:45px;" onclick="openMessenger()"><i class="fab fa-facebook-messenger"></i></div>
-        </div>
-    </div>
-    <div style="display:flex; gap:10px; padding:20px; margin-top:-30px;">
-        <div class="order-card" style="flex:1; text-align:center; margin:0;">
-            <small>ORDERS</small><br><b id="prof-total-orders">0</b>
-        </div>
-        <div class="order-card" style="flex:1; text-align:center; margin:0;">
-            <small>TOTAL</small><br><b id="prof-total-spent" style="color:var(--primary);">0 K</b>
-        </div>
-    </div>
-    <div style="padding:20px; flex:1; overflow-y:auto;">
-        <h4>History</h4>
-        <div id="prof-history-list"></div>
-    </div>
-</div>
-
-<div id="orderDetailView" class="detail-overlay">
-    <div style="padding:20px; border-bottom:1px solid #eee; display:flex; align-items:center; gap:15px;">
-        <i class="fas fa-arrow-left" onclick="closeOrderDetails()" style="font-size:20px;"></i>
-        <h3 style="margin:0;">Order Receipt</h3>
-    </div>
-    <div id="detail-content" style="padding:20px; overflow-y:auto;"></div>
-</div>
-
-<div id="menuModal" class="modal">
-    <div class="modal-content">
-        <h3 id="menuTitle">Menu Item</h3>
-        <input type="hidden" id="menu-id">
-        <input type="file" id="menu-file" class="form-input" accept="image/*" style="border:none;">
-        <input type="hidden" id="menu-img-url">
-        <input type="text" id="menu-name" class="form-input" placeholder="Item Name" style="width:100%; padding:10px; margin:10px 0; border:1px solid #eee; border-radius:10px;">
-        <input type="number" id="menu-price" class="form-input" placeholder="Price" style="width:100%; padding:10px; margin:10px 0; border:1px solid #eee; border-radius:10px;">
-        <select id="menu-stock" class="form-input" style="width:100%; padding:10px; margin:10px 0; border:1px solid #eee; border-radius:10px;">
-            <option value="In Stock">In Stock</option>
-            <option value="Out of Stock">Out of Stock</option>
-        </select>
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn btn-primary" style="flex:2" onclick="saveMenu()">Save</button>
-            <button id="menuDelBtn" class="btn" style="flex:1; color:red;" onclick="deleteMenu()">Delete</button>
-        </div>
-    </div>
-</div>
-        
-
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
-        <div class="order-card" style="margin:0; background: var(--primary); color:white;">
+    <div class="stat-grid">
+        <div class="order-card stat-main" style="background: var(--primary); color:white;">
             <small>REVENUE</small>
             <h2 id="st-total-rev">0 K</h2>
         </div>
-        <div class="order-card" style="margin:0;" onclick="switchTab('order', 1)">
+        <div class="order-card" onclick="switchTab('order', 1)">
             <small>ORDERS</small>
             <h2 id="st-total-ord">0</h2>
         </div>
-        <div class="order-card" style="margin:0;" onclick="switchTab('menu', 2)">
+        <div class="order-card" onclick="switchTab('menu', 2)">
             <small>MENU</small>
             <h2 id="st-total-menu">0</h2>
         </div>
-        <div class="order-card" style="margin:0;" onclick="showCustomerList()">
+        <div class="order-card" onclick="showCustomerList()">
             <small>CUSTOMERS</small>
             <h2 id="st-total-cust">0</h2>
         </div>
     </div>
-
     <div class="order-card">
         <h4>Trending Items</h4>
         <div id="trending-list"></div>
     </div>
 </div>
 
+<div id="order-view" class="container">
+    <div class="tab-container">
+        <button id="btn-tab-1" class="tab-btn active" onclick="loadOrders(1)">New</button>
+        <button id="btn-tab-2" class="tab-btn" onclick="loadOrders(2)">Cooking</button>
+        <button id="btn-tab-3" class="tab-btn" onclick="loadOrders(3)">Done</button>
+    </div>
+    <div id="order-list"></div>
+</div>
+
+<div id="menu-view" class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>Menu Management</h2>
+        <button class="btn-primary" onclick="openMenuModal()">+ Add Item</button>
+    </div>
+    <div id="menu-list" class="menu-grid"></div>
+</div>
+
+<div id="chat-view" class="container">
+    <h2>Internal Messages</h2>
+    <div id="chat-list"></div>
+</div>
+
+<div id="chatModal" class="modal-full">
+    <div class="chat-header">
+        <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+        <span id="chat-target-name">Customer</span>
+    </div>
+    <div id="chat-messages" class="chat-body"></div>
+    <div class="chat-footer">
+        <input type="text" id="chat-input" placeholder="Type a message...">
+        <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<div id="menuModal" class="modal">
+    <div class="modal-content">
+        <h3 id="menuTitle">Menu Item</h3>
+        <div class="image-upload-area" onclick="document.getElementById('menu-file').click()">
+            <img id="menu-img-preview" src="" style="display:none; width:100%; border-radius:15px;">
+            <div id="upload-placeholder"><i class="fas fa-camera"></i><br>Upload Image</div>
+        </div>
+        <input type="file" id="menu-file" hidden accept="image/*" onchange="previewImage(this)">
+        <input type="text" id="menu-name" class="modal-input" placeholder="Item Name">
+        <input type="number" id="menu-price" class="modal-input" placeholder="Price">
+        <select id="menu-stock" class="modal-input">
+            <option value="In Stock">In Stock</option>
+            <option value="Out of Stock">Out of Stock</option>
+        </select>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn-primary" style="flex:2" onclick="saveMenu()">Save</button>
+            <button id="menuDelBtn" class="btn-danger" style="flex:1" onclick="deleteMenu()">Delete</button>
+        </div>
+    </div>
+</div>
+
 <nav class="nav-bar">
     <div class="nav-item active" onclick="switchTab('dash', 0)"><i class="fas fa-home"></i></div>
-    <div class="nav-item" onclick="switchTab('order', 1)"><i class="fas fa-receipt"></i></div>
+    <div class="nav-item" onclick="switchTab('order', 1)"><i class="fas fa-receipt"></i><div id="dot-order" class="dot"></div></div>
     <div class="nav-item" onclick="switchTab('menu', 2)"><i class="fas fa-hamburger"></i></div>
+    <div class="nav-item" onclick="switchTab('chat', 3)"><i class="fas fa-comment-dots"></i></div>
 </nav>
+
 
 <script>
 const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njc1OTYwNiwiZXhwIjoyMDgyMzM1NjA2fQ.rNXHHO8PKO58ZXR4Eqzi6Bl0vzCIwH24jiwOVwbVPoc";
 const _sb = supabase.createClient(SB_URL, SB_KEY);
 
+const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njc1OTYwNiwiZXhwIjoyMDgyMzM1NjA2fQ.rNXHHO8PKO58ZXR4Eqzi6Bl0vzCIwH24jiwOVwbVPoc";
+const _sb = supabase.createClient(SB_URL, SB_KEY);
+
+let currentChatId = null;
+
+// --- VOICE SEARCH (Speak to Tap) ---
+function startVoiceSearch() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    document.getElementById('mic-icon').style.color = 'red';
+    
+    recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        document.getElementById('globalSearch').value = text;
+        handleSearch();
+        document.getElementById('mic-icon').style.color = '';
+    };
+    recognition.start();
+}
+
+// --- CHAT LOGIC ---
+async function loadChatList() {
+    const { data } = await _sb.from('chats').select('*').order('created_at', {ascending: false});
+    // Group by customer_id to show conversations
+    const uniqueChats = [...new Map(data.map(item => [item.customer_id, item])).values()];
+    
+    document.getElementById('chat-list').innerHTML = uniqueChats.map(c => `
+        <div class="order-card" onclick="openChat('${c.customer_id}')" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <b>Customer: ${c.customer_id}</b><br>
+                <small>${c.message_text.substring(0, 30)}...</small>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+        </div>
+    `).join('');
+}
+
+async function openChat(id) {
+    currentChatId = id;
+    document.getElementById('chat-target-name').innerText = id;
+    document.getElementById('chatModal').style.display = 'flex';
+    
+    // Fetch messages
+    const { data } = await _sb.from('chats').select('*').eq('customer_id', id).order('created_at', {ascending: true});
+    renderMessages(data);
+}
+
+function renderMessages(msgs) {
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = msgs.map(m => `
+        <div class="msg ${m.is_admin ? 'sent' : 'received'}">${m.message_text}</div>
+    `).join('');
+    container.scrollTop = container.scrollHeight;
+}
+
+async function sendMessage() {
+    const text = document.getElementById('chat-input').value;
+    if(!text) return;
+
+    await _sb.from('chats').insert([{
+        customer_id: currentChatId,
+        message_text: text,
+        is_admin: true
+    }]);
+
+    document.getElementById('chat-input').value = '';
+    openChat(currentChatId);
+}
+
+function closeChat() { document.getElementById('chatModal').style.display = 'none'; }
+
+// --- SHARING LOGIC ---
+function shareFullMenu() {
+    const shareText = "Check out MT Roast Menu! 🍗🔥\nOrder Now: [Your Website Link]";
+    if (navigator.share) {
+        navigator.share({ title: 'MT Roast Menu', text: shareText, url: window.location.href });
+    } else {
+        alert("Sharing not supported on this browser.");
+    }
+}
+
+function shareOrderHistory(orderId, customer, amount) {
+    const text = `Order Receipt from MT Roast\nID: ${orderId}\nCustomer: ${customer}\nTotal: ${amount} K\nThank you!`;
+    navigator.share({ title: 'Order Receipt', text: text });
+}
+
+// --- IMAGE PREVIEW & UPLOAD ---
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('menu-img-preview').src = e.target.result;
+            document.getElementById('menu-img-preview').style.display = 'block';
+            document.getElementById('upload-placeholder').style.display = 'none';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// --- CORE NAVIGATION ---
+function switchTab(id, idx) {
+    document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(id + '-view').classList.add('active');
+    document.querySelectorAll('.nav-item')[idx].classList.add('active');
+    
+    if(id === 'dash') loadStats();
+    if(id === 'chat') loadChatList();
+}
+
+
+    
+    
+    
 let currentOrderTab = 1;
 
 // --- NAVIGATION ---
@@ -455,9 +571,18 @@ function enablePush() { Notification.requestPermission(); }
 _sb.channel('any').on('postgres_changes', {event:'INSERT', table:'orders'}, payload => {
     document.getElementById('notiSound').play();
     document.getElementById('dot-order').style.display = 'block';
+    
+    // (မှတ်ချက် - ကျန်ရှိနေသော loadOrders, loadMenu, saveMenu စသည့် Function များကို အပိုင်း ၃ မှ မူရင်းအတိုင်း ဆက်လက်အသုံးပြုနိုင်ပါသည်)
+
+// Realtime Chat Update
     if(Notification.permission === 'granted') new Notification("New Order!", { body: payload.new.customer_name });
     loadStats();
     if(currentOrderTab === 1) loadOrders(1);
+_sb.channel('chat-room').on('postgres_changes', {event:'INSERT', table:'chats'}, payload => {
+    if(payload.new.customer_id === currentChatId) {
+        openChat(currentChatId);
+    }
+    loadChatList();
 }).subscribe();
 
 window.onload = loadStats;
