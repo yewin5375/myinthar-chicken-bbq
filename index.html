@@ -234,53 +234,28 @@
 
     // ၂။ ကိန်းရှင်များ သတ်မှတ်ချက်
     const MY_PHONE = "959767287345";
-    let menuData = []; // Database ကလာမယ့် data သိမ်းဖို့ (တစ်ခါပဲ ကြေညာပါ)
     let cart = {};
-    let myChatId = localStorage.getItem('chat_id') || "user_" + Math.random().toString(36).slice(2, 9);
-    localStorage.setItem('chat_id', myChatId);
+    let menuData = [];
 
-    // ၃။ Window Load ဖြစ်ချိန်မှာ Data ဆွဲယူခြင်း
-    window.onload = async () => {
-        document.getElementById('global-loader').style.display = 'flex';
-        
-        // Database ကနေ Menu Items တွေယူမယ်
-        const { data, error } = await _sb.from('products').select('*');
-        
-        if(!error && data.length > 0) {
-            menuData = data;
-        } else {
-            // အကယ်၍ Database မှာ ဘာမှမရှိသေးရင် နမူနာပြဖို့ (Testing အတွက်သာ)
-            menuData = [
-                { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'ကြက်', image: 'https://via.placeholder.com/150', stock_qty: 10 },
-                { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'ဆိတ်', image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png', stock_qty: 5 }
-            ];
-        }
-        
-        renderMenu(menuData);
-        loadRecentOrders();
-        document.getElementById('global-loader').style.display = 'none';
-    };
-
-    // ၄။ Menu Render လုပ်ခြင်း
-    function renderMenu(data) {
-    if (!data || data.length === 0) {
-        document.getElementById('menu-display').innerHTML = "<p style='text-align:center;'>ပစ္စည်းစာရင်း မရှိသေးပါ။</p>";
-        return;
+    async function fetchMenu() {
+        const { data } = await _supabase.from('menu_items').select('*').order('name');
+        if (data) { menuData = data; renderMenu(); }
     }
 
-    document.getElementById('menu-display').innerHTML = data.map(i => `
-        <div class="menu-card" style="${(i.stock_qty || 0) <= 0 ? 'opacity:0.6;' : ''}">
-            <img src="${i.image || 'https://via.placeholder.com/150'}">
-            <div style="padding:10px;">
-                <div style="font-weight:bold;">${i.name}</div>
-                <div style="color:var(--primary); font-weight:bold; margin:5px 0;">${(i.price || 0).toLocaleString()} K</div>
-                ${(i.stock_qty || 0) > 0 
-                    ? `<button class="add-btn" onclick="addToCart(${i.id})">Add</button>` 
-                    : `<button class="add-btn" style="background:#ccc; cursor:not-allowed;" disabled>Out of Stock</button>`
-                }
-            </div>
-        </div>
-    `).join('');
+    function renderMenu() {
+        const grid = document.getElementById('menu-grid');
+        grid.innerHTML = menuData.map(item => `
+            <div class="menu-card">
+                <div>
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">${item.price.toLocaleString()} K</div>
+                </div>
+                <div class="qty-box">
+                    <button class="btn-qty" onclick="updateQty('${item.name}', -1)">-</button>
+                    <span id="qty-${item.name}" style="font-weight:bold;">0</span>
+                    <button class="btn-qty" onclick="updateQty('${item.name}', 1)">+</button>
+                </div>
+            </div>`).join('');
     }
         
 
