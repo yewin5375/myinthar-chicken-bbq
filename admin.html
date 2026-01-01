@@ -30,12 +30,21 @@
         
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 30px; padding: 25px; max-height: 85vh; overflow-y: auto; }
+        .premium-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+.premium-table th { text-align: left; font-size: 11px; color: #94A3B8; padding: 5px 0; border-bottom: 1px solid #eee; }
+.premium-table td { padding: 10px 0; font-size: 13px; font-weight: 600; border-bottom: 1px solid #f9f9f9; }
+
+.detail-overlay { position: fixed; inset: 0; background: white; z-index: 4000; display: none; flex-direction: column; animation: fadeIn 0.3s; }
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.menu-card { background: white; border-radius: 20px; overflow: hidden; border: 1px solid #F1F5F9; }
+.menu-img { width: 100%; height: 120px; object-fit: cover; }
         
         .nav-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #1E293B; height: 70px; border-radius: 25px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
         .nav-item { color: #94A3B8; font-size: 20px; cursor: pointer; padding: 10px 20px; border-radius: 15px; }
         .nav-item.active { color: white; background: var(--primary); }
         
         .history-card { background: white; padding: 15px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #F1F5F9; }
+   
     </style>
 </head>
 <body>
@@ -46,13 +55,83 @@
             <i class="fas fa-search"></i>
             <input type="text" placeholder="Quick search..." onfocus="switchTab('order', 1)">
         </div>
-        <div class="action-circle" style="width:45px; height:45px;" onclick="switchTab('order', 1)">
-            <i class="fas fa-bell"></i>
-        </div>
-        <div class="action-circle" style="width:45px; height:45px;" onclick="window.open('https://m.me/YOUR_PAGE_ID')">
-            <i class="fab fa-facebook-messenger"></i>
+        <div id="order-view" class="container">
+    <div style="display:flex; background: #eee; padding: 5px; border-radius: 15px; margin-bottom: 20px;">
+        <button id="btn-tab-1" class="btn btn-primary" style="flex:1" onclick="loadOrders(1)">New</button>
+        <button id="btn-tab-2" class="btn" style="flex:1; background:none; color: #666;" onclick="loadOrders(2)">Cooking</button>
+        <button id="btn-tab-3" class="btn" style="flex:1; background:none; color: #666;" onclick="loadOrders(3)">Done</button>
+    </div>
+    <div id="order-list"></div>
+</div>
+
+<div id="menu-view" class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>Menu</h2>
+        <button class="btn btn-primary" onclick="openMenuModal()">+ Add Item</button>
+    </div>
+    <div id="menu-list" class="menu-grid"></div>
+</div>
+
+<div id="customerListModal" class="modal">
+    <div class="modal-content" style="max-width: 90%; height: 80vh;">
+        <h3 style="margin-top:0;">Customer Database</h3>
+        <div id="full-customer-list" style="margin-top:15px; max-height: 60vh; overflow-y: auto;"></div>
+        <button class="btn" style="width:100%; margin-top:20px; background:#eee;" onclick="closeModal('customerListModal')">Close</button>
+    </div>
+</div>
+
+<div id="customerProfile" class="profile-modal">
+    <div class="profile-header">
+        <i class="fas fa-chevron-left back-btn" onclick="closeProfile()" style="position:absolute; left:20px; top:40px; cursor:pointer;"></i>
+        <div class="avatar-large"><i class="fas fa-user"></i></div>
+        <h2 id="prof-name">-</h2>
+        <p id="prof-phone">-</p>
+        <div style="display:flex; justify-content:center; gap:15px; margin-top:15px;">
+            <a id="call-link" href="#" class="action-circle" style="width:45px; height:45px;"><i class="fas fa-phone"></i></a>
+            <div class="action-circle" style="width:45px; height:45px;" onclick="openMessenger()"><i class="fab fa-facebook-messenger"></i></div>
         </div>
     </div>
+    <div style="display:flex; gap:10px; padding:20px; margin-top:-30px;">
+        <div class="order-card" style="flex:1; text-align:center; margin:0;">
+            <small>ORDERS</small><br><b id="prof-total-orders">0</b>
+        </div>
+        <div class="order-card" style="flex:1; text-align:center; margin:0;">
+            <small>TOTAL</small><br><b id="prof-total-spent" style="color:var(--primary);">0 K</b>
+        </div>
+    </div>
+    <div style="padding:20px; flex:1; overflow-y:auto;">
+        <h4>History</h4>
+        <div id="prof-history-list"></div>
+    </div>
+</div>
+
+<div id="orderDetailView" class="detail-overlay">
+    <div style="padding:20px; border-bottom:1px solid #eee; display:flex; align-items:center; gap:15px;">
+        <i class="fas fa-arrow-left" onclick="closeOrderDetails()" style="font-size:20px;"></i>
+        <h3 style="margin:0;">Order Receipt</h3>
+    </div>
+    <div id="detail-content" style="padding:20px; overflow-y:auto;"></div>
+</div>
+
+<div id="menuModal" class="modal">
+    <div class="modal-content">
+        <h3 id="menuTitle">Menu Item</h3>
+        <input type="hidden" id="menu-id">
+        <input type="file" id="menu-file" class="form-input" accept="image/*" style="border:none;">
+        <input type="hidden" id="menu-img-url">
+        <input type="text" id="menu-name" class="form-input" placeholder="Item Name" style="width:100%; padding:10px; margin:10px 0; border:1px solid #eee; border-radius:10px;">
+        <input type="number" id="menu-price" class="form-input" placeholder="Price" style="width:100%; padding:10px; margin:10px 0; border:1px solid #eee; border-radius:10px;">
+        <select id="menu-stock" class="form-input" style="width:100%; padding:10px; margin:10px 0; border:1px solid #eee; border-radius:10px;">
+            <option value="In Stock">In Stock</option>
+            <option value="Out of Stock">Out of Stock</option>
+        </select>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn btn-primary" style="flex:2" onclick="saveMenu()">Save</button>
+            <button id="menuDelBtn" class="btn" style="flex:1; color:red;" onclick="deleteMenu()">Delete</button>
+        </div>
+    </div>
+</div>
+        
 
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
         <div class="order-card" style="margin:0; background: var(--primary); color:white;">
