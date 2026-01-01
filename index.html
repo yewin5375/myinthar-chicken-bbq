@@ -188,6 +188,13 @@
 </div>
 
 <script>
+    // သင့်ရဲ့ Supabase URL နဲ့ Key
+const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTk2MDYsImV4cCI6MjA4MjMzNTYwNn0.Kxy3QW1gq-J-tzUF2fxQd0l989Wr7BI2uRTbWDTNL6k";
+const _sb = supabase.createClient(SB_URL, SB_KEY);
+
+let menuData = []; // Database ကလာမယ့် data သိမ်းဖို့
+    
     const MY_PHONE = "959767287345";
     let cart = {};
     const menuData = [
@@ -195,23 +202,33 @@
         { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'ဆိတ်', image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png' }
     ];
 
-    window.onload = () => {
+    window.onload = async () => {
+    // Database ကနေ Menu Items တွေယူမယ်
+    const { data, error } = await _sb.from('products').select('*');
+    if(!error) {
+        menuData = data;
         renderMenu(menuData);
-        loadRecentOrders();
-    };
+    }
+    loadRecentOrders();
+};
+
 
     function renderMenu(data) {
-        document.getElementById('menu-display').innerHTML = data.map(i => `
-            <div class="menu-card">
-                <img src="${i.image}">
-                <div style="padding:10px;">
-                    <div style="font-weight:bold;">${i.name}</div>
-                    <div style="color:var(--primary); font-weight:bold; margin:5px 0;">${i.price.toLocaleString()} K</div>
-                    <button class="add-btn" onclick="addToCart(${i.id})">Add</button>
-                </div>
+    document.getElementById('menu-display').innerHTML = data.map(i => `
+        <div class="menu-card" style="${i.stock_qty <= 0 ? 'opacity:0.6;' : ''}">
+            <img src="${i.image}">
+            <div style="padding:10px;">
+                <div style="font-weight:bold;">${i.name}</div>
+                <div style="color:var(--primary); font-weight:bold; margin:5px 0;">${i.price.toLocaleString()} K</div>
+                ${i.stock_qty > 0 
+                    ? `<button class="add-btn" onclick="addToCart(${i.id})">Add</button>` 
+                    : `<button class="add-btn" style="background:#ccc; cursor:not-allowed;" disabled>Out of Stock</button>`
+                }
             </div>
-        `).join('');
-    }
+        </div>
+    `).join('');
+}
+
 
     function filterCategory(cat, btn) {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
@@ -332,34 +349,50 @@
         }, 1200);
     }
 
-    function sendOrder(platform) {
-        const name = document.getElementById('cust-name').value;
-        const phone = document.getElementById('cust-phone').value;
-        const date = document.getElementById('pickup-date').value;
-        const time = document.getElementById('pickup-time').value;
-        const note = document.getElementById('order-note').value || "-";
-        const deposit = document.getElementById('deposit-input').value || "0";
-        const subtotal = document.getElementById('subtotal').innerText;
-        
-        const itemsMsg = Object.values(cart).map(i => `• ${i.name} (${i.qty} x ${i.price} K)`).join('\n');
-        const msg = `🍗 *MYIN THAR ROAST ORDER*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n📅 ရက်စွဲ/အချိန်: ${date} ${time}\n📝 မှတ်ချက်: ${note}\n💰 စရံငွေ: ${deposit} K\n━━━━━━━━━━━━━━\n🛒 မှာယူမှု:\n${itemsMsg}\n━━━━━━━━━━━━━━\n💰 စုစုပေါင်း: ${subtotal}`;
+    async function sendOrder(platform) {
+    const name = document.getElementById('cust-name').value;
+    const phone = document.getElementById('cust-phone').value;
+    const date = document.getElementById('pickup-date').value;
+    const time = document.getElementById('pickup-time').value;
+    const note = document.getElementById('order-note').value || "-";
+    const subtotal = document.getElementById('subtotal').innerText;
+    
+    // ၁။ မှာယူတဲ့ ပစ္စည်းစာရင်းကို စာသားပြောင်းမယ်
+    const itemsMsg = Object.values(cart).map(i => `• ${i.name} (${i.qty} x ${i.price} K)`).join('\n');
+    
+    // ၂။ Supabase Database ထဲကို အော်ဒါအရင်သိမ်းမယ်
+    const { error } = await _sb.from('orders').insert([{
+        customer_name: name,
+        phone: phone,
+        items_text: itemsMsg + `\n\n⏰ Time: ${date} ${time}\n📝 Note: ${note}`,
+        total_amount: subtotal,
+        status: 1 // Status 1 = New Order
+    }]);
 
-        // Save to LocalStorage
-        const history = JSON.parse(localStorage.getItem('recentOrders') || "[]");
-        history.push({ id: Date.now(), date: new Date().toLocaleDateString(), total: subtotal, items: Object.values(cart) });
-        localStorage.setItem('recentOrders', JSON.stringify(history));
-
-        navigator.clipboard.writeText(msg).then(() => {
-            document.getElementById('global-loader').style.display = 'flex';
-            document.getElementById('loader-text').innerText = "Copy ကူးပြီးပါပြီ။ App သို့ သွားနေပါသည်...";
-            
-            setTimeout(() => {
-                if(platform === 'viber') window.location.href = `viber://chat?number=+${MY_PHONE}`;
-                else window.location.href = `https://t.me/+${MY_PHONE}`;
-                document.getElementById('global-loader').style.display = 'none';
-            }, 1000);
-        });
+    if(error) {
+        alert("Database ချိတ်ဆက်မှု အဆင်မပြေပါ။");
+        return;
     }
+
+    // ၃။ Message ပို့ဖို့ စာသားပြင်ဆင်မယ်
+    const msg = `🍗 *MYIN THAR ROAST ORDER*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n📅 ရက်စွဲ/အချိန်: ${date} ${time}\n📝 မှတ်ချက်: ${note}\n━━━━━━━━━━━━━━\n🛒 မှာယူမှု:\n${itemsMsg}\n━━━━━━━━━━━━━━\n💰 စုစုပေါင်း: ${subtotal}`;
+
+    // ၄။ Local History သိမ်းမယ်
+    const history = JSON.parse(localStorage.getItem('recentOrders') || "[]");
+    history.push({ id: Date.now(), date: new Date().toLocaleDateString(), total: subtotal, items: Object.values(cart) });
+    localStorage.setItem('recentOrders', JSON.stringify(history));
+
+    // ၅။ Viber သို့မဟုတ် Telegram သို့ သွားမယ်
+    navigator.clipboard.writeText(msg).then(() => {
+        document.getElementById('global-loader').style.display = 'flex';
+        setTimeout(() => {
+            if(platform === 'viber') window.location.href = `viber://chat?number=+${MY_PHONE}`;
+            else window.location.href = `https://t.me/+${MY_PHONE}`;
+            document.getElementById('global-loader').style.display = 'none';
+        }, 1000);
+    });
+    }
+    
 </script>
 </body>
 </html>
