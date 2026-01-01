@@ -187,6 +187,23 @@
     </div>
 </div>
 
+    <div id="chat-btn" onclick="toggleChat(true)" style="position:fixed; bottom:20px; left:20px; background:var(--accent); color:white; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:1002; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+    <i class="fas fa-comment-dots"></i>
+</div>
+
+<div id="chat-window" style="position:fixed; bottom:-100%; left:0; width:100%; height:70%; background:white; z-index:1003; transition:0.4s; border-radius:30px 30px 0 0; display:flex; flex-direction:column; box-shadow:0 -5px 20px rgba(0,0,0,0.1);">
+    <div style="padding:20px; background:var(--accent); color:white; border-radius:30px 30px 0 0; display:flex; justify-content:space-between;">
+        <b>Live Chat</b>
+        <i class="fas fa-times" onclick="toggleChat(false)"></i>
+    </div>
+    <div id="chat-messages" style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+        </div>
+    <div style="padding:15px; border-top:1px solid #eee; display:flex; gap:10px;">
+        <input type="text" id="chat-input" placeholder="စာရိုက်ပါ..." style="flex:1; border:none; background:#f0f0f0; padding:12px; border-radius:20px; outline:none;">
+        <button onclick="sendChatMessage()" style="background:var(--accent); color:white; border:none; width:45px; height:45px; border-radius:50%;"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+    
 <script>
     // သင့်ရဲ့ Supabase URL နဲ့ Key
 const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
@@ -349,6 +366,52 @@ let menuData = []; // Database ကလာမယ့် data သိမ်းဖိ�
         }, 1200);
     }
 
+    let myId = localStorage.getItem('chat_id') || "user_" + Math.random().toString(36).slice(2, 7);
+localStorage.setItem('chat_id', myId);
+
+function toggleChat(s) { 
+    document.getElementById('chat-window').style.bottom = s ? '0' : '-100%'; 
+    if(s) loadChatHistory();
+}
+
+async function sendChatMessage() {
+    const msg = document.getElementById('chat-input').value;
+    if(!msg) return;
+
+    await _sb.from('chats').insert([{
+        customer_id: myId,
+        sender: 'customer',
+        message: msg
+    }]);
+
+    document.getElementById('chat-input').value = "";
+}
+
+async function loadChatHistory() {
+    const { data } = await _sb.from('chats').select('*').eq('customer_id', myId).order('created_at', {ascending: true});
+    renderChat(data);
+}
+
+function renderChat(data) {
+    const box = document.getElementById('chat-messages');
+    box.innerHTML = data.map(m => `
+        <div style="align-self: ${m.sender === 'customer' ? 'flex-end' : 'flex-start'}; 
+                    background: ${m.sender === 'customer' ? 'var(--accent)' : '#eee'}; 
+                    color: ${m.sender === 'customer' ? 'white' : 'black'}; 
+                    padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size:14px;">
+            ${m.message}
+        </div>
+    `).join('');
+    box.scrollTop = box.scrollHeight;
+}
+
+// Realtime နားထောင်ခြင်း
+_sb.channel('live-chats').on('postgres_changes', { 
+    event: 'INSERT', schema: 'public', table: 'chats', filter: `customer_id=eq.${myId}` 
+}, payload => {
+    loadChatHistory(); // စာအသစ်ဝင်လာတိုင်း screen မှာပြမယ်
+}).subscribe();
+    
     async function sendOrder(platform) {
     const name = document.getElementById('cust-name').value;
     const phone = document.getElementById('cust-phone').value;
