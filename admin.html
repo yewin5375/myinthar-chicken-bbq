@@ -85,20 +85,56 @@
 </div>
 
 <div id="dash-view" class="container active">
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-        <div class="order-card" style="margin-bottom:0; padding:15px; cursor:default;">
-            <small style="color:#64748B; font-weight: 700;">REVENUE</small>
-            <h2 id="st-rev-today" style="margin:5px 0;">0 K</h2>
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <div class="search-bar" style="flex:1; margin:0;">
+            <i class="fas fa-search" style="color:#94A3B8;"></i>
+            <input type="text" placeholder="Search orders..." onfocus="switchTab('order', 1)">
         </div>
-        <div class="order-card" style="margin-bottom:0; padding:15px; cursor:default;">
-            <small style="color:#64748B; font-weight: 700;">NEW ORDERS</small>
-            <h2 id="st-ord-new" style="margin:5px 0; color: var(--primary);">0</h2>
+        <div class="action-circle" style="width:45px; height:45px;" onclick="switchTab('order', 1)">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="action-circle" style="width:45px; height:45px;" onclick="openMessenger()">
+            <i class="fab fa-facebook-messenger"></i>
         </div>
     </div>
-    <div class="order-card" style="margin-top:20px; cursor:default;">
-        <canvas id="salesChart"></canvas>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+        <div class="order-card" style="margin:0; background: linear-gradient(135deg, #FF6B35, #FF8E64); color:white;">
+            <small style="font-weight:700; opacity:0.8;">REVENUE</small>
+            <h2 id="st-total-rev" style="margin:5px 0;">0 K</h2>
+        </div>
+        <div class="order-card" style="margin:0; cursor:pointer;" onclick="switchTab('order', 1)">
+            <small style="color:#64748B; font-weight:700;">TOTAL ORDERS</small>
+            <h2 id="st-total-ord" style="margin:5px 0;">0</h2>
+        </div>
+        <div class="order-card" style="margin:0; cursor:pointer;" onclick="switchTab('menu', 2)">
+            <small style="color:#64748B; font-weight:700;">TOTAL MENU</small>
+            <h2 id="st-total-menu" style="margin:5px 0;">0</h2>
+        </div>
+        <div class="order-card" style="margin:0; cursor:pointer;" onclick="showCustomerList()">
+            <small style="color:#64748B; font-weight:700;">CUSTOMERS</small>
+            <h2 id="st-total-cust" style="margin:5px 0;">0</h2>
+        </div>
+    </div>
+
+    <div class="order-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h4 style="margin:0;">Trending Items</h4>
+            <small style="color:var(--primary); font-weight:700;">Live Update</small>
+        </div>
+        <div id="trending-list">
+            </div>
     </div>
 </div>
+
+<div id="customerListModal" class="modal">
+    <div class="modal-content" style="max-width: 90%; height: 80vh;">
+        <h3>Customer Database</h3>
+        <div id="full-customer-list" style="margin-top:15px;"></div>
+        <button class="btn" style="width:100%; margin-top:20px;" onclick="closeModal('customerListModal')">Close</button>
+    </div>
+</div>
+    
 
 <div id="order-view" class="container">
     <div style="display:flex; background: #eee; padding: 5px; border-radius: 15px; margin-bottom: 20px;">
@@ -394,14 +430,79 @@ async function handleSearch() {
 
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+// --- Enhanced Stats & Dashboard Logic ---
 async function loadStats() {
-    const { data } = await _sb.from('orders').select('*');
-    const today = new Date().toISOString().split('T')[0];
-    const todayOrds = data.filter(o => o.created_at.startsWith(today));
-    let rev = todayOrds.reduce((s, o) => s + (parseInt(o.total_amount.toString().replace(/\D/g,'')) || 0), 0);
-    document.getElementById('st-rev-today').innerText = rev.toLocaleString('en-US') + " K";
-    document.getElementById('st-ord-new').innerText = data.filter(o => o.status === 1).length;
+    // Fetch Data from Supabase
+    const { data: allOrders } = await _sb.from('orders').select('*');
+    const { data: allProducts } = await _sb.from('products').select('id');
+    
+    // Calculate Stats
+    const totalRev = allOrders.reduce((s, o) => s + (parseInt(o.total_amount.toString().replace(/\D/g,'')) || 0), 0);
+    const uniquePhones = [...new Set(allOrders.map(o => o.phone))];
+    
+    // UI Update
+    document.getElementById('st-total-rev').innerText = totalRev.toLocaleString() + " K";
+    document.getElementById('st-total-ord').innerText = allOrders.length;
+    document.getElementById('st-total-menu').innerText = allProducts.length;
+    document.getElementById('st-total-cust').innerText = uniquePhones.length;
+
+    // Trending Items Logic (Based on order frequency in items_text)
+    updateTrendingItems(allOrders);
 }
+
+function updateTrendingItems(orders) {
+    const itemMap = {};
+    orders.forEach(o => {
+        const lines = o.items_text.split('\n');
+        lines.forEach(line => {
+            if(line.includes('•')) {
+                const name = line.split('(')[0].replace('•','').trim();
+                itemMap[name] = (itemMap[name] || 0) + 1;
+            }
+        });
+    });
+
+    const sorted = Object.entries(itemMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    document.getElementById('trending-list').innerHTML = sorted.map(([name, count], idx) => `
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #f8f8f8;">
+            <div style="width:30px; height:30px; border-radius:8px; background:#F1F5F9; display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--primary); font-size:12px;">#${idx+1}</div>
+            <div style="flex:1;">
+                <div style="font-weight:700; font-size:14px;">${name}</div>
+                <small style="color:#94A3B8;">Ordered ${count} times</small>
+            </div>
+            <i class="fas fa-chart-line" style="color:#10B981;"></i>
+        </div>
+    `).join('');
+}
+
+// --- Customer List Logic ---
+async function showCustomerList() {
+    const { data: orders } = await _sb.from('orders').select('customer_name, phone').order('created_at', {ascending:false});
+    
+    // Get unique customers by phone
+    const customerMap = {};
+    orders.forEach(o => {
+        if(!customerMap[o.phone]) customerMap[o.phone] = o.customer_name;
+    });
+
+    document.getElementById('full-customer-list').innerHTML = Object.entries(customerMap).map(([phone, name]) => `
+        <div class="history-card" onclick="closeModal('customerListModal'); showCustomerProfile('${phone}')">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-user" style="color:#666;"></i>
+                </div>
+                <div>
+                    <div style="font-weight:700;">${name}</div>
+                    <small style="color:#94A3B8;">${phone}</small>
+                </div>
+            </div>
+            <i class="fas fa-chevron-right" style="color:#eee;"></i>
+        </div>
+    `).join('');
+    
+    document.getElementById('customerListModal').style.display = 'flex';
+}
+    
 
 function enablePush() { Notification.requestPermission(); }
 
