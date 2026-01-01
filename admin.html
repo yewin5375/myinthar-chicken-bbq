@@ -4,58 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MT Roast - Smart Admin Dashboard</title>
-    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-    --primary: #FF6B35;
-    --secondary: #7360F2;
-    --bg: #F8FAFC;
-    --card: #FFFFFF;
-    --text: #1E293B;
-    --danger: #EF4444;
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+        :root { --primary: #FF6B35; --secondary: #7360F2; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --danger: #EF4444; }
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 100px; }
+        
+        /* Header & Search */
+        .header { padding: 20px; background: white; border-radius: 0 0 30px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .search-bar { background: #F1F5F9; border-radius: 15px; padding: 10px 15px; display: flex; align-items: center; margin: 15px 0; }
+        .search-bar input { background: none; border: none; outline: none; width: 100%; margin-left: 10px; font-family: inherit; }
+
+        .container { padding: 20px; display: none; animation: fadeIn 0.4s ease; }
+        .container.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards & Tables */
+        .order-card { background: white; border-radius: 24px; padding: 20px; margin-bottom: 20px; border: 1px solid #F1F5F9; box-shadow: 0 5px 15px rgba(0,0,0,0.02); position: relative;}
+        .premium-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .premium-table th { text-align: left; font-size: 11px; color: #94A3B8; padding: 5px 0; border-bottom: 1px solid #eee; }
+        .premium-table td { padding: 10px 0; font-size: 13px; font-weight: 600; border-bottom: 1px solid #f9f9f9; }
+
+        /* Modals & Overlays */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 30px; padding: 25px; max-height: 85vh; overflow-y: auto; }
+        
+        /* Chat UI */
+        .chat-overlay { position: fixed; inset: 0; background: white; z-index: 5000; display: none; flex-direction: column; }
+        .chat-header { padding: 20px; background: var(--primary); color: white; display: flex; align-items: center; gap: 15px; }
+        .chat-msgs { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: #f0f2f5; }
+        .msg-bubble { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 14px; }
+        .msg-bubble.admin { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .msg-bubble.user { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
+        .chat-footer { padding: 15px; display: flex; gap: 10px; background: white; border-top: 1px solid #eee; }
+
+        /* Image in Chat */
+.chat-img { max-width: 200px; border-radius: 10px; margin-top: 5px; cursor: pointer; }
+
+        /* Typing indicator */
+.typing { font-size: 12px; color: #888; margin-bottom: 10px; display: none; padding-left: 20px; }
+
+/* Chat Action Buttons (Share menu/history) */
+.chat-actions { display: flex; gap: 5px; padding: 5px 15px; background: #fff; border-top: 1px solid #eee; }
+.action-pill { background: #f0f2f5; padding: 5px 12px; border-radius: 15px; font-size: 12px; cursor: pointer; white-space: nowrap; border: 1px solid #ddd; }
+
+/* Image Style in Chat */
+.chat-img { max-width: 100%; border-radius: 12px; margin: 5px 0; display: block; }
+        
+/* Profile Avatar Style */
+.prof-avatar { width: 80px; height: 80px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 10px auto; color: var(--primary); }
+
+/* History List Style */
+.history-item { background: #f8fafc; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #eee; }
+        
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #1E293B; height: 70px; border-radius: 25px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .nav-item { color: #94A3B8; font-size: 20px; cursor: pointer; padding: 10px 20px; border-radius: 15px; position: relative; }
+        .nav-item.active { color: white; background: var(--primary); }
+        .dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: red; border-radius: 50%; display: none; }
+
+        #typing-ui {
+    font-size: 11px;
+    color: #4ade80; /* Green color */
+    font-weight: bold;
+    margin-left: 15px;
+    animation: blink 1s infinite;
 }
 
-body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 90px; overflow-x: hidden; }
+@keyframes blink { 50% { opacity: 0; } }
 
-/* Layouts */
-.header { padding: 20px; background: white; border-radius: 0 0 30px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-.container { padding: 20px; display: none; }
-.container.active { display: block; animation: fadeIn 0.4s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Stats & Cards */
-.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-.order-card { background: white; border-radius: 24px; padding: 20px; border: 1px solid #F1F5F9; position: relative; }
-
-/* Tabs */
-.tab-container { display: flex; background: #eee; padding: 5px; border-radius: 15px; margin-bottom: 20px; }
-.tab-btn { flex: 1; border: none; padding: 10px; border-radius: 12px; cursor: pointer; background: none; font-weight: 600; }
-.tab-btn.active { background: var(--primary); color: white; }
-
-/* Chat UI */
-.modal-full { position: fixed; inset: 0; background: white; z-index: 5000; display: none; flex-direction: column; }
-.chat-header { padding: 20px; background: var(--primary); color: white; display: flex; align-items: center; gap: 15px; font-weight: 700; }
-.chat-body { flex: 1; overflow-y: auto; padding: 20px; background: #f0f2f5; display: flex; flex-direction: column; gap: 10px; }
-.msg { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 14px; }
-.msg.sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-.msg.received { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
-.chat-footer { padding: 15px; display: flex; gap: 10px; background: white; border-top: 1px solid #eee; }
-.chat-footer input { flex: 1; border: 1px solid #eee; border-radius: 25px; padding: 10px 15px; outline: none; }
-.chat-footer button { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; }
-
-/* Buttons & Inputs */
-.btn-primary { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 15px; font-weight: 700; }
-.btn-danger { background: #fee2e2; color: var(--danger); border: none; padding: 12px; border-radius: 15px; font-weight: 700; }
-.modal-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #eee; border-radius: 12px; box-sizing: border-box; }
-
-/* Navigation */
-.nav-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #1E293B; height: 70px; border-radius: 25px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-.nav-item { color: #94A3B8; font-size: 20px; cursor: pointer; }
-.nav-item.active { color: white; }
-.dot { position: absolute; top: 15px; right: 25%; width: 8px; height: 8px; background: red; border-radius: 50%; display: none; }
+        #order-search:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
         
+        /* Components */
+        .btn { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .btn-primary { background: var(--primary); color: white; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .menu-card { background: white; border-radius: 20px; overflow: hidden; border: 1px solid #F1F5F9; }
+        .menu-img { width: 100%; height: 120px; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -64,37 +95,48 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); marg
 
 <div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="margin:0; color:var(--primary);">MT Roast</h2>
-        <div style="display:flex; gap:15px;">
-            <i class="fas fa-share-alt" onclick="shareFullMenu()" style="font-size:20px; cursor:pointer;"></i>
-            <i class="fas fa-bell" onclick="enablePush()"></i>
-        </div>
+        <h2 style="margin:0;">MT Roast <i class="fas fa-share-alt" style="font-size:16px; margin-left:10px;" onclick="shareMenu()"></i></h2>
+        <i class="fas fa-bell" onclick="enablePush()"></i>
     </div>
     <div class="search-bar">
         <i class="fas fa-search"></i>
-        <input type="text" id="globalSearch" placeholder="Search customer or phone..." onkeyup="handleSearch()">
-        <i class="fas fa-microphone" onclick="startVoiceSearch()" id="mic-icon"></i>
+        <input type="text" id="globalSearch" placeholder="Search orders, customers..." onkeyup="handleSearch()">
+        <i class="fas fa-microphone" style="color:var(--primary)" onclick="startVoice()"></i>
     </div>
 </div>
 
 <div id="dash-view" class="container active">
-    <div class="stat-grid">
-        <div class="order-card stat-main" style="background: var(--primary); color:white;">
-            <small>REVENUE</small>
-            <h2 id="st-total-rev">0 K</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+        <div class="order-card" style="margin:0; background: var(--primary); color:white;">
+            <small>REVENUE</small><h2 id="st-total-rev">0 K</h2>
         </div>
-        <div class="order-card" onclick="switchTab('order', 1)">
-            <small>ORDERS</small>
-            <h2 id="st-total-ord">0</h2>
+        <div class="order-card" style="margin:0;" onclick="switchTab('order', 1)">
+            <small>ORDERS</small><h2 id="st-total-ord">0</h2>
         </div>
-        <div class="order-card" onclick="switchTab('menu', 2)">
-            <small>MENU</small>
-            <h2 id="st-total-menu">0</h2>
+        <div class="order-card" style="margin:0;" onclick="switchTab('menu', 2)">
+            <small>MENU</small><h2 id="st-total-menu">0</h2>
         </div>
-        <div class="order-card" onclick="showCustomerList()">
-            <small>CUSTOMERS</small>
-            <h2 id="st-total-cust">0</h2>
+        <div class="order-card" style="margin:0;" onclick="showCustomerList()">
+            <small>CUSTOMERS</small><h2 id="st-total-cust">0</h2>
         </div>
+        <div class="container" style="display:flex; gap:10px; margin-bottom:15px;">
+    <button class="btn" style="background:#10b981; color:white; flex:1;" onclick="showDailySummary()">
+        <i class="fas fa-chart-line"></i> Daily Sales
+    </button>
+    <button class="btn" style="background:#3b82f6; color:white; flex:1;" onclick="exportToExcel()">
+        <i class="fas fa-file-excel"></i> Export Excel
+    </button>
+</div>
+
+<div id="summaryModal" class="modal">
+    <div class="modal-content">
+        <h3 id="summary-date">Today's Summary</h3>
+        <hr>
+        <div id="summary-details" style="line-height:2;"></div>
+        <button class="btn btn-primary" style="width:100%; margin-top:15px;" onclick="closeModal('summaryModal')">Close</button>
+    </div>
+</div>
+        
     </div>
     <div class="order-card">
         <h4>Trending Items</h4>
@@ -102,58 +144,110 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); marg
     </div>
 </div>
 
-<div id="order-view" class="container">
-    <div class="tab-container">
-        <button id="btn-tab-1" class="tab-btn active" onclick="loadOrders(1)">New</button>
-        <button id="btn-tab-2" class="tab-btn" onclick="loadOrders(2)">Cooking</button>
-        <button id="btn-tab-3" class="tab-btn" onclick="loadOrders(3)">Done</button>
+    <div id="order-view" class="container">
+    <div style="display:flex; background: #eee; padding: 5px; border-radius: 15px; margin-bottom: 10px;">
+        <button id="btn-tab-1" class="btn btn-primary" style="flex:1" onclick="loadOrders(1)">New</button>
+        <button id="btn-tab-2" class="btn" style="flex:1" onclick="loadOrders(2)">Cooking</button>
+        <button id="btn-tab-3" class="btn" style="flex:1" onclick="loadOrders(3)">Done</button>
     </div>
+
+    <div style="margin-bottom: 20px; position: relative;">
+        <i class="fas fa-search" style="position: absolute; left: 15px; top: 12px; color: #888;"></i>
+        <input type="text" id="order-search" placeholder="Search name or phone..." 
+               style="width: 100%; padding: 10px 10px 10px 40px; border-radius: 10px; border: 1px solid #ddd;"
+               onkeyup="searchOrders()">
+    </div>
+
     <div id="order-list"></div>
-</div>
+    </div>
+    
 
 <div id="menu-view" class="container">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>Menu Management</h2>
-        <button class="btn-primary" onclick="openMenuModal()">+ Add Item</button>
+        <h2>Menu</h2>
+        <button class="btn btn-primary" onclick="openMenuModal()">+ Add Item</button>
     </div>
     <div id="menu-list" class="menu-grid"></div>
 </div>
 
 <div id="chat-view" class="container">
-    <h2>Internal Messages</h2>
-    <div id="chat-list"></div>
+    <h2>Messages</h2>
+    <div id="inbox-list"></div>
 </div>
 
-<div id="chatModal" class="modal-full">
-    <div class="chat-header">
-        <i class="fas fa-arrow-left" onclick="closeChat()"></i>
-        <span id="chat-target-name">Customer</span>
-    </div>
-    <div id="chat-messages" class="chat-body"></div>
-    <div class="chat-footer">
-        <input type="text" id="chat-input" placeholder="Type a message...">
-        <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+<div id="customerProfile" class="modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="prof-avatar"><i class="fas fa-user"></i></div>
+        <div style="text-align:center;">
+            <h2 id="prof-name" style="margin:5px 0;">-</h2>
+            <p id="prof-phone" style="color:#666; margin-bottom:15px;">-</p>
+            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
+                <button class="btn btn-primary" id="btn-chat-now"><i class="fas fa-comment"></i> Chat</button>
+                <button class="btn" style="background:#eee;" id="btn-call-now"><i class="fas fa-phone"></i> Call</button>
+            </div>
+        </div>
+        
+        <h4>Order History</h4>
+        <div id="prof-history-list" style="max-height:300px; overflow-y:auto;"></div>
+        
+        <button class="btn" style="width:100%; margin-top:15px;" onclick="closeModal('customerProfile')">Close</button>
     </div>
 </div>
+
+<div id="chatModal" class="chat-overlay">
+    <div class="chat-header">
+        <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+        <b id="chat-cust-name">Customer</b>
+    </div>
+    
+    <div id="chat-msgs" class="chat-msgs"></div>
+    
+    <div id="typing-ui" class="typing">Customer is typing...</div>
+
+    <div class="chat-actions">
+        <div class="action-pill" onclick="shareMenuToChat()"><i class="fas fa-hamburger"></i> Share Menu</div>
+        <div class="action-pill" onclick="shareHistoryToChat()"><i class="fas fa-history"></i> Share History</div>
+    </div>
+
+    <div class="chat-footer">
+        <input type="file" id="chat-file" hidden accept="image/*" onchange="sendImageMsg(this)">
+        <button class="btn" onclick="document.getElementById('chat-file').click()"><i class="fas fa-image"></i></button>
+        <input type="text" id="chat-input" placeholder="Type message..." oninput="handleTyping()">
+        <button class="btn btn-primary" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+    
+
+<div id="customerListModal" class="modal">
+    <div class="modal-content">
+        <h3>Customer Database</h3>
+        <div id="full-customer-list"></div>
+        <button class="btn" style="width:100%; margin-top:15px;" onclick="closeModal('customerListModal')">Close</button>
+    </div>
+</div>
+    
 
 <div id="menuModal" class="modal">
     <div class="modal-content">
         <h3 id="menuTitle">Menu Item</h3>
-        <div class="image-upload-area" onclick="document.getElementById('menu-file').click()">
-            <img id="menu-img-preview" src="" style="display:none; width:100%; border-radius:15px;">
-            <div id="upload-placeholder"><i class="fas fa-camera"></i><br>Upload Image</div>
+        <input type="hidden" id="menu-id">
+        <div style="text-align:center; margin-bottom:15px;">
+            <img id="menu-preview" src="" style="width:100%; height:150px; object-fit:cover; border-radius:15px; display:none; margin-bottom:10px;">
+            <button class="btn" style="background:#eee;" onclick="document.getElementById('menu-file').click()"><i class="fas fa-camera"></i> Upload/Camera</button>
         </div>
-        <input type="file" id="menu-file" hidden accept="image/*" onchange="previewImage(this)">
-        <input type="text" id="menu-name" class="modal-input" placeholder="Item Name">
-        <input type="number" id="menu-price" class="modal-input" placeholder="Price">
-        <select id="menu-stock" class="modal-input">
+        <input type="file" id="menu-file" hidden accept="image/*" onchange="previewImg(this)">
+        <input type="hidden" id="menu-img-url">
+        <input type="text" id="menu-name" class="modal-input" placeholder="Item Name" style="width:100%; padding:10px; margin:10px 0; border:1px solid #eee; border-radius:10px;">
+        <input type="number" id="menu-price" class="modal-input" placeholder="Price" style="width:100%; padding:10px; margin:10px 0; border:1px solid #eee; border-radius:10px;">
+        <select id="menu-stock" class="modal-input" style="width:100%; padding:10px; margin:10px 0; border:1px solid #eee; border-radius:10px;">
             <option value="In Stock">In Stock</option>
             <option value="Out of Stock">Out of Stock</option>
         </select>
         <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn-primary" style="flex:2" onclick="saveMenu()">Save</button>
-            <button id="menuDelBtn" class="btn-danger" style="flex:1" onclick="deleteMenu()">Delete</button>
+            <button class="btn btn-primary" style="flex:2" onclick="saveMenu()">Save</button>
+            <button id="menuDelBtn" class="btn" style="flex:1; color:red; background:#fee" onclick="deleteMenu()">Delete</button>
         </div>
+        <button class="btn" style="width:100%; margin-top:10px;" onclick="closeModal('menuModal')">Cancel</button>
     </div>
 </div>
 
@@ -161,133 +255,17 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); marg
     <div class="nav-item active" onclick="switchTab('dash', 0)"><i class="fas fa-home"></i></div>
     <div class="nav-item" onclick="switchTab('order', 1)"><i class="fas fa-receipt"></i><div id="dot-order" class="dot"></div></div>
     <div class="nav-item" onclick="switchTab('menu', 2)"><i class="fas fa-hamburger"></i></div>
-    <div class="nav-item" onclick="switchTab('chat', 3)"><i class="fas fa-comment-dots"></i></div>
+    <div class="nav-item" onclick="switchTab('chat', 3)"><i class="fas fa-comment-dots"></i><div id="dot-chat" class="dot"></div></div>
 </nav>
-
 
 <script>
 const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njc1OTYwNiwiZXhwIjoyMDgyMzM1NjA2fQ.rNXHHO8PKO58ZXR4Eqzi6Bl0vzCIwH24jiwOVwbVPoc";
 const _sb = supabase.createClient(SB_URL, SB_KEY);
 
-const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njc1OTYwNiwiZXhwIjoyMDgyMzM1NjA2fQ.rNXHHO8PKO58ZXR4Eqzi6Bl0vzCIwH24jiwOVwbVPoc";
-const _sb = supabase.createClient(SB_URL, SB_KEY);
+let activeCustId = null;
 
-let currentChatId = null;
-
-// --- VOICE SEARCH (Speak to Tap) ---
-function startVoiceSearch() {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'en-US';
-    document.getElementById('mic-icon').style.color = 'red';
-    
-    recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        document.getElementById('globalSearch').value = text;
-        handleSearch();
-        document.getElementById('mic-icon').style.color = '';
-    };
-    recognition.start();
-}
-
-// --- CHAT LOGIC ---
-async function loadChatList() {
-    const { data } = await _sb.from('chats').select('*').order('created_at', {ascending: false});
-    // Group by customer_id to show conversations
-    const uniqueChats = [...new Map(data.map(item => [item.customer_id, item])).values()];
-    
-    document.getElementById('chat-list').innerHTML = uniqueChats.map(c => `
-        <div class="order-card" onclick="openChat('${c.customer_id}')" style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <b>Customer: ${c.customer_id}</b><br>
-                <small>${c.message_text.substring(0, 30)}...</small>
-            </div>
-            <i class="fas fa-chevron-right"></i>
-        </div>
-    `).join('');
-}
-
-async function openChat(id) {
-    currentChatId = id;
-    document.getElementById('chat-target-name').innerText = id;
-    document.getElementById('chatModal').style.display = 'flex';
-    
-    // Fetch messages
-    const { data } = await _sb.from('chats').select('*').eq('customer_id', id).order('created_at', {ascending: true});
-    renderMessages(data);
-}
-
-function renderMessages(msgs) {
-    const container = document.getElementById('chat-messages');
-    container.innerHTML = msgs.map(m => `
-        <div class="msg ${m.is_admin ? 'sent' : 'received'}">${m.message_text}</div>
-    `).join('');
-    container.scrollTop = container.scrollHeight;
-}
-
-async function sendMessage() {
-    const text = document.getElementById('chat-input').value;
-    if(!text) return;
-
-    await _sb.from('chats').insert([{
-        customer_id: currentChatId,
-        message_text: text,
-        is_admin: true
-    }]);
-
-    document.getElementById('chat-input').value = '';
-    openChat(currentChatId);
-}
-
-function closeChat() { document.getElementById('chatModal').style.display = 'none'; }
-
-// --- SHARING LOGIC ---
-function shareFullMenu() {
-    const shareText = "Check out MT Roast Menu! 🍗🔥\nOrder Now: [Your Website Link]";
-    if (navigator.share) {
-        navigator.share({ title: 'MT Roast Menu', text: shareText, url: window.location.href });
-    } else {
-        alert("Sharing not supported on this browser.");
-    }
-}
-
-function shareOrderHistory(orderId, customer, amount) {
-    const text = `Order Receipt from MT Roast\nID: ${orderId}\nCustomer: ${customer}\nTotal: ${amount} K\nThank you!`;
-    navigator.share({ title: 'Order Receipt', text: text });
-}
-
-// --- IMAGE PREVIEW & UPLOAD ---
-function previewImage(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('menu-img-preview').src = e.target.result;
-            document.getElementById('menu-img-preview').style.display = 'block';
-            document.getElementById('upload-placeholder').style.display = 'none';
-        }
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-// --- CORE NAVIGATION ---
-function switchTab(id, idx) {
-    document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById(id + '-view').classList.add('active');
-    document.querySelectorAll('.nav-item')[idx].classList.add('active');
-    
-    if(id === 'dash') loadStats();
-    if(id === 'chat') loadChatList();
-}
-
-
-    
-    
-    
-let currentOrderTab = 1;
-
-// --- NAVIGATION ---
+// --- NAVIGATION & TABS ---
 function switchTab(id, idx) {
     document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -296,45 +274,31 @@ function switchTab(id, idx) {
     if(id === 'dash') loadStats();
     if(id === 'order') { loadOrders(1); document.getElementById('dot-order').style.display='none'; }
     if(id === 'menu') loadMenu();
+    if(id === 'chat') { loadInbox(); document.getElementById('dot-chat').style.display='none'; }
 }
 
-// --- ORDER LOGIC ---
-async function loadOrders(st) {
-    currentOrderTab = st;
-    document.querySelectorAll('#order-view .btn').forEach(b => {
-        b.classList.remove('btn-primary');
-        b.style.background = 'none'; b.style.color = '#666';
-    });
-    const activeBtn = document.getElementById(`btn-tab-${st}`);
-    activeBtn.classList.add('btn-primary'); activeBtn.style.background = ''; activeBtn.style.color = 'white';
-
-    const { data } = await _sb.from('orders').select('*').eq('status', st).order('created_at', {ascending:false});
-    renderOrders(data);
+// --- VOICE RECOGNITION (Speak Tap) ---
+function startVoice() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.start();
+    recognition.onresult = (e) => {
+        document.getElementById('globalSearch').value = e.results[0][0].transcript;
+        handleSearch();
+    };
 }
 
-function renderOrders(data) {
-    document.getElementById('order-list').innerHTML = data.map(o => `
-        <div class="order-card" onclick="showCustomerProfile('${o.phone}')">
-            <div class="order-header">
-                <div>
-                    <span style="color:var(--secondary); font-weight:700; border-bottom:1px dashed;">${o.customer_name}</span><br>
-                    <small style="color:#94A3B8;">${new Date(o.created_at).toLocaleString('en-US')}</small>
-                </div>
-                <div style="text-align:right;">
-                    <b style="color:var(--primary);">${o.phone}</b>
-                </div>
-            </div>
-            <table class="premium-table">
-                <thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
-                <tbody>${parseItems(o.items_text)}</tbody>
-            </table>
-            <div style="display:flex; justify-content:space-between; align-items:center; pointer-events: auto;" onclick="event.stopPropagation()">
-                <h3 style="margin:0;">Total: ${o.total_amount.toLocaleString()} K</h3>
-                ${o.status < 3 ? `<button class="btn btn-primary" onclick="updateStatus(${o.id}, ${o.status+1})">${o.status==1?'Cook':'Finish'}</button>`:''}
-            </div>
-        </div>
-    `).join('');
+// --- SHARING ---
+function shareMenu() {
+    if (navigator.share) {
+        navigator.share({ title: 'MT Roast Menu', text: 'Check out our delicious menu!', url: window.location.href });
+    }
 }
+
+function shareOrder(text) {
+    if (navigator.share) { navigator.share({ title: 'Order Voucher', text: text }); }
+}
+
 
 function parseItems(text) {
     return text.split('\n').filter(l => l.includes('(')).map(l => {
@@ -344,93 +308,246 @@ function parseItems(text) {
         return `<tr><td>${name}</td><td>${details[0]}</td><td>${details.slice(1).join(' ')}</td></tr>`;
     }).join('');
 }
+// --- ORDER LOGIC ---
+async function loadOrders(st) {
+    // Tab ခလုတ်တွေ အရောင်ပြောင်းတာ
+    document.querySelectorAll('#order-view .btn').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.style.background = 'none'; b.style.color = '#666';
+    });
+    const activeBtn = document.getElementById(`btn-tab-${st}`);
+    activeBtn.classList.add('btn-primary'); 
+    activeBtn.style.background = ''; activeBtn.style.color = 'white';
 
+    // Data ဆွဲထုတ်တာ
+    const { data } = await _sb.from('orders').select('*').eq('status', st).order('created_at', {ascending:false});
+    
+    // ဒီအပိုင်းက Render လုပ်တဲ့အပိုင်းပါ (နာမည်နှိပ်ရင် Profile ပွင့်အောင် ပြင်ထားပါတယ်)
+    document.getElementById('order-list').innerHTML = data.map(o => `
+        <div class="order-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
+                <div onclick="showCustomerProfile('${o.phone}')" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                    <div style="width:35px; height:35px; border-radius:50%; background:#f0f2f5; display:flex; align-items:center; justify-content:center; color:var(--primary);">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <b style="color:var(--text); font-size:14px; text-decoration:underline;">${o.customer_name}</b><br>
+                        <small style="color:#94A3B8;">${o.phone}</small>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <i class="fas fa-share-alt" style="color:#94A3B8; cursor:pointer;" onclick="shareOrder('Order for ${o.customer_name}: ${o.total_amount}K')"></i>
+                </div>
+            </div>
+            
+            <table class="premium-table">
+                <thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
+                <tbody>${parseItems(o.items_text)}</tbody>
+            </table>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; padding-top:10px; border-top:1px dashed #eee;">
+                <h3 style="margin:0; font-size:18px;">${o.total_amount.toLocaleString()} K</h3>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn" style="background:#f0f2f5;" onclick="openChat('${o.phone}')">
+                        <i class="fab fa-facebook-messenger" style="color:var(--secondary);"></i>
+                    </button>
+                    ${o.status < 3 ? `<button class="btn btn-primary" onclick="updateStatus(${o.id}, ${o.status+1})">${o.status==1?'Cook':'Finish'}</button>`:''}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+    
+    // အော်ဒါများကို နာမည် (သို့) ဖုန်းနံပါတ်ဖြင့် ရှာရန်
+function searchOrders() {
+    const term = document.getElementById('order-search').value.toLowerCase();
+    const cards = document.querySelectorAll('.order-card');
+    
+    cards.forEach(card => {
+        const cardText = card.innerText.toLowerCase();
+        // ရိုက်လိုက်တဲ့စာသား ပါမပါ စစ်ပြီး ဖျောက်/ပြ လုပ်တာပါ
+        card.style.display = cardText.includes(term) ? 'block' : 'none';
+    });
+}
+
+    
+    
 async function updateStatus(id, nxt) {
     await _sb.from('orders').update({status: nxt}).eq('id', id);
     loadOrders(nxt-1);
 }
 
-// --- CUSTOMER PROFILE & DETAILS ---
-async function showCustomerProfile(phone) {
-    const { data: ords } = await _sb.from('orders').select('*').eq('phone', phone).order('created_at', {ascending:false});
-    if(!ords.length) return;
-
-    const totalSpent = ords.reduce((sum, o) => sum + (parseInt(o.total_amount.toString().replace(/\D/g,'')) || 0), 0);
-    
-    document.getElementById('prof-name').innerText = ords[0].customer_name;
-    document.getElementById('prof-phone').innerText = phone;
-    document.getElementById('call-link').href = "tel:" + phone;
-    document.getElementById('prof-total-orders').innerText = ords.length;
-    document.getElementById('prof-total-spent').innerText = totalSpent.toLocaleString() + " K";
-    
-    document.getElementById('prof-history-list').innerHTML = ords.map(o => `
-        <div class="history-card" onclick='showOrderDetail(${JSON.stringify(o)})'>
-            <div>
-                <div style="font-weight:700;">${new Date(o.created_at).toLocaleDateString('en-US')}</div>
-                <small style="color:#94A3B8;">${new Date(o.created_at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})}</small>
-            </div>
-            <div style="text-align:right;">
-                <div style="font-weight:800; color:var(--primary);">${o.total_amount.toLocaleString()} K</div>
-                <i class="fas fa-chevron-right" style="font-size:10px; color:#94A3B8;"></i>
-            </div>
+// --- CHAT LOGIC ---
+async function loadInbox() {
+    const { data } = await _sb.from('chats').select('*').order('created_at', {ascending:false});
+    const threads = [...new Map(data.map(m => [m.customer_id, m])).values()];
+    document.getElementById('inbox-list').innerHTML = threads.map(t => `
+        <div class="order-card" onclick="openChat('${t.customer_id}')">
+            <b>Cust ID: ${t.customer_id}</b><br><small>${t.message_text}</small>
         </div>
     `).join('');
+}
+
+    // Image Sending
+async function sendImageMsg(input) {
+    if(!input.files[0]) return;
+    const file = input.files[0];
+    const fileName = `chat/${Date.now()}_${file.name}`;
     
-    document.getElementById('customerProfile').style.display = 'flex';
+    const { data, error } = await _sb.storage.from('product-images').upload(fileName, file);
+    if(error) return alert("Upload failed");
+
+    const { data: pUrl } = _sb.storage.from('product-images').getPublicUrl(fileName);
+    
+    await _sb.from('chats').insert([{
+        customer_id: activeCustId,
+        message_text: "[Image]",
+        image_url: pUrl.publicUrl,
+        is_admin: true
+    }]);
+    openChat(activeCustId);
 }
 
-function showOrderDetail(order) {
-    document.getElementById('detail-content').innerHTML = `
-        <div style="background:#F8FAFC; padding:15px; border-radius:15px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span style="color:#64748B;">Ref Status</span>
-                <b style="color:var(--primary);">${order.status == 1 ? 'New' : order.status == 2 ? 'Cooking' : 'Finished'}</b>
-            </div>
-            <div style="display:flex; justify-content:space-between;">
-                <span style="color:#64748B;">Date & Time</span>
-                <b>${new Date(order.created_at).toLocaleString('en-US')}</b>
-            </div>
-        </div>
-        <table style="width:100%; border-collapse: collapse;">
-            <thead><tr style="text-align:left; color:#94A3B8; font-size:12px;"><th>ITEM</th><th style="text-align:center;">QTY</th><th style="text-align:right;">PRICE</th></tr></thead>
-            <tbody>${parseItemsWithDetail(order.items_text)}</tbody>
-        </table>
-        <div style="margin-top:20px; padding-top:20px; border-top:2px dashed #F1F5F9; display:flex; justify-content:space-between;">
-            <span style="font-weight:700;">Total Voucher</span>
-            <span style="font-weight:800; font-size:20px; color:var(--primary);">${order.total_amount.toLocaleString()} K</span>
-        </div>
-    `;
-    document.getElementById('orderDetailView').style.display = 'flex';
-}
 
-function parseItemsWithDetail(text) {
-    return text.split('\n').filter(l => l.includes('(')).map(l => {
-        const p = l.split('(');
-        const name = p[0].replace('•','').trim();
-        const details = p[1].replace(')','').split(' ');
-        return `<tr><td style="padding:10px 0;">${name}</td><td style="text-align:center;">${details[0]}</td><td style="text-align:right;">${details.slice(1).join(' ')}</td></tr>`;
-    }).join('');
+    
+async function sendMsg() {
+    const val = document.getElementById('chat-input').value; if(!val) return;
+    await _sb.from('chats').insert([{customer_id: activeCustId, message_text: val, is_admin: true}]);
+    document.getElementById('chat-input').value = ''; openChat(activeCustId);
 }
-
-function closeOrderDetails() { document.getElementById('orderDetailView').style.display = 'none'; }
-function closeProfile() { document.getElementById('customerProfile').style.display = 'none'; }
-function openMessenger() { window.open('https://m.me/YOUR_PAGE_ID', '_blank'); }
+function closeChat() { document.getElementById('chatModal').style.display='none'; }
 
 // --- MENU CRUD ---
+function previewImg(input) {
+    if(input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('menu-preview').src = e.target.result;
+            document.getElementById('menu-preview').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 async function loadMenu() {
     const { data } = await _sb.from('products').select('*').order('id', {ascending: false});
     document.getElementById('menu-list').innerHTML = data.map(m => `
         <div class="menu-card" onclick='openMenuModal(${JSON.stringify(m)})'>
             <img src="${m.image}" class="menu-img">
-            <div style="padding:12px;">
-                <div style="font-weight:800; font-size:14px;">${m.name}</div>
-                <div style="color:var(--primary); font-weight:800;">${m.price.toLocaleString()} K</div>
-                <small style="color:${m.stock==='In Stock'?'#10B981':'red'}; font-weight:700;">${m.stock}</small>
+            <div style="padding:10px;">
+                <b>${m.name}</b><br><span style="color:var(--primary)">${m.price.toLocaleString()} K</span>
             </div>
         </div>
     `).join('');
 }
 
+    // Chat ထဲကို Menu Item ပို့ပေးခြင်း
+async function shareMenuToChat() {
+    // ၁။ Database ထဲက 'In Stock' ဖြစ်တဲ့ ပစ္စည်းတွေကိုပဲ ဆွဲထုတ်မယ်
+    const { data: products, error } = await _sb.from('products')
+        .select('*')
+        .eq('stock', 'In Stock'); // ဒီနေရာက 'Sold Out' တွေကို ဖယ်ပေးတာပါ
+    
+    // ပစ္စည်းမရှိရင် သတိပေးမယ်
+    if(error || !products || products.length === 0) {
+        alert("No items currently in stock.");
+        return;
+    }
+
+    // ၂။ ပစ္စည်းတွေကို List ပုံစံ စုစည်းမယ်
+    let menuList = "[FULL_MENU]";
+    products.forEach(p => {
+        // အချက်အလက်တွေကို | နဲ့ ခံပြီး စာကြောင်းစီတာပါ
+        menuList += `\n${p.name}|${p.price}|${p.image}`;
+    });
+
+    // ၃။ Chat ထဲကို ပို့မယ်
+    await _sb.from('chats').insert([{
+        customer_id: activeCustId,
+        message_text: menuList,
+        is_admin: true
+    }]);
+    
+    // ၄။ Chat Box ကို Refresh လုပ်ပြီး ပို့လိုက်တဲ့ Menu ကို ပြမယ်
+    openChat(activeCustId);
+}
+    
+    
+
+// Chat rendering logic update (Menu card လေးတွေ မြင်ရအောင်)
+async function openChat(id) {
+    activeCustId = id;
+    document.getElementById('chat-cust-name').innerText = id;
+    document.getElementById('chatModal').style.display = 'flex';
+    
+    const { data } = await _sb.from('chats').select('*').eq('customer_id', id).order('created_at', {ascending:true});
+    
+    document.getElementById('chat-msgs').innerHTML = data.map(m => {
+        // အကယ်၍ message က Menu list ဖြစ်နေရင်
+        if(m.message_text.startsWith('[FULL_MENU]')) {
+            const items = m.message_text.split('\n').slice(1);
+            let itemsHtml = items.map(line => {
+                const [name, price, img] = line.split('|');
+                return `
+                    <div style="display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee;">
+                        <img src="${img}" style="width:45px; height:45px; border-radius:8px; object-fit:cover;">
+                        <div style="flex:1;">
+                            <div style="font-size:13px; font-weight:700;">${name}</div>
+                            <div style="font-size:12px; color:var(--primary);">${price} K</div>
+                        </div>
+                        <button class="btn" style="padding:6px 12px; font-size:11px; background:var(--primary); color:white; border-radius:8px;" 
+                            onclick="createOrderFromChat('${name}', ${price})">Order</button>
+                    </div>`;
+            }).join('');
+
+            return `<div class="msg-bubble admin" style="width:280px; padding:0; overflow:hidden; background:white; color:black; border:1px solid #ddd;">
+                        <div style="background:#f8fafc; padding:10px; font-weight:800; border-bottom:2px solid #eee; text-align:center;">Our Menu</div>
+                        ${itemsHtml}
+                    </div>`;
+        }
+        
+        // ပုံမှန် စာပို့တာ သို့မဟုတ် ပုံပို့တာဆိုရင်
+        return `
+            <div class="msg-bubble ${m.is_admin?'admin':'user'}">
+                ${m.image_url ? `<img src="${m.image_url}" class="chat-img" onclick="window.open('${m.image_url}')">` : m.message_text}
+            </div>`;
+    }).join('');
+    
+    const box = document.getElementById('chat-msgs');
+    box.scrollTop = box.scrollHeight;
+}
+    
+
+// Chat ထဲကနေ တိုက်ရိုက် Order တင်ပေးခြင်း
+async function createOrderFromChat(itemName, price) {
+    if(!confirm(`Place order for ${itemName}?`)) return;
+    
+    const newOrder = {
+        customer_name: "Chat Customer",
+        phone: activeCustId,
+        items_text: `• ${itemName} (1 ${price} K)`,
+        total_amount: price,
+        status: 1
+    };
+    
+    const { error } = await _sb.from('orders').insert([newOrder]);
+    if(!error) {
+        alert("Order placed successfully!");
+        switchTab('order', 1);
+        closeChat();
+    }
+}
+    
+
+async function shareHistoryToChat() {
+    const { data: ords } = await _sb.from('orders').select('*').eq('phone', activeCustId).limit(1);
+    if(ords.length > 0) {
+        const msg = `Last Order Status: ${ords[0].status == 3 ? 'Delivered' : 'Processing'}\nTotal: ${ords[0].total_amount} K`;
+        await _sb.from('chats').insert([{ customer_id: activeCustId, message_text: msg, is_admin: true }]);
+        openChat(activeCustId);
+    }
+}
+    
 function openMenuModal(item = null) {
     document.getElementById('menuModal').style.display = 'flex';
     if(item) {
@@ -440,16 +557,20 @@ function openMenuModal(item = null) {
         document.getElementById('menu-price').value = item.price;
         document.getElementById('menu-stock').value = item.stock || 'In Stock';
         document.getElementById('menu-img-url').value = item.image;
+        document.getElementById('menu-preview').src = item.image;
+        document.getElementById('menu-preview').style.display = 'block';
         document.getElementById('menuDelBtn').style.display = 'block';
     } else {
         document.getElementById('menuTitle').innerText = "Add Item";
         document.getElementById('menu-id').value = "";
         document.getElementById('menu-name').value = "";
         document.getElementById('menu-price').value = "";
-        document.getElementById('menu-img-url').value = "";
+        document.getElementById('menu-preview').style.display = 'none';
         document.getElementById('menuDelBtn').style.display = 'none';
     }
 }
+
+    
 
 async function saveMenu() {
     const id = document.getElementById('menu-id').value;
@@ -460,132 +581,170 @@ async function saveMenu() {
         const fileName = `${Date.now()}_${file.name}`;
         const { data, error } = await _sb.storage.from('product-images').upload(fileName, file);
         if(!error) {
-            const { data: publicUrl } = _sb.storage.from('product-images').getPublicUrl(fileName);
-            imageUrl = publicUrl.publicUrl;
+            const { data: pUrl } = _sb.storage.from('product-images').getPublicUrl(fileName);
+            imageUrl = pUrl.publicUrl;
         }
     }
+
     const payload = {
         name: document.getElementById('menu-name').value,
         price: parseInt(document.getElementById('menu-price').value),
         stock: document.getElementById('menu-stock').value,
         image: imageUrl
     };
+
     if(id) await _sb.from('products').update(payload).eq('id', id);
     else await _sb.from('products').insert([payload]);
+    
     closeModal('menuModal'); loadMenu();
 }
 
-async function deleteMenu() {
-    if(confirm("Delete this?")) {
-        await _sb.from('products').delete().eq('id', document.getElementById('menu-id').value);
-        closeModal('menuModal'); loadMenu();
-    }
-}
-
-// --- CORE UTILS ---
-async function handleSearch() {
-    const query = document.getElementById('globalSearch').value.toLowerCase();
-    if(!query) { loadOrders(currentOrderTab); return; }
-    const { data } = await _sb.from('orders').select('*').or(`customer_name.ilike.%${query}%,phone.ilike.%${query}%`).order('created_at', {ascending: false});
-    renderOrders(data);
-}
-
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-// --- Enhanced Stats & Dashboard Logic ---
+// --- STATS ---
 async function loadStats() {
-    // Fetch Data from Supabase
-    const { data: allOrders } = await _sb.from('orders').select('*');
-    const { data: allProducts } = await _sb.from('products').select('id');
-    
-    // Calculate Stats
-    const totalRev = allOrders.reduce((s, o) => s + (parseInt(o.total_amount.toString().replace(/\D/g,'')) || 0), 0);
-    const uniquePhones = [...new Set(allOrders.map(o => o.phone))];
-    
-    // UI Update
+    const { data: ords } = await _sb.from('orders').select('*');
+    const { data: prods } = await _sb.from('products').select('id');
+    const totalRev = ords.reduce((s, o) => s + (parseInt(o.total_amount.toString().replace(/\D/g,'')) || 0), 0);
     document.getElementById('st-total-rev').innerText = totalRev.toLocaleString() + " K";
-    document.getElementById('st-total-ord').innerText = allOrders.length;
-    document.getElementById('st-total-menu').innerText = allProducts.length;
-    document.getElementById('st-total-cust').innerText = uniquePhones.length;
-
-    // Trending Items Logic (Based on order frequency in items_text)
-    updateTrendingItems(allOrders);
+    document.getElementById('st-total-ord').innerText = ords.length;
+    document.getElementById('st-total-menu').innerText = prods.length;
+    document.getElementById('st-total-cust').innerText = [...new Set(ords.map(o => o.phone))].length;
 }
 
-function updateTrendingItems(orders) {
-    const itemMap = {};
-    orders.forEach(o => {
-        const lines = o.items_text.split('\n');
-        lines.forEach(line => {
-            if(line.includes('•')) {
-                const name = line.split('(')[0].replace('•','').trim();
-                itemMap[name] = (itemMap[name] || 0) + 1;
-            }
-        });
-    });
-
-    const sorted = Object.entries(itemMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
-    document.getElementById('trending-list').innerHTML = sorted.map(([name, count], idx) => `
-        <div style="display:flex; align-items:center; gap:15px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #f8f8f8;">
-            <div style="width:30px; height:30px; border-radius:8px; background:#F1F5F9; display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--primary); font-size:12px;">#${idx+1}</div>
-            <div style="flex:1;">
-                <div style="font-weight:700; font-size:14px;">${name}</div>
-                <small style="color:#94A3B8;">Ordered ${count} times</small>
-            </div>
-            <i class="fas fa-chart-line" style="color:#10B981;"></i>
-        </div>
-    `).join('');
-}
-
-// --- Customer List Logic ---
-async function showCustomerList() {
-    const { data: orders } = await _sb.from('orders').select('customer_name, phone').order('created_at', {ascending:false});
-    
-    // Get unique customers by phone
-    const customerMap = {};
-    orders.forEach(o => {
-        if(!customerMap[o.phone]) customerMap[o.phone] = o.customer_name;
-    });
-
-    document.getElementById('full-customer-list').innerHTML = Object.entries(customerMap).map(([phone, name]) => `
-        <div class="history-card" onclick="closeModal('customerListModal'); showCustomerProfile('${phone}')">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:40px; height:40px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center;">
-                    <i class="fas fa-user" style="color:#666;"></i>
-                </div>
-                <div>
-                    <div style="font-weight:700;">${name}</div>
-                    <small style="color:#94A3B8;">${phone}</small>
-                </div>
-            </div>
-            <i class="fas fa-chevron-right" style="color:#eee;"></i>
-        </div>
-    `).join('');
-    
-    document.getElementById('customerListModal').style.display = 'flex';
-}
-    
-
+async function handleSearch() {
+    const q = document.getElementById('globalSearch').value.toLowerCase();
+    const { data } = await _sb.from('orders').select('*').or(`customer_name.ilike.%${q}%,phone.ilike.%${q}%`);
+    if(document.getElementById('order-view').classList.contains('active')) renderOrders(data);
+}    
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function enablePush() { Notification.requestPermission(); }
 
-_sb.channel('any').on('postgres_changes', {event:'INSERT', table:'orders'}, payload => {
-    document.getElementById('notiSound').play();
+// --- REALTIME (အကုန်လုံး စုစည်းပြီးသား) ---
+
+// ၁။ အော်ဒါအသစ်ဝင်လာရင် လုပ်မယ့်အလုပ်
+_sb.channel('order-track').on('postgres_changes', {event:'INSERT', table:'orders'}, payload => {
+    // အသံမြည်မယ်
+    document.getElementById('notiSound').play(); 
+    
+    // Voice Alert နဲ့ နာမည်ကို ပြောမယ်
+    speakAlert("New order received from " + payload.new.customer_name); 
+    
+    // အနီစက်လေး ပြမယ်
     document.getElementById('dot-order').style.display = 'block';
     
-    // (မှတ်ချက် - ကျန်ရှိနေသော loadOrders, loadMenu, saveMenu စသည့် Function များကို အပိုင်း ၃ မှ မူရင်းအတိုင်း ဆက်လက်အသုံးပြုနိုင်ပါသည်)
-
-// Realtime Chat Update
-    if(Notification.permission === 'granted') new Notification("New Order!", { body: payload.new.customer_name });
+    // ကိန်းဂဏန်းတွေ (Stats) update လုပ်မယ်
     loadStats();
-    if(currentOrderTab === 1) loadOrders(1);
-_sb.channel('chat-room').on('postgres_changes', {event:'INSERT', table:'chats'}, payload => {
-    if(payload.new.customer_id === currentChatId) {
-        openChat(currentChatId);
+    
+    // အကယ်၍ အော်ဒါစာမျက်နှာမှာ ရောက်နေရင် list ကို auto refresh လုပ်မယ်
+    if(typeof currentOrderTab !== 'undefined' && currentOrderTab === 1) {
+        loadOrders(1);
     }
-    loadChatList();
 }).subscribe();
 
-window.onload = loadStats;
+// ၂။ Chat အသစ်ဝင်လာရင် လုပ်မယ့်အလုပ်
+_sb.channel('chat-track').on('postgres_changes', {event:'INSERT', table:'chats', filter: 'is_admin=eq.false'}, () => {
+    document.getElementById('notiSound').play();
+    document.getElementById('dot-chat').style.display = 'block';
+}).subscribe();
+
+// ၃။ Voice Alert Function (အသံထွက်ပေးတာ)
+function speakAlert(text) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 1;
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+// ၄။ App စဖွင့်ချင်း လုပ်မယ့်အလုပ်
+window.onload = () => { 
+    loadStats(); 
+    loadOrders(1); 
+};
+    // --- PRINT VOUCHER FUNCTION ---
+function printVoucher(orderObj) {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Voucher - ${orderObj.customer_name}</title>
+            <style>
+                body { font-family: 'Pyidaungsu', sans-serif; padding: 20px; text-align: center; font-size: 14px; }
+                .line { border-bottom: 1px dashed #000; margin: 10px 0; }
+                table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+                th, td { text-align: left; padding: 5px; }
+                .total { text-align: right; font-size: 18px; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <h2 style="margin:0;">SHOP NAME</h2>
+            <p style="margin:5px 0;">Customer: ${orderObj.customer_name}<br>Phone: ${orderObj.phone}</p>
+            <div class="line"></div>
+            <table>
+                <thead><tr><th>Items</th><th style="text-align:right;">Price</th></tr></thead>
+                <tbody>
+                    <tr><td colspan="2">${orderObj.items_text.replace(/\n/g, '<br>')}</td></tr>
+                </tbody>
+            </table>
+            <div class="line"></div>
+            <div class="total">Total: ${orderObj.total_amount.toLocaleString()} K</div>
+            <p style="margin-top:20px;">--- Thank You ---</p>
+            <script>window.print(); window.close();</script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+// ၁။ နေ့စဉ်အရောင်းစာရင်းချုပ် ကြည့်ရန်
+async function showDailySummary() {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const { data, error } = await _sb.from('orders')
+            .select('total_amount')
+            .gte('created_at', today)
+            .eq('status', 3); 
+
+        if (error) throw error;
+
+        const total = data.reduce((sum, row) => sum + row.total_amount, 0);
+        const count = data.length;
+
+        document.getElementById('summary-date').innerText = "Sales for " + today;
+        document.getElementById('summary-details').innerHTML = `
+            <div style="display:flex; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                <b>Total Orders:</b> <span>${count}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:20px; color:#10b981; margin-top:15px; font-weight:bold;">
+                <b>Total Sales:</b> <span>${total.toLocaleString()} K</span>
+            </div>
+        `;
+        document.getElementById('summaryModal').style.display = 'flex';
+    } catch (err) {
+        console.error("Summary error:", err);
+    }
+}
+
+// ၂။ Excel ထုတ်ရန်
+async function exportToExcel() {
+    const { data } = await _sb.from('orders').select('*').order('created_at', {ascending: false});
+    let csvContent = "Date,Customer,Phone,Amount,Status\n";
+    data.forEach(o => {
+        const date = new Date(o.created_at).toLocaleDateString();
+        csvContent += `"${date}","${o.customer_name}","${o.phone}","${o.total_amount}","${o.status}"\n`;
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `Sales_Report.csv`);
+    link.click();
+}
+
+// ၃။ Print ခလုတ်အတွက် အကူအညီပေးမယ့် Function
+function printVoucherFromList(orderData) {
+    printVoucher(orderData);
+}
+
 </script>
 </body>
 </html>
+
