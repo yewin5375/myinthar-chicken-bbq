@@ -258,20 +258,26 @@
 
     // ၄။ Menu Render လုပ်ခြင်း
     function renderMenu(data) {
-        document.getElementById('menu-display').innerHTML = data.map(i => `
-            <div class="menu-card" style="${i.stock_qty <= 0 ? 'opacity:0.6;' : ''}">
-                <img src="${i.image}">
-                <div style="padding:10px;">
-                    <div style="font-weight:bold;">${i.name}</div>
-                    <div style="color:var(--primary); font-weight:bold; margin:5px 0;">${i.price.toLocaleString()} K</div>
-                    ${i.stock_qty > 0 
-                        ? `<button class="add-btn" onclick="addToCart(${i.id})">Add</button>` 
-                        : `<button class="add-btn" style="background:#ccc; cursor:not-allowed;" disabled>Out of Stock</button>`
-                    }
-                </div>
-            </div>
-        `).join('');
+    if (!data || data.length === 0) {
+        document.getElementById('menu-display').innerHTML = "<p style='text-align:center;'>ပစ္စည်းစာရင်း မရှိသေးပါ။</p>";
+        return;
     }
+
+    document.getElementById('menu-display').innerHTML = data.map(i => `
+        <div class="menu-card" style="${(i.stock_qty || 0) <= 0 ? 'opacity:0.6;' : ''}">
+            <img src="${i.image || 'https://via.placeholder.com/150'}">
+            <div style="padding:10px;">
+                <div style="font-weight:bold;">${i.name}</div>
+                <div style="color:var(--primary); font-weight:bold; margin:5px 0;">${(i.price || 0).toLocaleString()} K</div>
+                ${(i.stock_qty || 0) > 0 
+                    ? `<button class="add-btn" onclick="addToCart(${i.id})">Add</button>` 
+                    : `<button class="add-btn" style="background:#ccc; cursor:not-allowed;" disabled>Out of Stock</button>`
+                }
+            </div>
+        </div>
+    `).join('');
+    }
+        
 
     // --- ကျန်တဲ့ Function များ (ယခင်အတိုင်း) ---
     function filterCategory(cat, btn) {
