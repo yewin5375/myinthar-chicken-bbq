@@ -221,49 +221,59 @@
 </div>
     
     
-<script>
-    // သင့်ရဲ့ Supabase URL နဲ့ Key
-const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTk2MDYsImV4cCI6MjA4MjMzNTYwNn0.Kxy3QW1gq-J-tzUF2fxQd0l989Wr7BI2uRTbWDTNL6k";
-const _sb = supabase.createClient(SB_URL, SB_KEY);
+    <script>
+    // ၁။ Supabase ချိတ်ဆက်မှု
+    const SB_URL = "https://iogpnvljnhsxuzzdltpb.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZ3BudmxqbmhzeHV6emRsdHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTk2MDYsImV4cCI6MjA4MjMzNTYwNn0.Kxy3QW1gq-J-tzUF2fxQd0l989Wr7BI2uRTbWDTNL6k";
+    const _sb = supabase.createClient(SB_URL, SB_KEY);
 
-let menuData = []; // Database ကလာမယ့် data သိမ်းဖို့
-    
+    // ၂။ ကိန်းရှင်များ သတ်မှတ်ချက်
     const MY_PHONE = "959767287345";
+    let menuData = []; // Database ကလာမယ့် data သိမ်းဖို့ (တစ်ခါပဲ ကြေညာပါ)
     let cart = {};
-    const menuData = [
-        { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'ကြက်', image: 'https://via.placeholder.com/150' },
-        { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'ဆိတ်', image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png' }
-    ];
+    let myChatId = localStorage.getItem('chat_id') || "user_" + Math.random().toString(36).slice(2, 9);
+    localStorage.setItem('chat_id', myChatId);
 
+    // ၃။ Window Load ဖြစ်ချိန်မှာ Data ဆွဲယူခြင်း
     window.onload = async () => {
-    // Database ကနေ Menu Items တွေယူမယ်
-    const { data, error } = await _sb.from('products').select('*');
-    if(!error) {
-        menuData = data;
+        document.getElementById('global-loader').style.display = 'flex';
+        
+        // Database ကနေ Menu Items တွေယူမယ်
+        const { data, error } = await _sb.from('products').select('*');
+        
+        if(!error && data.length > 0) {
+            menuData = data;
+        } else {
+            // အကယ်၍ Database မှာ ဘာမှမရှိသေးရင် နမူနာပြဖို့ (Testing အတွက်သာ)
+            menuData = [
+                { id: 1, name: 'ကြက်ပေါင်', price: 4000, category: 'ကြက်', image: 'https://via.placeholder.com/150', stock_qty: 10 },
+                { id: 3, name: 'ဆိတ်သားကင်', price: 1500, category: 'ဆိတ်', image: 'https://i.ibb.co/twQjTScV/IMG-20251231-003231.png', stock_qty: 5 }
+            ];
+        }
+        
         renderMenu(menuData);
-    }
-    loadRecentOrders();
-};
+        loadRecentOrders();
+        document.getElementById('global-loader').style.display = 'none';
+    };
 
-
+    // ၄။ Menu Render လုပ်ခြင်း
     function renderMenu(data) {
-    document.getElementById('menu-display').innerHTML = data.map(i => `
-        <div class="menu-card" style="${i.stock_qty <= 0 ? 'opacity:0.6;' : ''}">
-            <img src="${i.image}">
-            <div style="padding:10px;">
-                <div style="font-weight:bold;">${i.name}</div>
-                <div style="color:var(--primary); font-weight:bold; margin:5px 0;">${i.price.toLocaleString()} K</div>
-                ${i.stock_qty > 0 
-                    ? `<button class="add-btn" onclick="addToCart(${i.id})">Add</button>` 
-                    : `<button class="add-btn" style="background:#ccc; cursor:not-allowed;" disabled>Out of Stock</button>`
-                }
+        document.getElementById('menu-display').innerHTML = data.map(i => `
+            <div class="menu-card" style="${i.stock_qty <= 0 ? 'opacity:0.6;' : ''}">
+                <img src="${i.image}">
+                <div style="padding:10px;">
+                    <div style="font-weight:bold;">${i.name}</div>
+                    <div style="color:var(--primary); font-weight:bold; margin:5px 0;">${i.price.toLocaleString()} K</div>
+                    ${i.stock_qty > 0 
+                        ? `<button class="add-btn" onclick="addToCart(${i.id})">Add</button>` 
+                        : `<button class="add-btn" style="background:#ccc; cursor:not-allowed;" disabled>Out of Stock</button>`
+                    }
+                </div>
             </div>
-        </div>
-    `).join('');
-}
+        `).join('');
+    }
 
-
+    // --- ကျန်တဲ့ Function များ (ယခင်အတိုင်း) ---
     function filterCategory(cat, btn) {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -277,6 +287,7 @@ let menuData = []; // Database ကလာမယ့် data သိမ်းဖိ�
 
     function addToCart(id) {
         const item = menuData.find(m => m.id === id);
+        if(!item) return;
         if(cart[id]) cart[id].qty++; else cart[id] = { ...item, qty: 1 };
         updateUI();
     }
@@ -303,229 +314,69 @@ let menuData = []; // Database ကလာမယ့် data သိမ်းဖိ�
         updateUI();
     }
 
-    function loadRecentOrders() {
-        const history = JSON.parse(localStorage.getItem('recentOrders') || "[]");
-        if(history.length > 0) {
-            document.getElementById('recent-section').style.display = 'block';
-            document.getElementById('recent-orders-list').innerHTML = history.slice(-5).reverse().map(h => `
-                <div class="recent-card">
-                    <b>Order #${h.id.toString().slice(-4)}</b><br>
-                    <span style="color:gray">${h.date}</span><br>
-                    <span style="color:var(--primary); font-weight:bold;">${h.total}</span>
-                    <button class="reorder-btn" onclick='reorder(${JSON.stringify(h.items)})'>Re-order</button>
-                </div>
-            `).join('');
-        }
-    }
-
-    function reorder(items) {
-        cart = {};
-        items.forEach(i => { cart[i.id] = i; });
-        updateUI();
-        toggleDrawer(true);
-        goToStep(1);
-    }
-
-    function toggleDrawer(s) { document.getElementById('drawer').classList.toggle('active', s); document.getElementById('overlay').style.display = s ? 'block' : 'none'; }
-    function goToStep(s) { document.getElementById('step-wrapper').style.transform = `translateX(-${(s-1)*50}%)`; }
-
-    function openModal() {
-        if(!document.getElementById('cust-name').value) return alert("အမည်ဖြည့်ပါ");
-        document.getElementById('flow-modal').style.display = 'flex';
-        showVoucherStep();
-    }
-
-    function closeModal() { document.getElementById('flow-modal').style.display = 'none'; }
-
-    function showVoucherStep() {
-        document.getElementById('voucher-action').style.display = 'block';
-        document.getElementById('social-action').style.display = 'none';
-        document.getElementById('modal-title').innerText = "Voucher သိမ်းယူမလား?";
-        document.getElementById('back-voucher-btn').style.display = 'flex';
-        document.getElementById('back-app-btn').style.display = 'none';
-    }
-
-    function showSocialOptions() {
-        document.getElementById('voucher-action').style.display = 'none';
-        document.getElementById('social-action').style.display = 'block';
-        document.getElementById('modal-title').innerText = "ပို့မည့် App ကို ရွေးပါ";
-        document.getElementById('back-voucher-btn').style.display = 'none';
-        document.getElementById('back-app-btn').style.display = 'flex';
-        document.getElementById('app-guide').innerHTML = `
-            <b>💡 မှာယူနည်းလမ်းညွှန်:</b><br>
-            ၁။ ခလုတ်နှိပ်လျှင် အော်ဒါစာသားများကို Copy အလိုအလျောက် ယူသွားပါမည်။<br>
-            ၂။ App ပွင့်လာပါက ဆိုင်ရှင် Chat ထဲတွင် Paste (ကူးထည့်) လုပ်၍ ပို့ပေးပါ။<br>
-            ⚠️ အော်ဒါတင်ပြီးပါက 09767287345 သို့ ဖုန်းဖြင့် အကြောင်းကြားပေးပါ။
-        `;
-    }
-
-    async function generateVoucher() {
-        document.getElementById('global-loader').style.display = 'flex';
+    // --- Order & Social Functions ---
+    async function sendOrder(platform) {
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
+        if(!name || !phone) return alert("အမည်နှင့် ဖုန်းဖြည့်ပါ");
+
+        const date = document.getElementById('pickup-date').value;
+        const time = document.getElementById('pickup-time').value;
+        const note = document.getElementById('order-note').value || "-";
         const subtotal = document.getElementById('subtotal').innerText;
-        const dep = document.getElementById('deposit-input').value || 0;
+        const itemsMsg = Object.values(cart).map(i => `• ${i.name} (${i.qty} x ${i.price} K)`).join('\n');
+        
+        const { error } = await _sb.from('orders').insert([{
+            customer_name: name,
+            phone: phone,
+            items_text: itemsMsg + `\n\n⏰ Time: ${date} ${time}\n📝 Note: ${note}`,
+            total_amount: subtotal,
+            status: 1
+        }]);
 
-        document.getElementById('v-info').innerHTML = `<b>ဝယ်သူ:</b> ${name}<br><b>ဖုန်း:</b> ${phone}`;
-        document.getElementById('v-body').innerHTML = Object.values(cart).map(i => `
-            <tr><td style="padding:5px 0;">${i.name}</td><td align="center">${i.price.toLocaleString()}</td><td align="center">${i.qty}</td><td align="right">${(i.price*i.qty).toLocaleString()}</td></tr>
-        `).join('');
-        document.getElementById('v-total-area').innerHTML = `Total: ${subtotal}${dep > 0 ? '<br>Deposit: ' + dep + ' K' : ''}`;
+        if(error) return alert("Database Error!");
 
-        setTimeout(async () => {
-            const canvas = await html2canvas(document.getElementById('voucher-ui'), {scale: 2});
-            const link = document.createElement('a');
-            link.download = `Voucher-${name}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-            document.getElementById('global-loader').style.display = 'none';
-            showSocialOptions();
-        }, 1200);
-    }
-
-    async function sendMessage() {
-    const name = document.getElementById('msg-name').value;
-    const phone = document.getElementById('msg-phone').value;
-    const text = document.getElementById('msg-text').value;
-
-    if(!name || !phone || !text) {
-        return alert("အချက်အလက်များကို ပြည့်စုံစွာ ဖြည့်ပေးပါ။");
-    }
-
-    // Loader ပြမယ်
-    document.getElementById('global-loader').style.display = 'flex';
-    document.getElementById('loader-text').innerText = "စာပို့နေပါသည်...";
-
-    // Supabase ရဲ့ messages table ထဲကို ပို့မယ်
-    const { error } = await _sb.from('messages').insert([{
-        customer_name: name,
-        phone: phone,
-        message_text: text
-    }]);
-
-    document.getElementById('global-loader').style.display = 'none';
-
-    if(!error) {
-        alert("စာပို့ခြင်း အောင်မြင်ပါသည်။ ဆိုင်မှ အကြောင်းပြန်ပေးပါမည်။");
-        // Form ကို ပြန်ရှင်းမယ်
-        document.getElementById('msg-name').value = "";
-        document.getElementById('msg-phone').value = "";
-        document.getElementById('msg-text').value = "";
-    } else {
-        alert("Error: " + error.message);
-    }
-    }
-
-    let myChatId = localStorage.getItem('chat_id') || "user_" + Math.random().toString(36).slice(2, 9);
-localStorage.setItem('chat_id', myChatId);
-
-function toggleChat(s) {
-    const win = document.getElementById('chat-window');
-    win.style.bottom = s ? '0' : '-100%';
-    if(s) {
-        document.getElementById('msg-badge').style.display = 'none';
-        loadChatHistory();
-    }
-}
-
-async function sendChatMessage() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    if(!msg) return;
-
-    input.value = ""; // စာပို့ပြီးရင် ချက်ချင်းဖျက်မယ်
-    const { error } = await _sb.from('chats').insert([{
-        customer_id: myChatId,
-        sender: 'customer',
-        message: msg
-    }]);
-
-    if(error) console.error(error);
-}
-
-async function loadChatHistory() {
-    const { data } = await _sb.from('chats').select('*')
-        .eq('customer_id', myChatId)
-        .order('created_at', {ascending: true});
-    renderChat(data);
-}
-
-function renderChat(data) {
-    const box = document.getElementById('chat-messages');
-    box.innerHTML = data.map(m => `
-        <div style="align-self: ${m.sender === 'customer' ? 'flex-end' : 'flex-start'}; 
-                    background: ${m.sender === 'customer' ? 'var(--primary)' : 'white'}; 
-                    color: ${m.sender === 'customer' ? 'white' : 'black'}; 
-                    padding: 12px 16px; 
-                    border-radius: ${m.sender === 'customer' ? '18px 18px 4px 18px' : '18px 18px 18px 4px'}; 
-                    max-width: 75%; font-size:14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-            ${m.message}
-        </div>
-    `).join('');
-    box.scrollTop = box.scrollHeight;
-}
-
-// Realtime Update - စာဝင်လာရင် ချက်ချင်းပြဖို့
-_sb.channel('chat-room').on('postgres_changes', { 
-    event: 'INSERT', schema: 'public', table: 'chats' 
-}, payload => {
-    if(payload.new.customer_id === myChatId) {
-        loadChatHistory();
-        if(document.getElementById('chat-window').style.bottom !== '0px') {
-            document.getElementById('msg-badge').style.display = 'block';
-            new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play();
-        }
-    }
-}).subscribe();
-    
-
-    async function sendOrder(platform) {
-    const name = document.getElementById('cust-name').value;
-    const phone = document.getElementById('cust-phone').value;
-    const date = document.getElementById('pickup-date').value;
-    const time = document.getElementById('pickup-time').value;
-    const note = document.getElementById('order-note').value || "-";
-    const subtotal = document.getElementById('subtotal').innerText;
-    
-    // ၁။ မှာယူတဲ့ ပစ္စည်းစာရင်းကို စာသားပြောင်းမယ်
-    const itemsMsg = Object.values(cart).map(i => `• ${i.name} (${i.qty} x ${i.price} K)`).join('\n');
-    
-    // ၂။ Supabase Database ထဲကို အော်ဒါအရင်သိမ်းမယ်
-    const { error } = await _sb.from('orders').insert([{
-        customer_name: name,
-        phone: phone,
-        items_text: itemsMsg + `\n\n⏰ Time: ${date} ${time}\n📝 Note: ${note}`,
-        total_amount: subtotal,
-        status: 1 // Status 1 = New Order
-    }]);
-
-    if(error) {
-        alert("Database ချိတ်ဆက်မှု အဆင်မပြေပါ။");
-        return;
-    }
-
-    // ၃။ Message ပို့ဖို့ စာသားပြင်ဆင်မယ်
-    const msg = `🍗 *MYIN THAR ROAST ORDER*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n📅 ရက်စွဲ/အချိန်: ${date} ${time}\n📝 မှတ်ချက်: ${note}\n━━━━━━━━━━━━━━\n🛒 မှာယူမှု:\n${itemsMsg}\n━━━━━━━━━━━━━━\n💰 စုစုပေါင်း: ${subtotal}`;
-
-    // ၄။ Local History သိမ်းမယ်
-    const history = JSON.parse(localStorage.getItem('recentOrders') || "[]");
-    history.push({ id: Date.now(), date: new Date().toLocaleDateString(), total: subtotal, items: Object.values(cart) });
-    localStorage.setItem('recentOrders', JSON.stringify(history));
-
-    // ၅။ Viber သို့မဟုတ် Telegram သို့ သွားမယ်
-    navigator.clipboard.writeText(msg).then(() => {
-        document.getElementById('global-loader').style.display = 'flex';
-        setTimeout(() => {
+        const msg = `🍗 *MYIN THAR ROAST ORDER*\n👤 ဝယ်သူ: ${name}\n📞 ဖုန်း: ${phone}\n📅 ရက်စွဲ: ${date} ${time}\n━━━━━━━━━━━━━━\n🛒 မှာယူမှု:\n${itemsMsg}\n━━━━━━━━━━━━━━\n💰 စုစုပေါင်း: ${subtotal}`;
+        
+        navigator.clipboard.writeText(msg).then(() => {
             if(platform === 'viber') window.location.href = `viber://chat?number=+${MY_PHONE}`;
             else window.location.href = `https://t.me/+${MY_PHONE}`;
-            document.getElementById('global-loader').style.display = 'none';
-        }, 1000);
-    });
+        });
     }
-    
-    
-    
-    
+
+    // --- Chat Functions ---
+    function toggleChat(s) {
+        document.getElementById('chat-window').style.bottom = s ? '0' : '-100%';
+        if(s) loadChatHistory();
+    }
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        const msg = input.value.trim();
+        if(!msg) return;
+        input.value = "";
+        await _sb.from('chats').insert([{ customer_id: myChatId, sender: 'customer', message: msg }]);
+    }
+
+    async function loadChatHistory() {
+        const { data } = await _sb.from('chats').select('*').eq('customer_id', myChatId).order('created_at', {ascending: true});
+        const box = document.getElementById('chat-messages');
+        box.innerHTML = data.map(m => `
+            <div style="align-self: ${m.sender === 'customer' ? 'flex-end' : 'flex-start'}; background: ${m.sender === 'customer' ? 'var(--primary)' : 'white'}; color: ${m.sender === 'customer' ? 'white' : 'black'}; padding: 12px 16px; border-radius: 15px; max-width: 75%; font-size:14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom:5px;">
+                ${m.message}
+            </div>
+        `).join('');
+        box.scrollTop = box.scrollHeight;
+    }
+
+    _sb.channel('chat-room').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chats' }, payload => {
+        if(payload.new.customer_id === myChatId) loadChatHistory();
+    }).subscribe();
+
+    // Drawer & Steps
+    function toggleDrawer(s) { document.getElementById('drawer').classList.toggle('active', s); document.getElementById('overlay').style.display = s ? 'block' : 'none'; }
+    function goToStep(s) { document.getElementById('step-wrapper').style.transform = `translateX(-${(s-1)*50}%)`; }
+    function loadRecentOrders() { /* History logic here */ }
 </script>
 </body>
 </html>
