@@ -3,46 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MT Roast - Ultimate Admin Control</title>
+    <title>MT Roast - Pro Admin Control</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #FF6B35; --accent: #7360F2; --bg: #F4F7FE; --white: #FFFFFF; --text: #2B3674; --gray: #A3AED0; --danger: #FF4D4D; --success: #05CD99; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 120px; }
 
-        /* Header & Dashboard Stats */
         .header { background: var(--white); padding: 25px 20px; border-radius: 0 0 30px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .stat-box { background: var(--white); padding: 20px; border-radius: 20px; border: 1px solid #E9EDF7; }
         .stat-box h4 { margin: 0; color: var(--gray); font-size: 12px; }
         .stat-box h2 { margin: 10px 0; font-size: 20px; }
 
-        /* Sections */
         .container { padding: 20px; display: none; }
         .container.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Tabs & Cards */
         .order-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { padding: 10px 20px; border-radius: 12px; border: none; background: #E9EDF7; color: var(--text); font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .tab-btn { padding: 10px 20px; border-radius: 12px; border: none; background: #E9EDF7; color: var(--text); font-weight: 600; cursor: pointer; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        .item-card { background: white; padding: 15px; border-radius: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid #E9EDF7; }
+        .item-card { background: white; padding: 15px; border-radius: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid #E9EDF7; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
         .item-img { width: 65px; height: 65px; border-radius: 12px; object-fit: cover; background: #eee; }
         .item-info { flex: 1; }
         .price-tag { color: var(--primary); font-weight: bold; }
 
-        /* FAB & Modals */
         .fab { position: fixed; bottom: 100px; right: 25px; background: var(--primary); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 10px 20px rgba(255,107,53,0.3); z-index: 999; cursor: pointer; border: 2px solid white; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); display: none; z-index: 2000; align-items: flex-end; }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: white; width: 100%; border-radius: 30px 30px 0 0; padding: 25px; box-sizing: border-box; transform: translateY(100%); transition: 0.3s; }
+        .modal-content { background: white; width: 100%; border-radius: 30px 30px 0 0; padding: 25px; box-sizing: border-box; transform: translateY(100%); transition: 0.3s; max-height: 90vh; overflow-y: auto; }
         .modal-overlay.active .modal-content { transform: translateY(0); }
 
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #eee; outline: none; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #eee; outline: none; box-sizing: border-box;}
         .btn-save { background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        /* Nav Bar */
         .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #eee; z-index: 1001; }
         .nav-item { color: var(--gray); text-align: center; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
@@ -53,16 +48,19 @@
 <div id="dashboard-view" class="container active">
     <div class="header">
         <h2 style="margin:0">MT Roast Dashboard</h2>
-        <div class="stat-box">
-    <h4>Revenue Target (1,000,000 K)</h4>
-    <h2 id="st-rev">0 K</h2>
-    <div style="width: 100%; background: #eee; height: 8px; border-radius: 5px; margin-top: 10px;">
-        <div id="rev-progress" style="width: 0%; background: var(--success); height: 100%; border-radius: 5px; transition: 1s;"></div>
-    </div>
+        <div id="stock-alert" style="display:none; background: #FFE5E5; color: #D00; padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px solid #FFCCCC; font-size: 13px;">
+            <i class="fas fa-exclamation-triangle"></i> <b>Low Stock:</b> <span id="low-stock-items"></span>
         </div>
-        
-            <div class="stat-box"><h4>Revenue</h4><h2 id="st-rev">0 K</h2></div>
+        <div class="stat-grid">
+            <div class="stat-box"><h4>All Revenue</h4><h2 id="st-rev">0 K</h2></div>
             <div class="stat-box"><h4>New Orders</h4><h2 id="st-ord">0</h2></div>
+            <div class="stat-box" style="grid-column: span 2; background: #F8F9FF;">
+                <h4>Today's Summary</h4>
+                <div style="display:flex; justify-content: space-around; padding-top:10px;">
+                    <div style="text-align:center;"><small>Orders</small><h3 id="today-orders">0</h3></div>
+                    <div style="text-align:center;"><small>Sales</small><h3 id="today-sales">0 K</h3></div>
+                </div>
+            </div>
             <div class="stat-box"><h4>Products</h4><h2 id="st-item">0</h2></div>
             <div class="stat-box"><h4>Messages</h4><h2 id="st-msg">0</h2></div>
         </div>
@@ -70,7 +68,7 @@
 </div>
 
 <div id="order-view" class="container">
-    <h3>Orders Status</h3>
+    <h3>Orders Management</h3>
     <div class="order-tabs">
         <button class="tab-btn active" onclick="filterOrders(1, this)">New (1)</button>
         <button class="tab-btn" onclick="filterOrders(2, this)">Cooking (2)</button>
@@ -80,7 +78,7 @@
 </div>
 
 <div id="inventory-view" class="container">
-    <h3>Menu Management</h3>
+    <h3>Menu Items</h3>
     <div id="menu-list"></div>
 </div>
 
@@ -88,36 +86,36 @@
     <h3>Customer Inbox</h3>
     <div id="message-list"></div>
 </div>
-    
-    <div id="order-view" class="container">
-    <h3>Orders Status</h3>
-    <input type="text" id="orderSearch" placeholder="Customer နာမည်ဖြင့် ရှာရန်..." onkeyup="searchOrders()" style="margin-bottom: 15px; border-radius: 20px; padding: 10px 20px;">
-    
-    <div class="order-tabs">
-        <button class="tab-btn active" onclick="filterOrders(1, this)">New (1)</button>
-        <button class="tab-btn" onclick="filterOrders(2, this)">Cooking (2)</button>
-        <button class="tab-btn" onclick="filterOrders(3, this)">Finished (3)</button>
-    </div>
-    <div id="order-list"></div>
-    </div>
-    
 
 <div class="modal-overlay" id="add-modal" onclick="if(event.target===this) closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <h3 id="modal-title">Add Menu</h3>
+        <h3 id="modal-title">Menu Item</h3>
         <div onclick="document.getElementById('fileInput').click()" style="border:2px dashed #ccc; padding:15px; text-align:center; border-radius:10px; margin-bottom:10px; cursor:pointer;">
             <p id="file-label" style="margin:0; font-size:13px; color:var(--gray)">Tap to upload photo</p>
             <input type="file" id="fileInput" hidden accept="image/*" onchange="previewImg(this)">
         </div>
-        <input type="text" id="m-name" placeholder="Name">
+        <input type="text" id="m-name" placeholder="Item Name">
         <input type="number" id="m-price" placeholder="Price (K)">
-        <input type="number" id="m-stock" placeholder="Stock Qty">
+        <input type="number" id="m-stock" placeholder="Stock Quantity">
         <select id="m-cat">
             <option value="Main">Main Dish</option>
             <option value="Side">Side Dish</option>
             <option value="Drink">Drinks</option>
         </select>
-        <button class="btn-save" onclick="saveItem()">Save Product</button>
+        <button type="button" class="btn-save" onclick="saveItem()">Save Product</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="order-detail-modal" onclick="if(event.target===this) this.classList.remove('active')">
+    <div class="modal-content">
+        <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">Order Details</h3>
+        <div id="order-info-content"></div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="printVoucher()" style="flex: 1; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer;">
+                <i class="fas fa-print"></i> Print Voucher
+            </button>
+            <button onclick="document.getElementById('order-detail-modal').classList.remove('active')" style="flex: 1; background: #eee; border: none; padding: 12px; border-radius: 10px; cursor: pointer;">Close</button>
+        </div>
     </div>
 </div>
 
@@ -137,6 +135,8 @@
 
     let base64 = "";
     let editId = null;
+    let currentOrder = null;
+    const notifySound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
     // --- NAVIGATION ---
     function switchTab(id, el) {
@@ -150,193 +150,142 @@
         if(id === 'dashboard') loadStats();
     }
 
-    // --- MODAL & IMAGE ---
+    // --- MODAL & IMAGES ---
     function openModal(data = null) {
         editId = data ? data.id : null;
-        document.getElementById('modal-title').innerText = data ? "Edit Item" : "Add Item";
+        document.getElementById('modal-title').innerText = data ? "Edit Item" : "Add New Item";
         document.getElementById('m-name').value = data ? data.name : "";
         document.getElementById('m-price').value = data ? data.price : "";
         document.getElementById('m-stock').value = data ? data.stock_qty : "";
         document.getElementById('m-cat').value = data ? data.category : "Main";
         base64 = data ? data.image : "";
-        document.getElementById('file-label').innerText = data ? "Image Loaded ✅" : "Tap to upload photo";
+        document.getElementById('file-label').innerText = data ? "Photo Loaded ✅" : "Tap to upload photo";
         document.getElementById('add-modal').classList.add('active');
     }
-    function closeModal() { document.getElementById('add-modal').classList.remove('active'); }
-
+    function closeModal() { document.getElementById('add-modal').classList.remove('active'); editId = null;}
     function previewImg(input) {
         const reader = new FileReader();
-        reader.onload = (e) => { 
-            base64 = e.target.result;
-            document.getElementById('file-label').innerText = "Selected ✅";
-        };
+        reader.onload = (e) => { base64 = e.target.result; document.getElementById('file-label').innerText = "Selected ✅"; };
         reader.readAsDataURL(input.files[0]);
     }
 
-    // --- PRODUCTS (ADD/EDIT/DELETE) ---
-        async function saveItem() {
-        const name = document.getElementById('m-name').value;
-        const price = document.getElementById('m-price').value;
-        const stock = document.getElementById('m-stock').value;
-        const cat = document.getElementById('m-cat').value;
-
-        // Validation: အချက်အလက်စုံမစုံစစ်မယ်
-        if(!name || !price || !base64) {
-            return alert("ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ပြည့်စုံစွာဖြည့်ပါ။");
-        }
-
-        const payload = {
-            name: name,
-            price: parseInt(price),
-            stock_qty: parseInt(stock) || 0,
-            category: cat,
-            image: base64
-        };
-
-        let response;
-
-        if (editId) {
-            // Edit လုပ်နေတာဆိုရင် Update လုပ်မယ်
-            response = await _sb.from('products').update(payload).eq('id', editId);
-        } else {
-            // အသစ်ထည့်တာဆိုရင် Insert လုပ်မယ်
-            response = await _sb.from('products').insert([payload]);
-        }
-
-        if(!response.error) {
-            alert(editId ? "ပြင်ဆင်ပြီးပါပြီ" : "အသစ်ထည့်သွင်းပြီးပါပြီ");
-            closeModal();
-            loadMenu(); // List ကို Refresh လုပ်မယ်
-            loadStats(); // Dashboard က အရေအတွက်တွေကို Update လုပ်မယ်
-        } else {
-            alert("Error: " + response.error.message);
-            console.error(response.error);
-        }
+    // --- PRODUCTS ---
+    async function saveItem() {
+        const p = { name: document.getElementById('m-name').value, price: parseInt(document.getElementById('m-price').value), stock_qty: parseInt(document.getElementById('m-stock').value) || 0, category: document.getElementById('m-cat').value, image: base64 };
+        if(!p.name || !p.price || !base64) return alert("Please fill all fields!");
+        const { error } = editId ? await _sb.from('products').update(p).eq('id', editId) : await _sb.from('products').insert([p]);
+        if(!error) { closeModal(); loadMenu(); loadStats(); } else alert(error.message);
     }
-
-
     async function loadMenu() {
         const { data } = await _sb.from('products').select('*').order('created_at', {ascending:false});
         document.getElementById('menu-list').innerHTML = data.map(i => `
             <div class="item-card">
                 <img src="${i.image}" class="item-img">
                 <div class="item-info"><b>${i.name}</b><br><span class="price-tag">${i.price} K</span><br><small>Stock: ${i.stock_qty}</small></div>
-                <div style="display:flex; gap:10px;">
-                    <i class="fas fa-edit" onclick='openModal(${JSON.stringify(i)})' style="color:var(--accent)"></i>
+                <div style="display:flex; gap:15px; font-size:18px;">
+                    <i class="fas fa-edit" onclick='openModal(${JSON.stringify(i).replace(/'/g, "&apos;")})' style="color:var(--accent)"></i>
                     <i class="fas fa-trash" onclick="delItem(${i.id})" style="color:var(--danger)"></i>
                 </div>
             </div>
         `).join('');
     }
-    async function delItem(id) { if(confirm("Delete?")) { await _sb.from('products').delete().eq('id', id); loadMenu(); } }
+    async function delItem(id) { if(confirm("Delete this item?")) { await _sb.from('products').delete().eq('id', id); loadMenu(); loadStats(); } }
 
-    // --- ORDERS (STATUS 1, 2, 3) ---
+    // --- ORDERS & DETAILS ---
     async function filterOrders(st, btn) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const { data } = await _sb.from('orders').select('*').eq('status', st).order('created_at',{ascending:false});
         document.getElementById('order-list').innerHTML = data.map(o => `
-            <div class="item-card" style="flex-direction:column; align-items:flex-start;">
+            <div class="item-card" onclick='showOrderDetail(${JSON.stringify(o).replace(/'/g, "&apos;")})' style="flex-direction:column; align-items:flex-start; cursor:pointer;">
                 <div style="display:flex; justify-content:space-between; width:100%;"><b>${o.customer_name}</b><small>${new Date(o.created_at).toLocaleTimeString()}</small></div>
-                <div style="font-size:13px; margin:5px 0;">${o.items_text}</div>
+                <div style="font-size:13px; margin:8px 0; color: #666;">${o.items_text.substring(0,50)}...</div>
                 <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                     <b class="price-tag">${o.total_amount} K</b>
-                    ${st==1 ? `<button onclick="updOrder(${o.id}, 2)" style="background:var(--accent); color:white; border:none; padding:5px 12px; border-radius:8px;">Confirm</button>` : ''}
-                    ${st==2 ? `<button onclick="updOrder(${o.id}, 3)" style="background:var(--success); color:white; border:none; padding:5px 12px; border-radius:8px;">Done</button>` : ''}
+                    <div onclick="event.stopPropagation()">
+                        ${st==1 ? `<button onclick="updOrder(${o.id}, 2)" style="background:var(--accent); color:white; border:none; padding:8px 15px; border-radius:8px;">Confirm</button>` : ''}
+                        ${st==2 ? `<button onclick="updOrder(${o.id}, 3)" style="background:var(--success); color:white; border:none; padding:8px 15px; border-radius:8px;">Done</button>` : ''}
+                    </div>
                 </div>
             </div>
         `).join('');
     }
-    async function updOrder(id, next) { await _sb.from('orders').update({status: next}).eq('id', id); switchTab('order', document.querySelectorAll('.nav-item')[1]); }
+    async function updOrder(id, next) { await _sb.from('orders').update({status: next}).eq('id', id); filterOrders(next == 2 ? 1 : 2, document.querySelector('.tab-btn.active')); loadStats(); }
 
-    // --- INBOX ---
+    function showOrderDetail(order) {
+        currentOrder = order;
+        document.getElementById('order-info-content').innerHTML = `
+            <p><strong>Customer:</strong> ${order.customer_name}</p>
+            <p><strong>Phone:</strong> ${order.phone || 'N/A'}</p>
+            <p><strong>Time:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+            <div style="background: #f8f9ff; padding: 15px; border-radius: 12px; margin: 15px 0;">
+                <p style="white-space: pre-line; margin:0;">${order.items_text}</p>
+                <hr style="border:0; border-top:1px solid #ddd; margin:10px 0;">
+                <h3 style="color:var(--primary); margin:0;">Total: ${order.total_amount} K</h3>
+            </div>`;
+        document.getElementById('order-detail-modal').classList.add('active');
+    }
+
+    function printVoucher() {
+        const w = window.open('', '_blank');
+        w.document.write(`<html><body style="font-family:sans-serif; padding:20px; text-align:center;">
+            <h2>MT Roast</h2><p>Voucher Summary</p><hr>
+            <div style="text-align:left;"><p>Order ID: #${currentOrder.id}</p><p>Customer: ${currentOrder.customer_name}</p>
+            <p>Items:<br>${currentOrder.items_text.replace(/\n/g, '<br>')}</p><hr>
+            <h3>Total: ${currentOrder.total_amount} K</h3></div>
+            <script>window.print(); setTimeout(()=>window.close(), 500);<\/script></body></html>`);
+    }
+
+    // --- DASHBOARD STATS ---
+    async function loadStats() {
+        const { data: ords } = await _sb.from('orders').select('total_amount, created_at');
+        const { count: prod } = await _sb.from('products').select('*', {count:'exact', head:true});
+        const { count: msg } = await _sb.from('messages').select('*', {count:'exact', head:true});
+        const { count: nOrd } = await _sb.from('orders').select('*', {count:'exact', head:true}).eq('status', 1);
+
+        let rev = 0, todayRev = 0, todayCount = 0;
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if(ords) {
+            ords.forEach(o => {
+                let amt = parseInt(o.total_amount.toString().replace(/\D/g,'')) || 0;
+                rev += amt;
+                if(o.created_at.startsWith(todayStr)) { todayRev += amt; todayCount++; }
+            });
+        }
+        document.getElementById('st-rev').innerText = rev.toLocaleString() + " K";
+        document.getElementById('st-ord').innerText = nOrd || 0;
+        document.getElementById('st-item').innerText = prod || 0;
+        document.getElementById('st-msg').innerText = msg || 0;
+        document.getElementById('today-orders').innerText = todayCount;
+        document.getElementById('today-sales').innerText = todayRev.toLocaleString() + " K";
+
+        const { data: low } = await _sb.from('products').select('name').lte('stock_qty', 5);
+        if(low && low.length > 0) {
+            document.getElementById('stock-alert').style.display = 'block';
+            document.getElementById('low-stock-items').innerText = low.map(l => l.name).join(', ');
+        } else document.getElementById('stock-alert').style.display = 'none';
+    }
+
+    // --- MESSAGES & REALTIME ---
     async function loadInbox() {
         const { data } = await _sb.from('messages').select('*').order('created_at',{ascending:false});
         document.getElementById('message-list').innerHTML = data.map(m => `
             <div class="item-card" style="flex-direction:column; align-items:flex-start;">
                 <div style="display:flex; justify-content:space-between; width:100%;"><b>${m.customer_name}</b><small>${m.phone}</small></div>
-                <p style="font-size:14px; margin:5px 0;">${m.message_text}</p>
-                <button onclick="delMsg(${m.id})" style="border:none; background:none; color:var(--danger);"><i class="fas fa-trash"></i> Delete</button>
-            </div>
-        `).join('');
+                <p style="font-size:14px; margin:8px 0;">${m.message_text}</p>
+                <button onclick="delMsg(${m.id})" style="border:none; background:none; color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
+            </div>`).join('');
     }
-    async function delMsg(id) { await _sb.from('messages').delete().eq('id', id); loadInbox(); }
+    async function delMsg(id) { await _sb.from('messages').delete().eq('id', id); loadInbox(); loadStats(); }
 
-    // --- STATS ---
-        async function loadStats() {
-        // ၁။ Database ကနေ Data တွေယူမယ်
-        const { data: ords } = await _sb.from('orders').select('total_amount');
-        const { count: prod } = await _sb.from('products').select('*', {count:'exact', head:true});
-        const { count: msg } = await _sb.from('messages').select('*', {count:'exact', head:true});
-        const { count: newOrd } = await _sb.from('orders').select('*', {count:'exact', head:true}).eq('status', 1);
-
-        // ၂။ ဝင်ငွေ (Revenue) ကို ပေါင်းမယ်
-        let rev = ords ? ords.reduce((s, o) => {
-            // total_amount ထဲက " K" တို့ ဘာတို့ ဖယ်ပြီး ဂဏန်းပြောင်းပေါင်းတာပါ
-            let amt = parseInt(o.total_amount.toString().replace(/\D/g,'')) || 0;
-            return s + amt;
-        }, 0) : 0;
-
-        // ၃။ ဂဏန်းတွေကို UI မှာ ပြမယ်
-        document.getElementById('st-rev').innerText = rev.toLocaleString() + " K";
-        document.getElementById('st-ord').innerText = newOrd || 0;
-        document.getElementById('st-item').innerText = prod || 0;
-        document.getElementById('st-msg').innerText = msg || 0;
-
-        // --- ဒီနေရာက သင်မေးထားတဲ့ Progress Bar တွက်တဲ့အပိုင်းပါ ---
-        let target = 1000000; // သတ်မှတ်ထားတဲ့ ရောင်းအားပန်းတိုင် (၁၀ သိန်း)
-        let percent = (rev / target) * 100;
-        
-        // Progress Bar အတန်းလေး ရှည်လာအောင် လုပ်တာပါ
-        const progressBar = document.getElementById('rev-progress');
-        if (progressBar) {
-            progressBar.style.width = (percent > 100 ? 100 : percent) + "%";
-        }
-        // ---------------------------------------------------
+    function enableRealtime() {
+        _sb.channel('db-changes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
+            notifySound.play(); alert("အော်ဒါအသစ် ရောက်ရှိလာပါပြီ!"); loadStats();
+        }).subscribe();
     }
 
-
-    window.onload = loadStats;
-    // အော်ဒါအသစ်တက်လာရင် မြည်မယ့်အသံ (Online က အသံတစ်ခုခု သုံးနိုင်ပါတယ်)
-const notifySound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-
-    function searchOrders() {
-    let input = document.getElementById('orderSearch').value.toUpperCase();
-    let cards = document.getElementById('order-list').getElementsByClassName('item-card');
-
-    for (let i = 0; i < cards.length; i++) {
-        let name = cards[i].getElementsByTagName("b")[0];
-        if (name) {
-            let txtValue = name.textContent || name.innerText;
-            if (txtValue.toUpperCase().indexOf(input) > -1) {
-                cards[i].style.display = "";
-            } else {
-                cards[i].style.display = "none";
-            }
-        }
-    }
-    }
-    
-function enableRealtime() {
-    _sb.channel('custom-all-channel')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
-        console.log('New Order Received!', payload.new);
-        notifySound.play(); // အသံမြည်မယ်
-        alert("အော်ဒါအသစ် ရောက်ရှိလာပါပြီ!");
-        loadStats(); // Dashboard refresh လုပ်မယ်
-        if(document.getElementById('order-view').classList.contains('active')) {
-            filterOrders(1, document.querySelector('.tab-btn')); // Order list refresh လုပ်မယ်
-        }
-    })
-    .subscribe();
-}
-
-// window.onload မှာ ဒါလေး ထည့်ပေးပါ
-window.onload = () => {
-    loadStats();
-    enableRealtime();
-};
-    
+    window.onload = () => { loadStats(); enableRealtime(); };
 </script>
 </body>
 </html>
