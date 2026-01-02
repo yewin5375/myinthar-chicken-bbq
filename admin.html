@@ -352,7 +352,10 @@
         <button class="btn" style="width:100%; margin-top:15px;" onclick="closeModal('customerListModal')">Close</button>
     </div>
 </div>
-    
+    <div id="customer-view" class="container">
+    <h2>Customers</h2>
+    <div id="customer-list"></div>
+    </div>
 
 <div id="menuModal" class="modal">
     <div class="modal-content">
@@ -383,6 +386,8 @@
     <div class="nav-item" onclick="switchTab('order', 1)"><i class="fas fa-receipt"></i><div id="dot-order" class="dot"></div></div>
     <div class="nav-item" onclick="switchTab('menu', 2)"><i class="fas fa-hamburger"></i></div>
     <div class="nav-item" onclick="switchTab('chat', 3)"><i class="fas fa-comment-dots"></i><div id="dot-chat" class="dot"></div></div>
+    <div class="nav-item" onclick="switchTab('customer', 4)">
+    <i class="fas fa-users"></i></div>
 </nav>
 
 <script>
@@ -402,6 +407,7 @@ function switchTab(id, idx) {
     if(id === 'order') { loadOrders(1); document.getElementById('dot-order').style.display='none'; }
     if(id === 'menu') loadMenu();
     if(id === 'chat') { loadInbox(); document.getElementById('dot-chat').style.display='none'; }
+    if(id === 'customer') loadCustomers();
 }
 
 // --- VOICE RECOGNITION (Speak Tap) ---
@@ -415,6 +421,45 @@ function startVoice() {
     };
 }
 
+    async function loadCustomers() {
+    const { data } = await _sb
+        .from('orders')
+        .select('customer_name, phone')
+        .order('created_at', { ascending:false });
+
+    const uniq = [...new Map(data.map(c => [c.phone, c])).values()];
+
+    document.getElementById('customer-list').innerHTML = uniq.map(c => `
+        <div class="order-card" onclick="openCustomerProfile('${c.phone}', '${c.customer_name}')">
+            <div class="prof-avatar">${c.customer_name[0]}</div>
+            <b>${c.customer_name}</b><br>
+            <small>${c.phone}</small>
+        </div>
+    `).join('');
+    }
+    async function openCustomerProfile(phone, name) {
+    activeCustId = phone;
+
+    document.getElementById('cp-avatar').innerText = name[0];
+    document.getElementById('cp-name').innerText = name;
+    document.getElementById('cp-phone').innerText = phone;
+
+    const { data } = await _sb
+        .from('orders')
+        .select('*')
+        .eq('phone', phone)
+        .order('created_at', { ascending:false });
+
+    document.getElementById('cp-orders').innerHTML = data.map(o => `
+        <div class="order-card" onclick='printVoucherFromList(${JSON.stringify(o)})'>
+            <b>${new Date(o.created_at).toLocaleString()}</b><br>
+            <small>Total: ${o.total_amount} K</small>
+        </div>
+    `).join('');
+
+    document.getElementById('customerProfile').style.display = 'flex';
+    }
+    
 // --- SHARING ---
 function shareMenu() {
     if (navigator.share) {
