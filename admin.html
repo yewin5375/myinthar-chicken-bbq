@@ -302,31 +302,48 @@
     <div id="inbox-list"></div>
 </div>
 
+<!-- customerProfile modal -->
 <div id="customerProfile" class="modal">
-    <div class="modal-content" style="max-width: 450px;">
-        <div class="prof-avatar"><i class="fas fa-user"></i></div>
-        <div style="text-align:center;">
-            <h2 id="prof-name" style="margin:5px 0;">-</h2>
-            <p id="prof-phone" style="color:#666; margin-bottom:15px;">-</p>
-            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
-                <button class="btn btn-primary" id="btn-chat-now"><i class="fas fa-comment"></i> Chat</button>
-                <button class="btn" style="background:#eee;" id="btn-call-now"><i class="fas fa-phone"></i> Call</button>
-            </div>
-        </div>
-        
-        <h4>Order History</h4>
-        <div id="prof-history-list" style="max-height:300px; overflow-y:auto;"></div>
-        
-        <button class="btn" style="width:100%; margin-top:15px;" onclick="closeModal('customerProfile')">Close</button>
-    </div>
+  <!-- customer profile content -->
 </div>
 
-<div id="chatModal" class="chat-overlay">
-    <div class="chat-header">
-        <i class="fas fa-arrow-left" onclick="closeChat()"></i>
-        <b id="chat-cust-name">Customer</b>
+<!-- ✅ custQuick ကို အပြင်ထုတ် -->
+<div id="custQuick" class="modal">
+  <div class="modal-content">
+
+    <div class="prof-avatar" id="cq-avatar"></div>
+
+    <h3 id="cq-name" style="text-align:center;margin:5px 0;"></h3>
+    <p id="cq-phone" style="text-align:center;color:#666;"></p>
+
+    <div style="display:flex;justify-content:center;gap:10px;margin:10px 0;">
+      <button class="btn btn-primary" onclick="openChat(activeCustId)">
+        <i class="fas fa-comment"></i> Chat
+      </button>
     </div>
-    
+
+    <div style="display:flex;justify-content:space-around;margin:15px 0;">
+      <div><b id="cq-total-orders">0</b><br><small>Orders</small></div>
+      <div><b id="cq-total-spent">0 K</b><br><small>Total</small></div>
+    </div>
+
+    <hr>
+
+    <h4>Recent Orders</h4>
+    <div id="cq-history"></div>
+
+    <button class="btn" style="width:100%;margin-top:15px;"
+      onclick="closeModal('custQuick')">Back</button>
+  </div>
+</div>
+
+<!-- chat modal -->
+<div id="chatModal" class="chat-overlay">
+  <div class="chat-header">
+    <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+    <b id="chat-cust-name">Customer</b>
+  </div>
+
     <div id="chat-msgs" class="chat-msgs"></div>
     
     <div id="typing-ui" class="typing">Customer is typing...</div>
@@ -503,7 +520,7 @@ async function loadOrders(st) {
                         <i class="fas fa-user"></i>
                     </div>
                     <div>
-                        <b style="color:var(--text); font-size:14px; text-decoration:underline;">${o.customer_name}</b><br>
+                        <b style="color:var(--primary); font-size:14px; cursor:pointer;" onclick="openCustomerQuick('${o.phone}', '${o.customer_name}')">   ${o.customer_name}</b>
                         <small style="color:#94A3B8;">${o.phone}</small>
                     </div>
                 </div>
@@ -875,7 +892,33 @@ async function exportToExcel() {
     link.setAttribute("download", `Sales_Report.csv`);
     link.click();
 }
-    
+    async function openCustomerQuick(phone, name) {
+    activeCustId = phone;
+
+    document.getElementById('cq-avatar').innerText = name[0];
+    document.getElementById('cq-name').innerText = name;
+    document.getElementById('cq-phone').innerText = phone;
+
+    const { data } = await _sb
+        .from('orders')
+        .select('*')
+        .eq('phone', phone)
+        .order('created_at', { ascending: false });
+
+    document.getElementById('cq-total-orders').innerText = data.length;
+    document.getElementById('cq-total-spent').innerText =
+        data.reduce((t,o)=>t+o.total_amount,0).toLocaleString() + " K";
+
+    document.getElementById('cq-history').innerHTML = data.slice(0,5).map(o => `
+        <div class="order-card"
+             onclick='printVoucherFromList(${JSON.stringify(o)})'>
+          <b>${new Date(o.created_at).toLocaleString()}</b><br>
+          <small>Total: ${o.total_amount} K</small>
+        </div>
+    `).join('');
+
+    document.getElementById('custQuick').style.display = 'flex';
+    }
 </script>
 </body>
 </html>
